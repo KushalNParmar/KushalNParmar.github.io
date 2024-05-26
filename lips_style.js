@@ -40,6 +40,7 @@ export class LipsStyle {
     setOpacitySliderValue(this.colorIntensity);
     this.setOpacity(this.colorIntensity);
 
+    console.log("submoduletest");
     // const newColor = ColorUtils.getColorWithIntensity(
     //   color,
     //   this.colorIntensity
