@@ -1,5 +1,5 @@
 /**
- * @fileoverview Declarations for the face tracking API.
+ * @fileoverview Declarations for the hand tracking API.
  */
 
 /**
@@ -14,56 +14,10 @@ export const VERSION: string;
 export declare type LandmarkConnectionArray = Array<[number, number]>;
 
 /**
- * Subgroup of FACEMESH_CONNECTIONS.
+ * HandEvent.onHand returns an array of landmarks. This array provides the
+ * edges to connect those landmarks to one another.
  */
-export declare const FACEMESH_LIPS: LandmarkConnectionArray;
-
-/**
- * Subgroup of FACEMESH_CONNECTIONS.
- */
-export declare const FACEMESH_LEFT_EYE: LandmarkConnectionArray;
-
-/**
- * Subgroup of FACEMESH_CONNECTIONS.
- */
-export declare const FACEMESH_LEFT_EYEBROW: LandmarkConnectionArray;
-
-/**
- * Subgroup of FACEMESH_CONNECTIONS.
- */
-export declare const FACEMESH_LEFT_IRIS: LandmarkConnectionArray;
-
-/**
- * Subgroup of FACEMESH_CONNECTIONS.
- */
-export declare const FACEMESH_RIGHT_EYE: LandmarkConnectionArray;
-
-/**
- * Subgroup of FACEMESH_CONNECTIONS.
- */
-export declare const FACEMESH_RIGHT_EYEBROW: LandmarkConnectionArray;
-
-/**
- * Subgroup of FACEMESH_CONNECTIONS.
- */
-export declare const FACEMESH_RIGHT_IRIS: LandmarkConnectionArray;
-
-/**
- * Subgroup of FACEMESH_CONNECTIONS.
- */
-export declare const FACEMESH_FACE_OVAL: LandmarkConnectionArray;
-
-/**
- * onResults returns an array of landmarks. This array provides the combination
- * of contours listed above.
- */
-export declare const FACEMESH_CONTOURS: LandmarkConnectionArray;
-
-/**
- * onResults returns an array of landmarks. This array provides the edges of
- * the full set of landmarks.
- */
-export declare const FACEMESH_TESSELATION: LandmarkConnectionArray;
+export declare const HAND_CONNECTIONS: LandmarkConnectionArray;
 
 /**
  * Represents a single normalized landmark.
@@ -88,11 +42,6 @@ export interface InputMap {
 }
 
 /**
- * GpuBuffers should all be compatible with Canvas' `drawImage`
- */
-type GpuBuffer = HTMLCanvasElement | HTMLImageElement | ImageBitmap;
-
-/**
  * One list of landmarks.
  */
 export type NormalizedLandmarkList = NormalizedLandmark[];
@@ -103,121 +52,80 @@ export type NormalizedLandmarkList = NormalizedLandmark[];
 export type NormalizedLandmarkListList = NormalizedLandmarkList[];
 
 /**
- * Shows the vertex type of a mesh in order to decode the vertex buffer list.
+ * Represents a single landmark (not normalized).
  */
-export interface VertexType {
-  VERTEX_PT: 0;  // Position (XYZ) + Texture (UV)
+export interface Landmark extends NormalizedLandmark {}
+
+/**
+ * Detected points are returned as a collection of landmarks.
+ */
+export type LandmarkList = Landmark[];
+
+/**
+ * Detected points are returned as a collection of landmarks.
+ */
+export type LandmarkListList = LandmarkList[];
+
+/**
+ * GpuBuffers should all be compatible with Canvas' `drawImage`
+ */
+type GpuBuffer = HTMLCanvasElement|HTMLImageElement|ImageBitmap;
+
+/**
+ * The descriptiong of the hand represented by the corresponding landmarks.
+ */
+export interface Handedness {
+  /**
+   * Index of the object as it appears in multiHandLandmarks.
+   */
+  index: number;
+  /**
+   * Confidence score between 0..1.
+   */
+  score: number;
+  /**
+   * Identifies which hand is detected at this index.
+   */
+  label: 'Right'|'Left';
 }
 
 /**
- * Shows the type of primitive shape in a mesh in order to give shape.
- */
-export interface PrimitiveType {
-  TRIANGLE: 0;
-}
-
-/**
- * Represents the Layout of a Matrix for the MatrixData proto
- */
-export interface Layout {
-  COLUMN_MAJOR: 0;
-  ROW_MAJOR: 1;
-}
-
-
-/**
- * A const object harboring all the default variables for the perspective
- * camera in FaceGeometry
- */
-export interface DefaultCameraParams {
-  verticalFovDegrees: 63.0;
-  near: 1.0;
-  far: 10000.0;
-}
-
-/**
- * Collects the enums into a single namespace
- */
-export declare const FACE_GEOMETRY: {
-  VertexType: VertexType,
-  PrimitiveType: PrimitiveType,
-  Layout: Layout,
-  DEFAULT_CAMERA_PARAMS: DefaultCameraParams;
-};
-
-/**
- * A representation of a mesh given by the Mesh3d proto
- */
-export interface Mesh {
-  getVertexBufferList(): Float32Array;
-  getVertexType(): VertexType;
-  getIndexBufferList(): Uint32Array;
-  getPrimitiveType(): PrimitiveType;
-}
-
-/**
- * A representation of a matrix given by the MatrixData proto.
- */
-export interface MatrixData {
-  getPackedDataList(): number[];
-  getRows(): number;
-  getCols(): number;
-  getLayout(): Layout;
-}
-
-/**
- * A representation of a face geometry from the face geometry proto.
- */
-export interface FaceGeometry {
-  getMesh(): Mesh;
-  getPoseTransformMatrix(): MatrixData;
-}
-
-/**
- * Converts a MatrixData proto to a traditional JS array.
- */
-export function matrixDataToMatrix(mat: MatrixData): number[][];
-
-/**
- * Possible results from FaceMesh.
+ * Possible results from Hands.
  */
 export interface Results {
-  multiFaceLandmarks: NormalizedLandmarkListList;
-  multiFaceGeometry: FaceGeometry[];
+  multiHandLandmarks: NormalizedLandmarkListList;
+  multiHandWorldLandmarks: LandmarkListList;
+  multiHandedness: Handedness[];
   image: GpuBuffer;
 }
 
 /**
- * Configurable options for FaceMesh.
+ * Configurable options for Hands.
  */
 export interface Options {
-  cameraNear?: number;
-  cameraFar?: number;
-  cameraVerticalFovDegrees?: number;
-  enableFaceGeometry?: boolean;
   selfieMode?: boolean;
-  maxNumFaces?: number;
-  refineLandmarks?: boolean;
+  maxNumHands?: number;
+  modelComplexity?: 0|1;
   minDetectionConfidence?: number;
   minTrackingConfidence?: number;
 }
 
 /**
- * Listener for any results from FaceMesh.
+ * Listener for any results from Hands.
  */
 export type ResultsListener = (results: Results) => (Promise<void>|void);
 
 /**
- * Contains all of the setup options to drive the face solution.
+ * Contains all of the setup options to drive the hand solution.
  */
-export interface FaceMeshConfig {
+export interface HandsConfig {
   locateFile?: (path: string, prefix?: string) => string;
 }
 
 /**
- * Declares the interface of FaceMesh.
+ * Declares the interface of Hands.
  */
-declare interface FaceMeshInterface {
+declare interface HandsInterface {
   close(): Promise<void>;
   onResults(listener: ResultsListener): void;
   initialize(): Promise<void>;
@@ -227,13 +135,13 @@ declare interface FaceMeshInterface {
 }
 
 /**
- * Encapsulates the entire FaceMesh solution. All that is needed from the
- * developer is the source of the image data. The user will call `send`
- * repeatedly and if a face is detected, then the user can receive callbacks
+ * Encapsulates the entire Hand solution. All that is needed from the developer
+ * is the source of the image data. The user will call `send`
+ * repeatedly and if a hand is detected, then the user can receive callbacks
  * with this metadata.
  */
-export declare class FaceMesh implements FaceMeshInterface {
-  constructor(config?: FaceMeshConfig);
+export declare class Hands implements HandsInterface {
+  constructor(config?: HandsConfig);
 
   /**
    * Shuts down the object. Call before creating a new instance.
