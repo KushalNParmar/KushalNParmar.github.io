@@ -1,16 +1,21 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>FyndStyle</title><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Inter&family=Montserrat:wght@100;400&display=swap" rel="stylesheet"/><link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"/><script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.4/lottie.min.js"></script><script defer="defer" src="runtime.70b672599937457ce8f0.js"></script><script defer="defer" src="vendors.eb0cf0b8bcacd5ff8702.js"></script><script defer="defer" src="main.3b9339ba17b523e65fbd.js"></script></head><body><div id="app"><script>document.head.addEventListener("apiResponseReceived", function (event) {
-          var apiResponse = event.detail;
-          //console.log("Received API response in main page:", apiResponse);
-          // You can use 'apiResponse' as needed in your main page code
-        });
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <title>GlamAR</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.4/lottie.min.js"></script>
+    <!-- <script data-consolejs-channel="a10539bf-eb86-e5dc-ff0c-f1f864cdd8fe"
+    src="https://remotejs.com/agent/agent.js"></script> -->
+  <script defer src="/runtime.3363e74fb3900ea9ebac.js"></script><script defer src="/vendors.d9c8e4743b67cc66c304.js"></script><script defer src="/main.f78e3944476ce2ffe2f3.js"></script></head>
 
-        // Define a function to receive the API response from Unity
-        function messageFromUnity(apiResponse) {
-          // Your JavaScript code here
-          //alert(apiResponse);
-          var event = new CustomEvent("apiResponseReceived", {
-            detail: apiResponse,
-          });
-          document.dispatchEvent(event);
-          //console.log(apiResponse);
-        }</script></div><div id="lighting_viewing_buttons" style="position: absolute; width: fit-content; height: fit-content; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 10px;"><input type="file" id="gltfModelInput" style="display: none;" accept=".gltf,.glb"> <button type="button" id="upload_model_button" onclick="document.getElementById('gltfModelInput').click()">Upload Model</button> <input type="file" id="hdrInput" style="display: none;" accept=".hdr"> <button type="button" id="upload_hdrimage_button" onclick="document.getElementById('hdrInput').click()">Upload HDR</button></div></body></html>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
