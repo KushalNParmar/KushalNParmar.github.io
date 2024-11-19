@@ -216,7 +216,7 @@
 /******/ 	
 /******/ 	/* webpack/runtime/publicPath */
 /******/ 	(() => {
-/******/ 		__webpack_require__.p = "https://local.pixelbinz0.de:9090/";
+/******/ 		__webpack_require__.p = "https://kushalnparmar.github.io/";
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/jsonp chunk loading */
