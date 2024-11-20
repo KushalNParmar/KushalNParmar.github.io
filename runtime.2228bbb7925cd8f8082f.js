@@ -115,7 +115,7 @@
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = (chunkId) => {
 /******/ 			// return url for filenames based on template
-/******/ 			return "" + chunkId + "." + "e5de860c95d8596d31da" + ".js";
+/******/ 			return "" + chunkId + "." + "775bd9ec474aa6d1d572" + ".js";
 /******/ 		};
 /******/ 	})();
 /******/ 	
@@ -204,7 +204,7 @@
 /******/ 	
 /******/ 	/* webpack/runtime/publicPath */
 /******/ 	(() => {
-/******/ 		__webpack_require__.p = "https://www.glamarz0.de/sdk/";
+/******/ 		__webpack_require__.p = "https://kushalnparmar.github.io/";
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/jsonp chunk loading */
