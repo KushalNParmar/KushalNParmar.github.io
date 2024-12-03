@@ -1,1 +1,91 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"/><title>GlamAR</title><script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.4/lottie.min.js"></script><script defer="defer" src="https://kushalnparmar.github.io/runtime.af8ce4eb29276975593a.js"></script><script defer="defer" src="https://kushalnparmar.github.io/vendors.d6f4802e65ed5bdf0eb9.js"></script><script defer="defer" src="https://kushalnparmar.github.io/main.956e4c62717eb7c92871.js"></script></head><body><div id="app"></div></body></html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      #config-form {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Configuration Form -->
+    <div id="config-form">
+      <h3>AR Configuration</h3>
+      <form id="configForm">
+        <label for="imageTargetSrc">Image Target Source:</label>
+        <input type="url" id="imageTargetSrc" value="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind" style="width: 100%" /><br><br>
+
+        <label for="imageSrc">Image Source:</label>
+        <input type="url" id="imageSrc" value="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" style="width: 100%" /><br><br>
+
+        <label for="avatarModelSrc">Avatar Model Source (GLTF):</label>
+        <input type="url" id="avatarModelSrc" value="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/softmind/scene.gltf" style="width: 100%" /><br><br>
+
+        <label for="cameraPosition">Camera Position (x, y, z):</label>
+        <input type="text" id="cameraPosition" value="0 0 0" style="width: 100%" /><br><br>
+
+        <label for="rotation">Avatar Rotation (x, y, z):</label>
+        <input type="text" id="avatarRotation" value="0 0 0" style="width: 100%" /><br><br>
+
+        <button type="button" onclick="updateARScene()">Update AR Scene</button>
+      </form>
+    </div>
+
+    <!-- AR Scene -->
+    <a-scene id="arScene" mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;"
+             color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights"
+             vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      <a-assets>
+        <img id="card" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" />
+        <a-asset-item id="avatarModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/softmind/scene.gltf"></a-asset-item>
+      </a-assets>
+
+      <a-camera id="camera" position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity id="targetEntity" mindar-image-target="targetIndex: 0">
+        <a-plane id="plane" src="#card" position="0 0 0" height="0.552" width="1" rotation="0 0 0"></a-plane>
+        <a-gltf-model id="avatar" rotation="0 0 0" position="0 0 0.1" scale="0.005 0.005 0.005"
+                      src="#avatarModel" animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
+        </a-gltf-model>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      function updateARScene() {
+        const imageTargetSrc = document.getElementById("imageTargetSrc").value;
+        const imageSrc = document.getElementById("imageSrc").value;
+        const avatarModelSrc = document.getElementById("avatarModelSrc").value;
+        const cameraPosition = document.getElementById("cameraPosition").value.split(" ");
+        const avatarRotation = document.getElementById("avatarRotation").value.split(" ");
+
+        // Update the AR scene with new settings
+        const arScene = document.getElementById("arScene");
+        arScene.setAttribute("mindar-image", "imageTargetSrc: " + imageTargetSrc);
+
+        // Update the assets
+        const card = document.getElementById("card");
+        card.setAttribute("src", imageSrc);
+        const avatarModel = document.getElementById("avatarModel");
+        avatarModel.setAttribute("src", avatarModelSrc);
+
+        // Update the camera position
+        const camera = document.getElementById("camera");
+        camera.setAttribute("position", cameraPosition.join(" "));
+
+        // Update avatar rotation
+        const avatar = document.getElementById("avatar");
+        avatar.setAttribute("rotation", avatarRotation.join(" "));
+      }
+    </script>
+  </body>
+</html>
