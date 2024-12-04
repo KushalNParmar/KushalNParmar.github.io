@@ -1,91 +1,162 @@
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-      }
-      #config-form {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        background-color: rgba(255, 255, 255, 0.8);
-        padding: 20px;
-        border-radius: 10px;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Configuration Form -->
-    <div id="config-form">
-      <h3>AR Configuration</h3>
-      <form id="configForm">
-        <label for="imageTargetSrc">Image Target Source:</label>
-        <input type="url" id="imageTargetSrc" value="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind" style="width: 100%" /><br><br>
+<!DOCTYPE html>
+<head>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<title>Hello, world!</title>
+	<!-- include three.js library -->
+	<script src='./js/three.js'></script>
+	<!-- include jsartookit -->
+	<script src="./jsartoolkit5/artoolkit.min.js"></script>
+	<script src="./jsartoolkit5/artoolkit.api.js"></script>
+	<!-- include threex.artoolkit -->
+	<script src="./threex/threex-artoolkitsource.js"></script>
+	<script src="./threex/threex-artoolkitcontext.js"></script>
+	<script src="./threex/threex-arbasecontrols.js"></script>
+	<script src="./threex/threex-armarkercontrols.js"></script>
+</head>
 
-        <label for="imageSrc">Image Source:</label>
-        <input type="url" id="imageSrc" value="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" style="width: 100%" /><br><br>
+<body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
 
-        <label for="avatarModelSrc">Avatar Model Source (GLTF):</label>
-        <input type="url" id="avatarModelSrc" value="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/softmind/scene.gltf" style="width: 100%" /><br><br>
+<video id="video" autoplay loop crossOrigin="anonymous" webkit-playsinline style="display:none">
+	<source src="./assets/sintel.ogv" type='video/ogg; codecs="theora, vorbis"'>
+	<source src="./assets/sintel.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+</video>
+		
+<!-- 
+  Example created by Lee Stemkoski: https://github.com/stemkoski
+  Based on the AR.js library and examples created by Jerome Etienne: https://github.com/jeromeetienne/AR.js/
+-->
 
-        <label for="cameraPosition">Camera Position (x, y, z):</label>
-        <input type="text" id="cameraPosition" value="0 0 0" style="width: 100%" /><br><br>
+<script>
 
-        <label for="rotation">Avatar Rotation (x, y, z):</label>
-        <input type="text" id="avatarRotation" value="0 0 0" style="width: 100%" /><br><br>
+var scene, camera, renderer, clock, deltaTime, totalTime;
 
-        <button type="button" onclick="updateARScene()">Update AR Scene</button>
-      </form>
-    </div>
+var arToolkitSource, arToolkitContext;
 
-    <!-- AR Scene -->
-    <a-scene id="arScene" mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;"
-             color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights"
-             vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      <a-assets>
-        <img id="card" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" />
-        <a-asset-item id="avatarModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/softmind/scene.gltf"></a-asset-item>
-      </a-assets>
+var markerRoot1;
 
-      <a-camera id="camera" position="0 0 0" look-controls="enabled: false"></a-camera>
+var mesh1;
 
-      <a-entity id="targetEntity" mindar-image-target="targetIndex: 0">
-        <a-plane id="plane" src="#card" position="0 0 0" height="0.552" width="1" rotation="0 0 0"></a-plane>
-        <a-gltf-model id="avatar" rotation="0 0 0" position="0 0 0.1" scale="0.005 0.005 0.005"
-                      src="#avatarModel" animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
-        </a-gltf-model>
-      </a-entity>
-    </a-scene>
+initialize();
+animate();
 
-    <script>
-      function updateARScene() {
-        const imageTargetSrc = document.getElementById("imageTargetSrc").value;
-        const imageSrc = document.getElementById("imageSrc").value;
-        const avatarModelSrc = document.getElementById("avatarModelSrc").value;
-        const cameraPosition = document.getElementById("cameraPosition").value.split(" ");
-        const avatarRotation = document.getElementById("avatarRotation").value.split(" ");
+function initialize()
+{
+	scene = new THREE.Scene();
 
-        // Update the AR scene with new settings
-        const arScene = document.getElementById("arScene");
-        arScene.setAttribute("mindar-image", "imageTargetSrc: " + imageTargetSrc);
+	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
+	scene.add( ambientLight );
+				
+	camera = new THREE.Camera();
+	scene.add(camera);
 
-        // Update the assets
-        const card = document.getElementById("card");
-        card.setAttribute("src", imageSrc);
-        const avatarModel = document.getElementById("avatarModel");
-        avatarModel.setAttribute("src", avatarModelSrc);
+	renderer = new THREE.WebGLRenderer({
+		antialias : true,
+		alpha: true
+	});
+	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+	renderer.setSize( 640, 480 );
+	renderer.domElement.style.position = 'absolute'
+	renderer.domElement.style.top = '0px'
+	renderer.domElement.style.left = '0px'
+	document.body.appendChild( renderer.domElement );
 
-        // Update the camera position
-        const camera = document.getElementById("camera");
-        camera.setAttribute("position", cameraPosition.join(" "));
+	clock = new THREE.Clock();
+	deltaTime = 0;
+	totalTime = 0;
+	
+	////////////////////////////////////////////////////////////
+	// setup arToolkitSource
+	////////////////////////////////////////////////////////////
 
-        // Update avatar rotation
-        const avatar = document.getElementById("avatar");
-        avatar.setAttribute("rotation", avatarRotation.join(" "));
-      }
-    </script>
-  </body>
+	arToolkitSource = new THREEx.ArToolkitSource({
+		sourceType : 'webcam',
+	});
+
+	function onResize()
+	{
+		arToolkitSource.onResize()	
+		arToolkitSource.copySizeTo(renderer.domElement)	
+		if ( arToolkitContext.arController !== null )
+		{
+			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
+		}	
+	}
+
+	arToolkitSource.init(function onReady(){
+		onResize()
+	});
+	
+	// handle resize event
+	window.addEventListener('resize', function(){
+		onResize()
+	});
+	
+	////////////////////////////////////////////////////////////
+	// setup arToolkitContext
+	////////////////////////////////////////////////////////////	
+
+	// create atToolkitContext
+	arToolkitContext = new THREEx.ArToolkitContext({
+		cameraParametersUrl: './data/camera_para.dat',
+		detectionMode: 'mono'
+	});
+	
+	// copy projection matrix to camera when initialization complete
+	arToolkitContext.init( function onCompleted(){
+		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
+	});
+
+	////////////////////////////////////////////////////////////
+	// setup markerRoots
+	////////////////////////////////////////////////////////////
+
+	// build markerControls
+	markerRoot1 = new THREE.Group();
+	scene.add(markerRoot1);
+	let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, markerRoot1, {
+		type: 'pattern', patternUrl: "./data/hiro.patt",
+	})
+
+	let geometry1 = new THREE.PlaneBufferGeometry(2,2, 4,4);
+
+	let video = document.getElementById( 'video' );
+	let texture = new THREE.VideoTexture( video );
+	texture.minFilter = THREE.LinearFilter;
+	texture.magFilter = THREE.LinearFilter;
+	texture.format = THREE.RGBFormat;
+	let material1 = new THREE.MeshBasicMaterial( { map: texture } );
+	
+	mesh1 = new THREE.Mesh( geometry1, material1 );
+	mesh1.rotation.x = -Math.PI/2;
+	
+	markerRoot1.add( mesh1 );
+}
+
+
+function update()
+{
+	// update artoolkit on every frame
+	if ( arToolkitSource.ready !== false )
+		arToolkitContext.update( arToolkitSource.domElement );
+}
+
+
+function render()
+{
+	renderer.render( scene, camera );
+}
+
+
+function animate()
+{
+	requestAnimationFrame(animate);
+	deltaTime = clock.getDelta();
+	totalTime += deltaTime;
+	update();
+	render();
+}
+
+</script>
+
+</body>
 </html>
