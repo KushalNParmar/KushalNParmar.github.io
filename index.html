@@ -16,9 +16,13 @@
 
 <body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
 
-<video id="video" autoplay loop crossOrigin="anonymous" webkit-playsinline style="display:none">
+<!-- <video id="video" autoplay loop crossOrigin="anonymous" webkit-playsinline style="display:none">
 	<source src="./assets/sintel.ogv" type='video/ogg; codecs="theora, vorbis"'>
 	<source src="./assets/sintel.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+</video> -->
+
+<video id="video" autoplay muted loop playsinline crossOrigin="anonymous" webkit-playsinline style="display:none">
+  <source src="./assets/sintel.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
 </video>
 		
 <!-- 
@@ -124,6 +128,10 @@ function initialize()
 	texture.minFilter = THREE.LinearFilter;
 	texture.magFilter = THREE.LinearFilter;
 	texture.format = THREE.RGBFormat;
+  document.getElementById('video').play().catch(() => {
+    // Show a play button for manual user interaction
+    console.log("Autoplay failed. Waiting for user interaction.");
+});
 	let material1 = new THREE.MeshBasicMaterial( { map: texture } );
 	
 	mesh1 = new THREE.Mesh( geometry1, material1 );
