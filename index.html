@@ -58,7 +58,7 @@ function initialize()
 		alpha: true
 	});
 	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
-	renderer.setSize( 1920, 1080 );
+	renderer.setSize( 640, 480 );
 	renderer.domElement.style.position = 'absolute'
 	renderer.domElement.style.top = '0px'
 	renderer.domElement.style.left = '0px'
@@ -118,7 +118,7 @@ function initialize()
 	markerRoot1 = new THREE.Group();
 	scene.add(markerRoot1);
 	let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, markerRoot1, {
-		type: 'pattern', patternUrl: "./data/pattern-nicestores.patt",
+		type: 'pattern', patternUrl: "./data/pattern-nicestore.patt",
 	})
 
 	let geometry1 = new THREE.PlaneBufferGeometry(2,2, 4,4);
@@ -128,10 +128,6 @@ function initialize()
 	texture.minFilter = THREE.LinearFilter;
 	texture.magFilter = THREE.LinearFilter;
 	texture.format = THREE.RGBFormat;
-  document.getElementById('video').play().catch(() => {
-    // Show a play button for manual user interaction
-    console.log("Autoplay failed. Waiting for user interaction.");
-});
 	let material1 = new THREE.MeshBasicMaterial( { map: texture } );
 	
 	mesh1 = new THREE.Mesh( geometry1, material1 );
