@@ -4,6 +4,7 @@
   autoplay=""
   ar-scale="fixed"
   ar-modes="webxr scene-viewer quick-look"
+  ar-status="not-presenting"
   camera-orbit="-30deg auto auto"
   max-camera-orbit="auto 100deg auto"
   shadow-intensity="1"
@@ -237,7 +238,25 @@
     );
   };
 
+  modelViewer.addEventListener("progress", (event) => {
+    const progressBar = document.getElementById("progress-bar");
+    const progress = event.detail.totalProgress;
+    if (progress === 1) {
+      modelViewer.addEventListener("ar-status", (arEvent) => {
+        if (arEvent.detail.status === "activated") {
+          // Hide loader once AR is activated
+          progressBar.style.display = "none";
+          // Hide 3D model viewer when AR is activated
+          modelViewer.style.display = "none";
+        }
+      });
+    }
+  });
+
   modelViewer.addEventListener("load", () => {
+    modelViewer.addEventListener("ar-status", (event) => {
+      if (modelViewer && modelViewer.canActivateAR) modelViewer.activateAR();
+    });
     const center = modelViewer.getBoundingBoxCenter();
     const size = modelViewer.getDimensions();
     const x2 = size.x / 2;
