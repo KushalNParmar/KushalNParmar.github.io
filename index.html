@@ -11,6 +11,7 @@
   camera-controls
   touch-action="pan-y"
   src="https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/glamar-3d-models/West_Elm/02/Irvine_Leather_Dining_Chair.glb"
+  onload="onModelLoaded()"
   alt="A 3D model of an armchair."
 >
   <button
@@ -131,6 +132,16 @@
     ...modelViewer.querySelectorAll("button"),
     modelViewer.querySelector("#dimLines"),
   ];
+
+  function onModelLoaded() {
+    const modelViewer = document.getElementById("model-viewer");
+    const loader = document.getElementById("progress-bar");
+
+    // Enable AR mode immediately upon model load if it's available
+    if (modelViewer && modelViewer.canActivateAR) {
+      modelViewer.activateAR(); // Automatically trigger AR
+    }
+  }
 
   function setVisibility(visible) {
     dimElements.forEach((element) => {
@@ -254,9 +265,6 @@
   });
 
   modelViewer.addEventListener("load", () => {
-    modelViewer.addEventListener("ar-status", (event) => {
-      if (modelViewer && modelViewer.canActivateAR) modelViewer.activateAR();
-    });
     const center = modelViewer.getBoundingBoxCenter();
     const size = modelViewer.getDimensions();
     const x2 = size.x / 2;
