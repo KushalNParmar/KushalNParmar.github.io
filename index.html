@@ -1,632 +1,2329 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script>
+      !(function () {
+        var e = (window.stelios = window.stelios || []);
+        if (!e.initialize) {
+          if (e.invoked)
+            window.console &&
+              console.error &&
+              console.error("Stelios snippet included twice.");
+          else {
+            (e.invoked = !0),
+              (e.methods = [
+                "trackSubmit",
+                "trackClick",
+                "trackLink",
+                "trackForm",
+                "pageview",
+                "identify",
+                "reset",
+                "group",
+                "track",
+                "ready",
+                "alias",
+                "debug",
+                "page",
+                "once",
+                "off",
+                "on",
+                "addSourceMiddleware",
+                "addIntegrationMiddleware",
+                "setAnonymousId",
+                "addDestinationMiddleware",
+              ]),
+              (e.factory = function (t) {
+                return function () {
+                  var i = Array.prototype.slice.call(arguments);
+                  return i.unshift(t), e.push(i), e;
+                };
+              });
+            for (var t = 0; t < e.methods.length; t++) {
+              var i = e.methods[t];
+              e[i] = e.factory(i);
+            }
+            (e.load = function (i, o) {
+              var a = document.createElement("script");
+              (a.type = "text/javascript"),
+                (a.async = !0),
+                (a.onload = o),
+                (a.src =
+                  "https://cdn.pixelbin.io/v2/fyndcloud/fyndpd/original/m1/stelios/v1.54.8/prod/stelios.min.index.js");
+              var r = document.getElementsByTagName("script")[0];
+              r.parentNode.insertBefore(a, r), (e._loadOptions = t);
+            }),
+              (e._writeKey =
+                "6pTGDe5bJ7zfum82jHPjvj6t7TC0iE9zhKAUzfC3s_HmieEJvjsg7MTynphTZp4NZOHXRlvoV7GsfK5iX9EwYQ"),
+              (e._cdn = "https://apiv2-streams.boltic.io"),
+              (e.SNIPPET_VERSION = "4.15.3"),
+              e.load(
+                "6pTGDe5bJ7zfum82jHPjvj6t7TC0iE9zhKAUzfC3s_HmieEJvjsg7MTynphTZp4NZOHXRlvoV7GsfK5iX9EwYQ",
+                function () {
+                  (window.stelios = window.stelios.AnalyticsBrowser.load({
+                    writeKey: e._writeKey,
+                  })),
+                    window.stelios.page();
+                }
+              );
+          }
+        }
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GlamAR</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.4/lottie.min.js"></script>
+    <!-- Ensure proper base URL resolution for cloud deployment -->
+    <base href="./" />
+    <title>
+      GlamAR Virtual Try-On SDK Demo - Experience AR Beauty and Fashion
+    </title>
+    <meta
+      name="description"
+      content="Experience the future of beauty and fashion shopping with GlamAR's Virtual Try-On SDK. Try on makeup, eyewear, jewelry, and accessories virtually using advanced AR technology. Perfect for e-commerce integration and enhanced customer experience."
+    />
+    <meta
+      name="keywords"
+      content="GlamAR, virtual try-on, AR makeup, virtual eyewear, beauty AR, fashion technology, SDK demo, augmented reality"
+    />
+    <meta name="author" content="GlamAR" />
+    <meta
+      http-equiv="Permissions-Policy"
+      content="xr-spatial-tracking=(self)"
+    />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://cdn.pixelbin.io/v2/glamar-fynd-835885/t.resize(h:64,w:64)/glamar_assets/glamar_logo_icon.png"
+    />
+    <link
+      rel="shortcut icon"
+      type="image/png"
+      href="https://cdn.pixelbin.io/v2/glamar-fynd-835885/t.resize(h:64,w:64)/glamar_assets/glamar_logo_icon.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="https://cdn.pixelbin.io/v2/glamar-fynd-835885/t.resize(h:90,w:90)/glamar_assets/glamar_logo_icon.png"
+    />
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="GlamAR Virtual Try-On SDK Demo" />
+    <meta
+      property="og:description"
+      content="Experience the future of beauty and fashion shopping with GlamAR's Virtual Try-On SDK. Try on makeup, eyewear, jewelry, and accessories virtually using advanced AR technology."
+    />
+    <meta
+      property="og:image"
+      content="https://cdn.pixelbin.io/v2/glamar-fynd-835885/t.resize(h:90,w:90)/glamar_assets/glamar_logo_icon.png"
+    />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="GlamAR Virtual Try-On SDK Demo" />
+    <meta
+      name="twitter:description"
+      content="Experience the future of beauty and fashion shopping with GlamAR's Virtual Try-On SDK. Try on makeup, eyewear, jewelry, and accessories virtually using advanced AR technology."
+    />
+    <meta
+      name="twitter:image"
+      content="https://cdn.pixelbin.io/v2/glamar-fynd-835885/t.resize(h:90,w:90)/glamar_assets/glamar_logo_icon.png"
+    />
+
+    <!-- Load GlamAR SDK via script tag as per documentation -->
+    <script src="https://cdn.glamarz0.de/sdk/wrapper?"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        min-height: 100vh;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        background: white;
+      }
+
+      .header-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        z-index: 9999;
+        padding: 15px 20px 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        pointer-events: none; /* Allow clicks to pass through the overlay */
+      }
+
+      .header-left,
+      .header-right,
+      .header-debug-toggle,
+      .header-version {
+        pointer-events: auto; /* Re-enable clicks on the actual buttons */
+      }
+
+      .header-left {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .header-right {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .mode-dropdown {
+        position: relative;
+        display: inline-block;
+      }
+
+      .mode-dropdown-btn,
+      .size-btn {
+        background: white;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #333;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .mode-dropdown-btn:hover,
+      .size-btn:hover {
+        background: #f8f9fa;
+        border-color: #da0d64;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .mode-dropdown-btn.active,
+      .size-btn.active {
+        background: #da0d64;
+        color: white;
+        border-color: #da0d64;
+      }
+
+      .dropdown-arrow {
+        font-size: 12px;
+        transition: transform 0.3s ease;
+      }
+
+      .mode-dropdown.open .dropdown-arrow {
+        transform: rotate(180deg);
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        min-width: 200px;
+        z-index: 10002;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+      }
+
+      .mode-dropdown.open .dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .dropdown-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        border-bottom: 1px solid #f1f3f4;
+        font-weight: 500;
+      }
+
+      .dropdown-item:last-child {
+        border-bottom: none;
+      }
+
+      .dropdown-item:hover {
+        background: #f8f9fa;
+      }
+
+      .dropdown-item.active {
+        background: #da0d64;
+        color: white;
+      }
+
+      /* SDK Container - Following documentation example */
+      #container__frame_wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 1;
+        background: #ffffff;
+        border-radius: 0;
+        overflow: hidden;
+      }
+
+      /* VTO Live Container - Ensure it opens in full screen */
+      [class*="vtoLiveContainer"] {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+        background: white !important;
+        border-radius: 0 !important;
+        overflow: hidden !important;
+      }
+
+      /* Additional selectors for VTO containers */
+      div[class*="vtoLiveContainer"],
+      div[id*="renderWindow"] {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+        background: white !important;
+        border-radius: 0 !important;
+        overflow: hidden !important;
+      }
+
+      .custom-size-panel {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        display: none;
+        z-index: 10000;
+        width: 250px;
+        max-width: 300px;
+      }
+
+      .custom-size-panel h3 {
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 16px;
+      }
+
+      .custom-size-panel input {
+        width: 100%;
+        padding: 10px 12px;
+        margin: 8px 0;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+      }
+
+      .custom-size-panel input:focus {
+        outline: none;
+        border-color: #da0d64;
+        box-shadow: 0 0 0 3px rgba(218, 13, 100, 0.1);
+      }
+
+      .custom-size-panel button {
+        background: #da0d64;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 5px 5px 0 0;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .custom-size-panel button:hover {
+        background: #b8095a;
+        transform: translateY(-1px);
+      }
+
+      .custom-size-panel button.cancel {
+        background: #6c757d;
+      }
+
+      .custom-size-panel button.cancel:hover {
+        background: #545b62;
+        transform: translateY(-1px);
+      }
+
+      /* Modal Styles */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 10001;
+      }
+
+      .modal {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        position: relative;
+      }
+
+      .modal h2 {
+        margin-bottom: 20px;
+        color: #333;
+        text-align: center;
+      }
+
+      .modal input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        font-size: 16px;
+      }
+
+      .modal-button {
+        background: #da0d64;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 20px auto 5px auto;
+        transition: all 0.3s ease;
+        display: block;
+        text-align: center;
+      }
+
+      .modal-button:hover {
+        background: #b8095a;
+        transform: translateY(-1px);
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 28px;
+        cursor: pointer;
+        color: #666;
+        padding: 5px;
+        margin: 0;
+        line-height: 1;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .close-btn:hover {
+        color: #da0d64;
+        background: rgba(218, 13, 100, 0.1);
+      }
+
+      /* Category Grid */
+      .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .category-btn,
+      .subcategory-btn {
+        background: #f8f9fa;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        padding: 15px 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      .category-btn:hover,
+      .subcategory-btn:hover {
+        background: #da0d64;
+        color: white;
+        border-color: #da0d64;
+        transform: translateY(-2px);
+      }
+
+      .subcategory-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 8px;
+        margin-top: 15px;
+      }
+
+      textarea {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: monospace;
+        min-height: 150px;
+        resize: vertical;
+      }
+
+      /* Access Token Popup */
+      .access-token-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 999999;
+        backdrop-filter: blur(5px);
+      }
+
+      .access-token-modal {
+        background: white;
+        border-radius: 16px;
+        padding: 40px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+        position: relative;
+        text-align: center;
+      }
+
+      .access-token-modal h2 {
+        margin-bottom: 15px;
+        color: #333;
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .access-token-modal p {
+        margin-bottom: 25px;
+        color: #666;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .access-token-modal input {
+        width: 100%;
+        padding: 15px;
+        margin: 15px 0;
+        border: 2px solid #e1e8ed;
+        border-radius: 10px;
+        font-size: 16px;
+        font-family: monospace;
+        transition: border-color 0.3s ease;
+      }
+
+      .access-token-modal input:focus {
+        outline: none;
+        border-color: #da0d64;
+        box-shadow: 0 0 0 3px rgba(218, 13, 100, 0.1);
+      }
+
+      .access-token-modal button {
+        width: 100%;
+        background: #da0d64;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .access-token-modal button:hover:not(:disabled) {
+        background: #b8095a;
+        transform: translateY(-1px);
+      }
+
+      .access-token-modal button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .access-token-icon {
+        font-size: 48px;
+        margin-bottom: 20px;
+        color: #da0d64;
+      }
+
+      .toggle-switch {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 20px;
+      }
+
+      .toggle-switch input {
+        display: none;
+      }
+
+      .toggle-switch .slider {
+        width: 40px;
+        height: 20px;
+        background-color: #ccc;
+        border-radius: 10px;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .toggle-switch .slider::before {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background-color: white;
+        border-radius: 50%;
+        top: 2px;
+        left: 2px;
+        transition: 0.3s;
+      }
+
+      .toggle-switch input:checked + .slider::before {
+        transform: translateX(20px);
+      }
+
+      .toggle-switch input:checked + .slider {
+        background-color: #4caf50;
+      }
+
+      .toggle-label {
+        font-size: 14px;
+        color: #333;
+      }
+    </style>
   </head>
-
   <body>
-    <div id="app">
-      <model-viewer
-        id="model-viewer"
-        src="https://cdn.pixelbinz0.de/v2/calm-term-553038/original/Leroy_Sofa.glb"
-        environment-image=""
-        ar
-        field-of-view="10deg"
-        autoplay
-        ar-scale="fixed"
-        ar-modes="webxr scene-viewer quick-look"
-        camera-controls
-        camera-orbit="-30deg auto auto"
-        max-camera-orbit="auto 100deg auto"
-        disable-zoom
-        disable-tap
-        touch-action="pan-y"
-        tone-mapping="neutral"
-        shadow-intensity="1"
-        shadow-softness="0.6"
-      >
-        <button slot="ar-button" id="ar-button" class="button">
-          View in your space
+    <!-- Access Token Popup - Appears on first load -->
+    <div id="accessTokenOverlay" class="access-token-overlay">
+      <div class="access-token-modal">
+        <div class="access-token-icon">🔑</div>
+        <h2>GlamAR SDK Access Required</h2>
+        <p>
+          Please enter your GlamAR SDK Access Token to continue. This token is
+          required to initialize the SDK.
+        </p>
+        <input
+          type="text"
+          id="accessTokenInput"
+          placeholder="Enter your GlamAR SDK Access Token"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="accessTokenButton" onclick="setAccessToken()">
+          Initialize SDK
         </button>
-        <button
-          slot="hotspot-dot+X+Y+Z"
-          class="dot"
-          data-position="1 1 1"
-          data-normal="1 0 0"
-        ></button>
-        <button
-          slot="hotspot-dot+X-Y+Z"
-          class="dot"
-          data-position="1 -1 1"
-          data-normal="1 0 0"
-        ></button>
-        <button
-          slot="hotspot-dim+X-Y"
-          class="dim"
-          data-position="1 -1 0"
-          data-normal="1 0 0"
-        ></button>
-        <button
-          slot="hotspot-dot+X-Y-Z"
-          class="dot"
-          data-position="1 -1 -1"
-          data-normal="1 0 0"
-        ></button>
-        <button
-          slot="hotspot-dim+X-Z"
-          class="dim"
-          data-position="1 0 -1"
-          data-normal="1 0 0"
-        ></button>
-        <button
-          slot="hotspot-dot+X+Y-Z"
-          class="dot"
-          data-position="1 1 -1"
-          data-normal="0 1 0"
-        ></button>
-        <button
-          slot="hotspot-dim+Y-Z"
-          class="dim dim-always-visible"
-          data-position="0 -1 -1"
-          data-normal="0 1 0"
-        ></button>
-        <button
-          slot="hotspot-dot-X+Y-Z"
-          class="dot"
-          data-position="-1 1 -1"
-          data-normal="0 1 0"
-        ></button>
-        <button
-          slot="hotspot-dim-X-Z"
-          class="dim"
-          data-position="-1 0 -1"
-          data-normal="-1 0 0"
-        ></button>
-        <button
-          slot="hotspot-dot-X-Y-Z"
-          class="dot"
-          data-position="-1 -1 -1"
-          data-normal="-1 0 0"
-        ></button>
-        <button
-          slot="hotspot-dim-X-Y"
-          class="dim"
-          data-position="-1 -1 0"
-          data-normal="-1 0 0"
-        ></button>
-        <button
-          slot="hotspot-dot-X-Y+Z"
-          class="dot"
-          data-position="-1 -1 1"
-          data-normal="-1 0 0"
-        ></button>
-        <button
-          slot="hotspot-dot-X+Y+Z"
-          class="dot"
-          data-position="-1 1 1"
-          data-normal="-1 0 0"
-        ></button>
-        <svg
-          id="dimLines"
-          width="100%"
-          height="100%"
-          xmlns="http://www.w3.org/2000/svg"
-          class="dimensionLineContainer"
-        >
-          <line class="dimensionLine"></line>
-          <line class="dimensionLine"></line>
-          <line class="dimensionLine"></line>
-          <line class="dimensionLine"></line>
-          <line class="dimensionLine"></line>
-          <line class="dimensionLine"></line>
-          <line class="dimensionLine"></line>
-          <line class="dimensionLine"></line>
-          <line class="dimensionLine"></line>
-          <line class="dimensionLine"></line>
-          <line class="dimensionLine"></line>
-          <line class="dimensionLine"></line>
-        </svg>
-
-        <div id="controls" class="button controls-ar">
-          <label for="show-dimensions">Show Dimensions:</label>
-          <input id="show-dimensions" type="checkbox" checked="true" />
-        </div>
-      </model-viewer>
-      <div id="lottie"></div>
+        <p style="font-size: 12px; color: #666; margin-top: 15px">
+          💾
+          <span style="color: #28a745"
+            >Token will be saved automatically for future visits</span
+          >
+        </p>
+      </div>
     </div>
-  </body>
-</html>
 
-<script
-  type="module"
-  src="https://unpkg.com/@google/model-viewer/dist/model-viewer.js"
-></script>
+    <!-- App ID Popup for Skin Analysis -->
+    <div id="appIdOverlay" class="access-token-overlay" style="display: none">
+      <div class="access-token-modal">
+        <div class="access-token-icon">🧬</div>
+        <h2>Skin Analysis App ID Required</h2>
+        <p>
+          Please enter your Skin Analysis App ID to continue with skin analysis
+          functionality.
+        </p>
+        <input
+          type="text"
+          id="appIdInput"
+          placeholder="Enter your Skin Analysis App ID"
+          autocomplete="off"
+          spellcheck="false"
+          title="Suggested App ID: 1495dffb-38fe-4f0d-b785-200eea3705b9"
+        />
+        <button id="appIdButton" onclick="setAppId()">
+          Start Skin Analysis
+        </button>
+        <p style="font-size: 12px; color: #666; margin-top: 15px">
+          💾
+          <span style="color: #28a745"
+            >App ID will be saved automatically for future visits</span
+          ><br />
+        </p>
+      </div>
+    </div>
 
-<script type="module"></script>
+    <!-- Header Overlay -->
+    <div class="header-overlay">
+      <div class="header-left">
+        <div class="mode-dropdown" id="modeDropdown">
+          <button class="mode-dropdown-btn" onclick="toggleDropdown()">
+            <span id="selectedMode">Select Mode</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-item" onclick="setMode('applyBySKU')">
+              Apply by SKU
+            </div>
+            <div class="dropdown-item" onclick="setMode('applyByCategory')">
+              Apply by Category
+            </div>
+          </div>
+        </div>
+      </div>
 
-<script type="module">
-  var modelViewer = document.getElementById("model-viewer");
+      <div class="header-right">
+        <div class="mode-dropdown" id="sizeDropdown">
+          <button class="mode-dropdown-btn" onclick="toggleSizeDropdown()">
+            <span id="selectedSize">Web</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-item" onclick="setScreenSize('mobile')">
+              Mobile
+            </div>
+            <div class="dropdown-item active" onclick="setScreenSize('web')">
+              Web
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  //#region Lottie Loader
-  var lottieLoader = document.querySelector("#lottie");
+    <!-- SDK Container - Using the container ID recommended in documentation -->
+    <div id="container__frame_wrapper"></div>
 
-  const LOADER_TYPES = {
-    common: { name: "common", loader: null },
-  };
-  var animation = null;
+    <!-- Custom Size Panel -->
+    <div id="customSizePanel" class="custom-size-panel">
+      <h3>Custom Size</h3>
+      <input
+        type="number"
+        id="customWidth"
+        placeholder="Width (px)"
+        value="800"
+      />
+      <input
+        type="number"
+        id="customHeight"
+        placeholder="Height (px)"
+        value="600"
+      />
+      <button onclick="applyCustomSize()">Apply</button>
+      <button class="cancel" onclick="hideCustomPanel()">Cancel</button>
+    </div>
 
-  function initLottieLoader(loader) {
-    if (!animation) {
-      animation = lottie.loadAnimation({
-        container: document.getElementById("lottie"), // the DOM element
-        renderer: "svg",
-        loop: true,
-        autoplay: true,
-        animationData: loader, // the path to the animation json
+    <div id="customCameraPanel" class="custom-size-panel">
+      <h3>Custom Camera resolution</h3>
+      <input
+        type="number"
+        id="customCameraWidth"
+        placeholder="Width (px)"
+        value="1920"
+      />
+      <input
+        type="number"
+        id="customCameraHeight"
+        placeholder="Height (px)"
+        value="1080"
+      />
+      <button onclick="applyCustomCamera()">Apply</button>
+      <button class="cancel" onclick="hideCustomCameraPanel()">Cancel</button>
+    </div>
+
+    <!-- SKU Modal -->
+    <div id="skuModal" class="modal-overlay">
+      <div class="modal">
+        <button class="close-btn" onclick="closeModal('skuModal')">✕</button>
+        <h2>Enter SKU</h2>
+        <div class="modal-content">
+          <input type="text" id="skuInput" placeholder="Enter SKU ID" />
+          <button class="modal-button" onclick="applySKU()">Apply SKU</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div id="categoryModal" class="modal-overlay">
+      <div class="modal">
+        <button class="close-btn" onclick="closeModal('categoryModal')">
+          ✕
+        </button>
+        <div class="modal-content">
+          <h2>Select Category</h2>
+          <div class="category-grid">
+            <div class="category-btn" onclick="showSubcategories('eyewear')">
+              Eyewear
+            </div>
+            <div class="category-btn" onclick="showSubcategories('makeup')">
+              Makeup
+            </div>
+            <div class="category-btn" onclick="showSubcategories('jewellery')">
+              Jewellery
+            </div>
+            <div
+              class="category-btn"
+              onclick="showSubcategories('accessories')"
+            >
+              Accessories
+            </div>
+            <div class="category-btn" onclick="showSubcategories('home')">
+              Home
+            </div>
+            <div class="category-btn" onclick="startSkinAnalysis()">
+              Skin Analysis
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subcategory Modal -->
+    <div id="subcategoryModal" class="modal-overlay">
+      <div class="modal">
+        <button class="close-btn" onclick="closeModal('subcategoryModal')">
+          ✕
+        </button>
+        <div class="modal-content">
+          <h2 id="subcategoryTitle">Select Subcategory</h2>
+          <div id="subcategoryGrid" class="subcategory-grid"></div>
+          <button class="modal-button" onclick="goBackToCategories()">
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Config Modal -->
+    <div id="configModal" class="modal-overlay">
+      <div class="modal">
+        <button class="close-btn" onclick="closeModal('configModal')">✕</button>
+        <div class="modal-content">
+          <h2>Multiple Configuration</h2>
+          <p>Enter JSON configuration for multiple SKUs:</p>
+          <textarea
+            id="configInput"
+            placeholder='[{"sku":"sku1", "category":"lipstick"}, {"sku":"sku2", "category":"eyeglasses"}]'
+          ></textarea>
+          <button class="modal-button" onclick="applyConfig()">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Add global error handler to catch SDK errors
+      window.addEventListener("error", function (event) {
+        if (event.filename && event.filename.includes("tryOnModes.js")) {
+          console.error("Caught tryOnModes.js error:", {
+            message: event.message,
+            filename: event.filename,
+            lineno: event.lineno,
+            error: event.error,
+          });
+          // Prevent the error from crashing the app
+          event.preventDefault();
+          return true;
+        }
       });
-    }
-  }
 
-  function showLottieLoader(loaderType) {
-    if (!animation) {
-      initLottieLoader(LOADER_TYPES[loaderType]?.loader);
-    }
-    switch (loaderType) {
-      case LOADER_TYPES.common.name:
-        lottieLoader.style.background = "black";
-        break;
-      default:
-        lottieLoader.style.background = "transparent";
-    }
-    lottieLoader.style.display = "flex";
-    modelViewer.style.display = "none";
-  }
+      let currentMode = "applyBySKU";
+      let currentSize = "web";
+      let isSDKInitialized = false;
+      let accessToken = null; // Store the user's access token
+      let appId = null; // Store the skin analysis app ID
+      let currentCameraResolution = null;
+      let isDebugTextOn = false;
 
-  function hideLottieLoader() {
-    if (animation) animation.destroy();
-    animation = null;
-    lottieLoader.style.display = "none";
-    modelViewer.style.display = "block";
-  }
+      // Initialize default SDK version
+      window.selectedSdkVersion = "1.0.0";
 
-  fetch("./loader.json")
-    .then((response) => response.json())
-    .then((data) => {
-      LOADER_TYPES.common.loader = data;
-      initLottieLoader(LOADER_TYPES.common.loader);
-      showLottieLoader(LOADER_TYPES.common.name);
-    })
-    .catch((error) => console.error("Error loading lottie JSON:", error));
+      // Store the data for each mode
+      let pendingData = {
+        sku: null,
+        category: null,
+        config: null,
+      };
 
-  //#endregion
+      const subcategories = {
+        eyewear: ["sunglasses", "eyeglasses"],
+        makeup: [
+          "lipstick",
+          "lipliner",
+          "eyeliner",
+          "mascara",
+          "eyelashes",
+          "eyebrows",
+          "eyeshadow",
+          "foundation",
+          "blush",
+          "highlighter",
+          "contour",
+          "bronzer",
+          "nailColor",
+          "hairColor",
+        ],
+        jewellery: ["earring", "necklace", "bracelets", "mangtika", "rings"],
+        accessories: ["hats", "caps", "watches"],
+        home: [
+          "furniture",
+          "floor-decor",
+          "wall-decor",
+          "lighting",
+          "kitchen",
+          "appliances",
+        ],
+        skinanalysis: ["skinanalysis"],
+      };
 
-  //#region Model Viewer
-  var checkbox = modelViewer.querySelector("#show-dimensions");
-  var dimLines = modelViewer.querySelectorAll("line");
-  var dimElements = [
-    ...modelViewer.querySelectorAll("button"),
-    modelViewer.querySelector("#dimLines"),
-  ];
+      // IndexedDB functions for access token caching
+      const DB_NAME = "GlamARSDK";
+      const DB_VERSION = 1;
+      const STORE_NAME = "tokens";
 
-  function setDimensionsUiStatus(flag) {
-    const state = flag ? "block" : "none";
-    dimElements.forEach((item) => {
-      if (flag) item.classList.remove("hide");
-      else item.classList.add("hide");
-    });
-    controls.style.display = state;
-  }
+      // Initialize IndexedDB
+      function initDB() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-  function setVisibility(visible) {
-    dimElements.forEach((element) => {
-      if (element && element.id !== "ar-button") {
-        if (visible) {
-          element.classList.remove("hide");
-        } else {
-          element.classList.add("hide");
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => resolve(request.result);
+
+          request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+              db.createObjectStore(STORE_NAME, { keyPath: "id" });
+            }
+          };
+        });
+      }
+
+      // Save access token to IndexedDB
+      async function saveAccessToken(token) {
+        try {
+          const db = await initDB();
+          const transaction = db.transaction([STORE_NAME], "readwrite");
+          const store = transaction.objectStore(STORE_NAME);
+          await store.put({
+            id: "accessToken",
+            value: token,
+            timestamp: Date.now(),
+          });
+          console.log("Access token saved to IndexedDB");
+        } catch (error) {
+          console.error("Error saving access token:", error);
         }
       }
-    });
-  }
 
-  function drawLine(svgLine, dotHotspot1, dotHotspot2) {
-    if (dotHotspot1 && dotHotspot2) {
-      svgLine.setAttribute("x1", dotHotspot1.canvasPosition.x);
-      svgLine.setAttribute("y1", dotHotspot1.canvasPosition.y);
-      svgLine.setAttribute("x2", dotHotspot2.canvasPosition.x);
-      svgLine.setAttribute("y2", dotHotspot2.canvasPosition.y);
-    }
-  }
+      // Load access token from IndexedDB
+      async function loadAccessToken() {
+        try {
+          const db = await initDB();
+          const transaction = db.transaction([STORE_NAME], "readonly");
+          const store = transaction.objectStore(STORE_NAME);
+          const request = store.get("accessToken");
 
-  function renderSVG() {
-    drawLine(
-      dimLines[11],
-      modelViewer.queryHotspot("hotspot-dot+X+Y+Z"),
-      modelViewer.queryHotspot("hotspot-dot-X+Y+Z")
-    );
-    drawLine(
-      dimLines[10],
-      modelViewer.queryHotspot("hotspot-dot+X-Y+Z"),
-      modelViewer.queryHotspot("hotspot-dot-X-Y+Z")
-    );
-    drawLine(
-      dimLines[9],
-      modelViewer.queryHotspot("hotspot-dot+X-Y-Z"),
-      modelViewer.queryHotspot("hotspot-dot-X-Y-Z")
-    );
-    drawLine(
-      dimLines[8],
-      modelViewer.queryHotspot("hotspot-dot+X+Y+Z"),
-      modelViewer.queryHotspot("hotspot-dot+X+Y-Z")
-    );
-    drawLine(
-      dimLines[7],
-      modelViewer.queryHotspot("hotspot-dot+X+Y+Z"),
-      modelViewer.queryHotspot("hotspot-dot+X-Y+Z")
-    );
-    drawLine(
-      dimLines[0],
-      modelViewer.queryHotspot("hotspot-dot+X-Y+Z"),
-      modelViewer.queryHotspot("hotspot-dot+X-Y-Z"),
-      modelViewer.queryHotspot("hotspot-dim+X-Y")
-    );
-    drawLine(
-      dimLines[1],
-      modelViewer.queryHotspot("hotspot-dot+X-Y-Z"),
-      modelViewer.queryHotspot("hotspot-dot+X+Y-Z"),
-      modelViewer.queryHotspot("hotspot-dim+X-Z")
-    );
-    drawLine(
-      dimLines[2],
-      modelViewer.queryHotspot("hotspot-dot+X+Y-Z"),
-      modelViewer.queryHotspot("hotspot-dot-X+Y-Z")
-    ); // always visible
-    drawLine(
-      dimLines[3],
-      modelViewer.queryHotspot("hotspot-dot-X+Y-Z"),
-      modelViewer.queryHotspot("hotspot-dot-X-Y-Z"),
-      modelViewer.queryHotspot("hotspot-dim-X-Z")
-    );
-    drawLine(
-      dimLines[4],
-      modelViewer.queryHotspot("hotspot-dot-X-Y-Z"),
-      modelViewer.queryHotspot("hotspot-dot-X-Y+Z"),
-      modelViewer.queryHotspot("hotspot-dim-X-Y")
-    );
-    drawLine(
-      dimLines[5],
-      modelViewer.queryHotspot("hotspot-dot-X-Y+Z"),
-      modelViewer.queryHotspot("hotspot-dot-X+Y+Z")
-    );
-    drawLine(
-      dimLines[6],
-      modelViewer.queryHotspot("hotspot-dot-X+Y-Z"),
-      modelViewer.queryHotspot("hotspot-dot-X+Y+Z")
-    );
-  }
+          return new Promise((resolve) => {
+            request.onsuccess = () => {
+              if (request.result) {
+                console.log("Access token loaded from IndexedDB");
+                resolve(request.result.value);
+              } else {
+                resolve(null);
+              }
+            };
+            request.onerror = () => {
+              console.error("Error loading access token:", request.error);
+              resolve(null);
+            };
+          });
+        } catch (error) {
+          console.error("Error loading access token:", error);
+          return null;
+        }
+      }
 
-  function updateAllHotSpots({ l, b, h }) {
-    const center = modelViewer.getBoundingBoxCenter();
-    const size = modelViewer.getDimensions();
-    const x2 = size.x / 2;
-    const y2 = size.y / 2;
-    const z2 = size.z / 2;
+      // Clear access token from IndexedDB
+      async function clearAccessToken() {
+        try {
+          const db = await initDB();
+          const transaction = db.transaction([STORE_NAME], "readwrite");
+          const store = transaction.objectStore(STORE_NAME);
+          await store.delete("accessToken");
+          console.log("Access token cleared from IndexedDB");
+        } catch (error) {
+          console.error("Error clearing access token:", error);
+        }
+      }
 
-    modelViewer.updateHotspot({
-      name: "hotspot-dot+X+Y+Z",
-      position: `${center.x + x2} ${center.y + y2} ${center.z + z2}`,
-    });
-    modelViewer.updateHotspot({
-      name: "hotspot-dot+X-Y+Z",
-      position: `${center.x + x2} ${center.y - y2} ${center.z + z2}`,
-    });
+      // Save App ID to IndexedDB
+      async function saveAppId(id) {
+        try {
+          const db = await initDB();
+          const transaction = db.transaction([STORE_NAME], "readwrite");
+          const store = transaction.objectStore(STORE_NAME);
+          await store.put({ id: "appId", value: id, timestamp: Date.now() });
+          console.log("App ID saved to IndexedDB");
+        } catch (error) {
+          console.error("Error saving App ID:", error);
+        }
+      }
 
-    modelViewer.updateHotspot({
-      name: "hotspot-dim+X-Y",
-      position: `${center.x + x2 * 1.2} ${center.y - y2 * 1.1} ${center.z}`,
-    });
+      // Load App ID from IndexedDB
+      async function loadAppId() {
+        try {
+          const db = await initDB();
+          const transaction = db.transaction([STORE_NAME], "readonly");
+          const store = transaction.objectStore(STORE_NAME);
+          const request = store.get("appId");
 
-    modelViewer.querySelector(
-      'button[slot="hotspot-dim+X-Y"]'
-    ).textContent = `${b}`;
+          return new Promise((resolve) => {
+            request.onsuccess = () => {
+              if (request.result) {
+                console.log("App ID loaded from IndexedDB");
+                resolve(request.result.value);
+              } else {
+                resolve(null);
+              }
+            };
+            request.onerror = () => {
+              console.error("Error loading App ID:", request.error);
+              resolve(null);
+            };
+          });
+        } catch (error) {
+          console.error("Error loading App ID:", error);
+          return null;
+        }
+      }
 
-    modelViewer.updateHotspot({
-      name: "hotspot-dot+X-Y-Z",
-      position: `${center.x + x2} ${center.y - y2} ${center.z - z2}`,
-    });
+      // Initialize GlamAR SDK following documentation steps
+      document.addEventListener("DOMContentLoaded", async function () {
+        console.log("Page loaded - checking for cached access token...");
 
-    modelViewer.updateHotspot({
-      name: "hotspot-dim+X-Z",
-      position: `${center.x + x2 * 1.2} ${center.y} ${center.z}`,
-    });
-    modelViewer.querySelector(
-      'button[slot="hotspot-dim+X-Z"]'
-    ).textContent = `${h}`;
+        // Initialize SDK version
+        window.selectedSdkVersion = "1.0.0";
 
-    modelViewer.updateHotspot({
-      name: "hotspot-dot+X+Y-Z",
-      position: `${center.x + x2} ${center.y + y2} ${center.z - z2}`,
-    });
+        // Try to load cached access token
+        const cachedToken = await loadAccessToken();
+        if (cachedToken) {
+          console.log("Found cached access token, auto-filling...");
+          document.getElementById("accessTokenInput").value = cachedToken;
 
-    modelViewer.updateHotspot({
-      name: "hotspot-dim+Y-Z",
-      position: `${center.x} ${center.y + y2 * 1.1} ${center.z}`,
-    });
-    modelViewer.querySelector(
-      'button[slot="hotspot-dim+Y-Z"]'
-    ).textContent = `${l}`;
+          // Enable the button since we have a token
+          const tokenButton = document.getElementById("accessTokenButton");
+          tokenButton.disabled = false;
 
-    modelViewer.updateHotspot({
-      name: "hotspot-dot-X+Y-Z",
-      position: `${center.x - x2} ${center.y + y2} ${center.z - z2}`,
-    });
-
-    modelViewer.updateHotspot({
-      name: "hotspot-dim-X-Z",
-      position: `${center.x - x2 * 1.2} ${center.y} ${center.z}`,
-    });
-    modelViewer.querySelector(
-      'button[slot="hotspot-dim-X-Z"]'
-    ).textContent = `${h}`;
-
-    modelViewer.updateHotspot({
-      name: "hotspot-dot-X-Y-Z",
-      position: `${center.x - x2} ${center.y - y2} ${center.z - z2}`,
-    });
-
-    modelViewer.updateHotspot({
-      name: "hotspot-dim-X-Y",
-      position: `${center.x - x2 * 1.2} ${center.y - y2 * 1.1} ${center.z}`,
-    });
-    modelViewer.querySelector(
-      'button[slot="hotspot-dim-X-Y"]'
-    ).textContent = `${b}`;
-
-    modelViewer.updateHotspot({
-      name: "hotspot-dot-X-Y+Z",
-      position: `${center.x - x2} ${center.y - y2} ${center.z + z2}`,
-    });
-
-    modelViewer.updateHotspot({
-      name: "hotspot-dot-X+Y+Z",
-      position: `${center.x - x2} ${center.y + y2} ${center.z + z2}`,
-    });
-    renderSVG();
-  }
-
-  function initModelViewer(metaData, envUrl) {
-    const isMetaAvailbale =
-      metaData != null &&
-      metaData != undefined &&
-      metaData.dimensions &&
-      Object.keys(metaData.dimensions).length > 0;
-
-    setDimensionsUiStatus(isMetaAvailbale);
-
-    if (isMetaAvailbale) {
-      console.log("meta data ", metaData.dimensions);
-      modelViewer.addEventListener("ar-status", (event) => {
-        setVisibility(
-          checkbox.checked && event.detail.status !== "session-started"
-        );
+          // Optional: Auto-initialize with cached token (uncomment if desired)
+          // accessToken = cachedToken;
+          // document.getElementById('accessTokenOverlay').style.display = 'none';
+          // initializeSDK();
+        } else {
+          console.log(
+            "No cached access token found - waiting for user input..."
+          );
+        }
       });
 
-      checkbox.addEventListener("change", () => {
-        setVisibility(checkbox.checked);
+      async function setAccessToken() {
+        const tokenInput = document.getElementById("accessTokenInput");
+        const token = tokenInput.value.trim();
+
+        if (!token) {
+          alert("Please enter a valid access token");
+          return;
+        }
+
+        // Basic validation for access token format (should be a reasonable length)
+        if (token.length < 10) {
+          alert(
+            "Access token appears to be too short. Please check and try again."
+          );
+          return;
+        }
+
+        // Store the access token
+        accessToken = token;
+        console.log("Access token set:", accessToken);
+
+        // Save token to IndexedDB for future use
+        await saveAccessToken(token);
+
+        // Hide the popup
+        const overlay = document.getElementById("accessTokenOverlay");
+        overlay.style.display = "none";
+        showModal("categoryModal");
+        // Initialize the SDK with the provided token
+        initializeSDK();
+      }
+
+      async function setAppId() {
+        const appIdInput = document.getElementById("appIdInput");
+        const id = appIdInput.value.trim();
+
+        if (!id) {
+          alert("Please enter a valid App ID");
+          return;
+        }
+
+        // Basic validation for App ID format (should be a UUID-like format)
+        if (id.length < 10) {
+          alert("App ID appears to be too short. Please check and try again.");
+          return;
+        }
+
+        // Store the App ID
+        appId = id;
+        console.log("App ID set:", appId);
+
+        // Save App ID to IndexedDB for future use
+        await saveAppId(id);
+
+        // Hide the popup
+        const overlay = document.getElementById("appIdOverlay");
+        overlay.style.display = "none";
+
+        // Now proceed with skin analysis initialization
+        initializeSkinAnalysisSDK();
+      }
+
+      // Add input validation and Enter key support for access token
+      document.addEventListener("DOMContentLoaded", function () {
+        const tokenInput = document.getElementById("accessTokenInput");
+        const tokenButton = document.getElementById("accessTokenButton");
+
+        // Enable/disable button based on input
+        tokenInput.addEventListener("input", function () {
+          const hasValue = this.value.trim().length > 0;
+          tokenButton.disabled = !hasValue;
+        });
+
+        // Handle Enter key
+        tokenInput.addEventListener("keypress", function (e) {
+          if (e.key === "Enter" && this.value.trim().length > 0) {
+            setAccessToken();
+          }
+        });
+
+        // Initially disable button
+        tokenButton.disabled = true;
+
+        // App ID input validation and Enter key support
+        const appIdInput = document.getElementById("appIdInput");
+        const appIdButton = document.getElementById("appIdButton");
+
+        // Enable/disable button based on input
+        appIdInput.addEventListener("input", function () {
+          const hasValue = this.value.trim().length > 0;
+          appIdButton.disabled = !hasValue;
+        });
+
+        // Handle Enter key
+        appIdInput.addEventListener("keypress", function (e) {
+          if (e.key === "Enter" && this.value.trim().length > 0) {
+            setAppId();
+          }
+        });
+
+        // Initially disable button
+        appIdButton.disabled = true;
+
+        // Global click handler to close dropdowns when clicking outside
+        document.addEventListener("click", function (e) {
+          const modeDropdown = document.getElementById("modeDropdown");
+          const sizeDropdown = document.getElementById("sizeDropdown");
+
+          // Close mode dropdown if clicking outside
+          if (modeDropdown && modeDropdown.classList.contains("open")) {
+            const modeButton = modeDropdown.querySelector(".mode-dropdown-btn");
+            if (
+              !modeDropdown.contains(e.target) &&
+              !modeButton.contains(e.target)
+            ) {
+              modeDropdown.classList.remove("open");
+            }
+          }
+
+          // Close size dropdown if clicking outside
+          if (sizeDropdown && sizeDropdown.classList.contains("open")) {
+            const sizeButton = sizeDropdown.querySelector(".mode-dropdown-btn");
+            if (
+              !sizeDropdown.contains(e.target) &&
+              !sizeButton.contains(e.target)
+            ) {
+              sizeDropdown.classList.remove("open");
+            }
+          }
+        });
       });
-      modelViewer.addEventListener("camera-change", renderSVG);
-    }
 
-    const isEnvUrlValid = envUrl && envUrl.trim() !== "";
-    if (isEnvUrlValid) modelViewer.setAttribute("environment-image", envUrl);
+      function initializeSDK() {
+        if (!accessToken) {
+          console.error("Cannot initialize SDK without access token");
+          return;
+        }
 
-    modelViewer.addEventListener("load", () => {
-      console.log("Model has been successfully loaded!");
-      if (isMetaAvailbale) updateAllHotSpots(metaData.dimensions);
-      modelViewer.style.display = "block";
-    });
+        // Add a delay before initializing SDK to ensure everything is ready
+        setTimeout(() => {
+          try {
+            // Use absolute minimal configuration
+            let config = {
+              platform: "web",
+              meta: {
+                sdkVersion: "2.0.0",
+                cameraResolution: currentCameraResolution,
+              },
+            };
 
-    modelViewer.addEventListener("progress", (event) => {
-      const progress = event.detail.totalProgress;
-      if (progress === 1) {
-        hideLottieLoader();
-        modelViewer.addEventListener("ar-status", (arEvent) => {
-          if (arEvent.detail.status === "activated") {
-            modelViewer.style.display = "none";
+            console.log("Initializing GlamAR SDK with user token...");
+            console.log("Full SDK config:", config);
+
+            // Initialize SDK with user's access key
+            window.GlamAR.init(
+              "container__frame_wrapper", // Container ID
+              accessToken, // Use user-provided access token
+              config
+            );
+
+            // Add event listeners as recommended in documentation
+            window.GlamAR.addEventListener("*", (event) => {
+              console.log("GlamAR SDK Event:", event);
+              console.log("Current isSDKInitialized state:", isSDKInitialized);
+              console.log("Pending data:", pendingData);
+
+              switch (event) {
+                case "loaded":
+                  console.log("SDK Loaded - setting isSDKInitialized to true");
+                  isSDKInitialized = true; // Set flag when SDK is actually loaded
+                  console.log("isSDKInitialized now:", isSDKInitialized);
+
+                  // Ensure VTO containers are full screen
+                  ensureVTOFullScreen();
+
+                  // Add a small delay to ensure SDK is fully ready before applying methods
+                  setTimeout(() => {
+                    console.log("Checking for pending data to apply...");
+                    console.log("Current mode:", currentMode);
+                    console.log("Pending data check:", pendingData);
+
+                    // Check if SDK methods are available before calling
+                    if (!window.GlamAR) {
+                      console.error("GlamAR SDK not available");
+                      return;
+                    }
+
+                    // Call appropriate method based on current mode and pending data
+                    if (currentMode === "applyBySKU" && pendingData.sku) {
+                      console.log("Applying pending SKU:", pendingData.sku);
+                      try {
+                        if (typeof window.GlamAR.applyBySku === "function") {
+                          window.GlamAR.applyBySku(pendingData.sku);
+                          pendingData.sku = null; // Clear after applying
+                          console.log(
+                            "SKU applied successfully, cleared from pending data"
+                          );
+                        } else {
+                          console.error("applyBySku method not available");
+                        }
+                      } catch (error) {
+                        console.error("Failed to apply SKU:", error);
+                      }
+                    } else if (
+                      currentMode === "applyByCategory" &&
+                      pendingData.category
+                    ) {
+                      console.log(
+                        "Applying pending Category:",
+                        pendingData.category
+                      );
+                      try {
+                        if (
+                          typeof window.GlamAR.applyByCategory === "function"
+                        ) {
+                          window.GlamAR.applyByCategory(pendingData.category);
+                          pendingData.category = null; // Clear after applying
+                          console.log(
+                            "Category applied successfully, cleared from pending data"
+                          );
+                        } else {
+                          console.error("applyByCategory method not available");
+                        }
+                      } catch (error) {
+                        console.error("Failed to apply Category:", error);
+                      }
+                    } else if (
+                      currentMode === "multipleConfig" &&
+                      pendingData.config
+                    ) {
+                      console.log(
+                        "Applying pending Config:",
+                        pendingData.config
+                      );
+                      try {
+                        if (
+                          typeof window.GlamAR.applyByMultipleConfigData ===
+                          "function"
+                        ) {
+                          window.GlamAR.applyByMultipleConfigData(
+                            pendingData.config
+                          );
+                          pendingData.config = null; // Clear after applying
+                          console.log(
+                            "Config applied successfully, cleared from pending data"
+                          );
+                        } else {
+                          console.error(
+                            "applyByMultipleConfigData method not available"
+                          );
+                        }
+                      } catch (error) {
+                        console.error("Failed to apply Config:", error);
+                      }
+                    } else {
+                      console.log("No pending data to apply or mode mismatch");
+                      console.log(
+                        "Current mode:",
+                        currentMode,
+                        "Pending SKU:",
+                        pendingData.sku,
+                        "Pending Category:",
+                        pendingData.category,
+                        "Pending Config:",
+                        pendingData.config
+                      );
+                    }
+                  }, 1000); // Increased delay to 1000ms to ensure SDK is fully ready
+                  break;
+                case "opened":
+                  console.log("SDK Opened");
+                  // Ensure VTO containers are full screen when opened
+                  ensureVTOFullScreen();
+                  break;
+                case "closed":
+                  console.log("SDK Closed");
+                  isSDKInitialized = false; // Reset flag when SDK is closed
+                  break;
+                case "camera-failed":
+                  console.log("SDK Camera Failed");
+                  break;
+                case "sku-applied":
+                  console.log("SDK Sku applied");
+                  break;
+                case "sku-failed":
+                  console.log("SDK Sku Failed");
+                  break;
+                case "error":
+                  console.log("SDK Error", event);
+                  isSDKInitialized = false; // Reset flag on error
+                  break;
+              }
+            });
+          } catch (error) {
+            console.log("SDK Init Failed: " + error.message);
+          }
+        }, 10);
+      }
+
+      function initializeSkinAnalysisSDK() {
+        if (!accessToken) {
+          console.error("Cannot initialize SDK without access token");
+          return;
+        }
+
+        if (!appId) {
+          console.error("Cannot initialize skin analysis without App ID");
+          return;
+        }
+
+        // Reset SDK initialization flag
+        isSDKInitialized = false;
+
+        // Clear the container
+        const container = document.getElementById("container__frame_wrapper");
+        if (container) {
+          container.innerHTML = "";
+          console.log("Container cleared for skin analysis");
+        }
+
+        // Add a delay before initializing SDK to ensure everything is ready
+        setTimeout(() => {
+          try {
+            // Special configuration for skin analysis using user-provided App ID
+            let config = {
+              platform: "web",
+              mode: "private",
+              category: "skinanalysis",
+              configuration: {
+                global: {
+                  openLiveOnInit: true,
+                },
+                skinAnalysis: {
+                  appId: appId, // Use the user-provided App ID
+                  version: "GlamGen",
+                  defaultFilter: true,
+                  startScreen: true,
+                },
+              },
+              meta: {
+                sdkVersion: "2.0.0",
+                debugText: isDebugTextOn,
+                cameraResolution: currentCameraResolution,
+              },
+            };
+
+            console.log(
+              "Initializing GlamAR SDK for skin analysis with config:",
+              config
+            );
+
+            // Initialize SDK with skin analysis configuration
+            window.GlamAR.init(
+              "container__frame_wrapper", // Container ID
+              accessToken, // Use user-provided access token
+              config
+            );
+
+            // Add special event listeners for skin analysis
+            attachSkinAnalysisEventListeners();
+          } catch (error) {
+            console.log("Skin Analysis SDK Init Failed: " + error.message);
+          }
+        }, 1000); // Added delay before initializing SDK
+      }
+
+      function attachSkinAnalysisEventListeners() {
+        window.GlamAR.addEventListener("*", (e, payload) => {
+          console.log("GlamAR Skin Analysis Event:", e, payload);
+
+          switch (e) {
+            case "loaded":
+              console.log("Skin Analysis SDK Loaded");
+              isSDKInitialized = true;
+
+              // Ensure VTO containers are full screen
+              ensureVTOFullScreen();
+              break;
+            case "skin-analysis":
+              console.log("Skin Analysis Event:", payload);
+              if (
+                payload &&
+                payload.options &&
+                payload.options === "result" &&
+                payload.value
+              ) {
+                console.log("Skin Analysis Result:", payload.value);
+                // JsonConfigData = payload.value; // Store the result if needed
+                // You can add custom logic here to handle the skin analysis result
+              }
+              if (
+                payload &&
+                payload.options &&
+                payload.options === "recommendation" &&
+                payload.value
+              ) {
+                console.log("Skin Analysis Recommendation:", payload.value);
+                // recommendationData = payload.value; // Store recommendations if needed
+                // You can add custom logic here to handle recommendations
+              }
+              break;
+            case "opened":
+              console.log("Skin Analysis SDK Opened");
+              ensureVTOFullScreen();
+              break;
+            case "closed":
+              console.log("Skin Analysis SDK Closed");
+              isSDKInitialized = false;
+              break;
+            case "camera-failed":
+              console.log("Skin Analysis Camera Failed");
+              break;
+            case "error":
+              console.log("Skin Analysis SDK Error", e, payload);
+              isSDKInitialized = false;
+              break;
+            default:
+              console.log("Other Skin Analysis Event:", e, payload);
+              break;
           }
         });
       }
-    });
-  }
 
-  initModelViewer(
-    {
-      dimensions: {
-        l: "31''",
-        b: "33''",
-        h: "29''",
-      },
-    },
-    "https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/Demo_Store/HDRI/neutral.hdr"
-  );
-  //#endregion
-</script>
+      function toggleDropdown() {
+        const dropdown = document.getElementById("modeDropdown");
+        dropdown.classList.toggle("open");
+      }
 
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f5f5f5;
-    font-family: Arial, sans-serif;
-  }
+      function toggleSizeDropdown() {
+        const dropdown = document.getElementById("sizeDropdown");
+        dropdown.classList.toggle("open");
+      }
 
-  #app {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-  }
+      function setMode(mode) {
+        currentMode = mode;
 
-  #lottie {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    background-color: #000;
-    z-index: 5000;
-  }
-  #lottie svg {
-    width: 60% !important;
-    height: 60% !important;
-  }
+        // Update dropdown text and states
+        const selectedModeText = document.getElementById("selectedMode");
+        const dropdown = document.getElementById("modeDropdown");
 
-  model-viewer {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    background-color: #fff;
-  }
+        // Update selected text
+        switch (mode) {
+          case "applyBySKU":
+            selectedModeText.textContent = "Apply by SKU";
+            break;
+          case "applyByCategory":
+            selectedModeText.textContent = "Apply by Category";
+            break;
+          case "multipleConfig":
+            selectedModeText.textContent = "Multiple Config";
+            break;
+        }
 
-  #controls {
-    position: absolute;
-    bottom: 16px;
-    left: 16px;
-    max-width: unset;
-    transform: unset;
-    pointer-events: auto;
-    z-index: 10;
-  }
+        // Update active states
+        document
+          .querySelectorAll(".dropdown-item")
+          .forEach((item) => item.classList.remove("active"));
+        event.target.classList.add("active");
 
-  .controls-ar {
-    background-color: #fff;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0px 16px 0px 16px;
-    font-size: 14px;
-    color: #4285f4;
-    height: 36px;
-    line-height: 36px;
-    border-radius: 18px;
-  }
+        // Close dropdown
+        dropdown.classList.remove("open");
 
-  #ar-button {
-    position: absolute;
-    border: 0px;
-    bottom: 16px;
-    right: 16px;
-    max-width: unset;
-    transform: unset;
-    pointer-events: auto;
-    z-index: 100;
-    background-color: #fff;
-    padding: 0px 16px 0px 16px;
-    font-size: 14px;
-    color: #4285f4;
-    height: 36px;
-    line-height: 36px;
-    border-radius: 18px;
-  }
+        // Reinitialize SDK for the new mode
+        reinitializeSDK();
 
-  @media (max-width: 600px) {
-    .controls-ar {
-      padding: 0px 8px 0px 8px;
-      font-size: 12px;
-      height: 28px;
-      line-height: 28px;
-      border-radius: 14px;
-    }
+        // Show appropriate modal based on mode
+        if (mode === "applyBySKU") {
+          showModal("skuModal");
+        } else if (mode === "applyByCategory") {
+          // TODO OPEN USING THIS
+          showModal("categoryModal");
+        } else if (mode === "multipleConfig") {
+          showModal("configModal");
+        }
+      }
 
-    #ar-button {
-      padding: 0px 8px 0px 8px;
-      font-size: 12px;
-      height: 28px;
-      line-height: 28px;
-      border-radius: 14px;
-    }
-  }
+      function reinitializeSDK() {
+        console.log("Reinitializing SDK for mode:", currentMode);
 
-  .button {
-    margin: 0.25rem !important;
-    cursor: pointer;
-    box-shadow: 1px 1px 2px #22222227;
-  }
+        // Immediately reset SDK initialization flag
+        isSDKInitialized = false;
+        console.log("isSDKInitialized reset to:", isSDKInitialized);
 
-  .dot {
-    display: none;
-  }
+        try {
+          // Try to properly close/destroy existing SDK instance if it exists
+          if (window.GlamAR && typeof window.GlamAR.destroy === "function") {
+            console.log("Destroying existing SDK instance...");
+            window.GlamAR.destroy();
+          } else if (
+            window.GlamAR &&
+            typeof window.GlamAR.close === "function"
+          ) {
+            console.log("Closing existing SDK instance...");
+            window.GlamAR.close();
+          }
+        } catch (error) {
+          console.log(
+            "Error during SDK cleanup (this is usually fine):",
+            error
+          );
+        }
 
-  .dot-test {
-    display: block;
-    border: none;
-    width: 20px;
-    height: 20px;
-    background-color: #e6165b;
-  }
+        // Clear the container
+        const container = document.getElementById("container__frame_wrapper");
+        if (container) {
+          container.innerHTML = "";
+          console.log("Container cleared");
+        }
 
-  .glass {
-    background: rgba(255, 255, 255, 0.37);
-    backdrop-filter: blur(8px) contrast(0.89) saturate(1.27);
-    -webkit-backdrop-filter: blur(8px) contrast(0.89) saturate(1.27);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-  }
+        // Add delay before reinitializing
+        setTimeout(() => {
+          try {
+            // Use absolute minimal configuration
+            let config = {
+              platform: "web",
+              meta: {
+                sdkVersion: "2.0.0",
+                debugText: isDebugTextOn,
+                cameraResolution: currentCameraResolution,
+              },
+            };
 
-  .dim {
-    border-radius: 18px;
-    border: none;
-    box-sizing: border-box;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
-    color: rgba(0, 0, 0, 0.8);
-    display: block;
-    font-family: Inter;
-    font-size: 1em;
-    font-weight: 700;
-    max-width: 128px;
-    overflow-wrap: break-word;
-    padding: 0.5em 1em;
-    position: absolute;
-    width: max-content;
-    height: max-content;
-    transform: translate3d(-50%, -50%, 0);
-    pointer-events: none;
-    --min-hotspot-opacity: 0;
-  }
+            console.log("Reinitializing GlamAR SDK with minimal config...");
+            console.log("isSDKInitialized before init:", isSDKInitialized);
 
-  .dim-always-visible {
-    --min-hotspot-opacity: 1;
-  }
+            // Initialize SDK with minimal configuration
+            window.GlamAR.init(
+              "container__frame_wrapper", // Container ID
+              accessToken, // Use user-provided access token
+              config
+            );
 
-  .dimensionLineContainer {
-    pointer-events: none;
-    display: block;
-  }
+            // Re-add event listeners for the reinitialized SDK
+            window.GlamAR.addEventListener("*", (event) => {
+              console.log("GlamAR SDK Event (reinit):", event);
+              console.log("Current isSDKInitialized state:", isSDKInitialized);
+              console.log("Pending data:", pendingData);
 
-  .dimensionLine {
-    stroke: #4285f4;
-    stroke-width: 2;
-    stroke-dasharray: none;
-  }
+              switch (event) {
+                case "loaded":
+                  console.log(
+                    "SDK Loaded (reinit) - setting isSDKInitialized to true"
+                  );
+                  isSDKInitialized = true;
+                  console.log("isSDKInitialized now:", isSDKInitialized);
 
-  .hide {
-    display: none;
-  }
+                  // Ensure VTO containers are full screen
+                  ensureVTOFullScreen();
 
-  :not(:defined) > * {
-    display: none;
-  }
-</style>
+                  // Add a small delay to ensure SDK is fully ready before applying methods
+                  setTimeout(() => {
+                    console.log(
+                      "Checking for pending data to apply (reinit)..."
+                    );
+                    console.log("Current mode:", currentMode);
+                    console.log("Pending data check:", pendingData);
+
+                    // Check if SDK methods are available before calling
+                    if (!window.GlamAR) {
+                      console.error("GlamAR SDK not available (reinit)");
+                      return;
+                    }
+
+                    // Call appropriate method based on current mode and pending data
+                    if (currentMode === "applyBySKU" && pendingData.sku) {
+                      console.log(
+                        "Applying pending SKU (reinit):",
+                        pendingData.sku
+                      );
+                      try {
+                        if (typeof window.GlamAR.applyBySku === "function") {
+                          window.GlamAR.applyBySku(pendingData.sku);
+                          pendingData.sku = null; // Clear after applying
+                          console.log(
+                            "SKU applied successfully (reinit), cleared from pending data"
+                          );
+                        } else {
+                          console.error(
+                            "applyBySku method not available (reinit)"
+                          );
+                        }
+                      } catch (error) {
+                        console.error("Failed to apply SKU (reinit):", error);
+                      }
+                    } else if (
+                      currentMode === "applyByCategory" &&
+                      pendingData.category
+                    ) {
+                      console.log(
+                        "Applying pending Category (reinit):",
+                        pendingData.category
+                      );
+                      try {
+                        if (
+                          typeof window.GlamAR.applyByCategory === "function"
+                        ) {
+                          window.GlamAR.applyByCategory(pendingData.category);
+                          pendingData.category = null; // Clear after applying
+                          console.log(
+                            "Category applied successfully (reinit), cleared from pending data"
+                          );
+                        } else {
+                          console.error(
+                            "applyByCategory method not available (reinit)"
+                          );
+                        }
+                      } catch (error) {
+                        console.error(
+                          "Failed to apply Category (reinit):",
+                          error
+                        );
+                      }
+                    } else if (
+                      currentMode === "multipleConfig" &&
+                      pendingData.config
+                    ) {
+                      console.log(
+                        "Applying pending Config (reinit):",
+                        pendingData.config
+                      );
+                      try {
+                        if (
+                          typeof window.GlamAR.applyByMultipleConfigData ===
+                          "function"
+                        ) {
+                          window.GlamAR.applyByMultipleConfigData(
+                            pendingData.config
+                          );
+                          pendingData.config = null; // Clear after applying
+                          console.log(
+                            "Config applied successfully (reinit), cleared from pending data"
+                          );
+                        } else {
+                          console.error(
+                            "applyByMultipleConfigData method not available (reinit)"
+                          );
+                        }
+                      } catch (error) {
+                        console.error(
+                          "Failed to apply Config (reinit):",
+                          error
+                        );
+                      }
+                    } else {
+                      console.log(
+                        "No pending data to apply or mode mismatch (reinit)"
+                      );
+                      console.log(
+                        "Current mode:",
+                        currentMode,
+                        "Pending SKU:",
+                        pendingData.sku,
+                        "Pending Category:",
+                        pendingData.category,
+                        "Pending Config:",
+                        pendingData.config
+                      );
+                    }
+                  }, 1000); // Same delay as initial setup
+                  break;
+                case "opened":
+                  console.log("SDK Opened (reinit)");
+                  ensureVTOFullScreen();
+                  break;
+                case "closed":
+                  console.log("SDK Closed (reinit)");
+                  isSDKInitialized = false;
+                  break;
+                case "camera-failed":
+                  console.log("SDK Camera Failed (reinit)");
+                  break;
+                case "sku-applied":
+                  console.log("SDK Sku applied (reinit)");
+                  break;
+                case "sku-failed":
+                  console.log("SDK Sku Failed (reinit)");
+                  break;
+                case "error":
+                  console.log("SDK Error (reinit)", event);
+                  isSDKInitialized = false;
+                  break;
+              }
+            });
+
+            console.log("SDK reinitialization started successfully");
+          } catch (error) {
+            console.error("Failed to reinitialize SDK:", error);
+            isSDKInitialized = false; // Ensure flag is false on error
+          }
+        }, 500); // Delay before reinitializing
+      }
+
+      function resetSizeDropDown(dropdown) {
+        document
+          .querySelectorAll("#sizeDropdown .dropdown-item")
+          .forEach((item) => item.classList.remove("active"));
+        if (event && event.target) {
+          event.target.classList.add("active");
+        }
+        // Close dropdown
+        if (dropdown) {
+          dropdown.classList.remove("open");
+        }
+      }
+
+      function setScreenSize(size) {
+        hideCustomPanel();
+        hideCustomCameraPanel();
+        currentSize = size;
+
+        // Update dropdown text and states
+        const selectedSizeText = document.getElementById("selectedSize");
+        const dropdown = document.getElementById("sizeDropdown");
+        resetSizeDropDown(dropdown);
+
+        if (size === "customCamera") {
+          showCustomCameraPanel();
+          return;
+        }
+
+        switch (size) {
+          case "mobile":
+            selectedSizeText.textContent = "Mobile";
+            break;
+          case "tablet":
+            selectedSizeText.textContent = "Tablet";
+            break;
+          case "web":
+            selectedSizeText.textContent = "Web";
+            break;
+          case "custom":
+            selectedSizeText.textContent = "Custom";
+            break;
+        }
+
+        const container = document.getElementById("container__frame_wrapper");
+
+        if (size === "custom") {
+          showCustomPanel();
+          return;
+        } else {
+          hideCustomPanel();
+        }
+
+        // Reset to full screen first
+        container.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                z-index: 1;
+                background: #fff;
+                border-radius: 0;
+                overflow: hidden;
+            `;
+
+        switch (size) {
+          case "mobile":
+            container.style.cssText += `
+                        width: 375px;
+                        height: 667px;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        border-radius: 20px;
+                        box-shadow: 0 0 30px rgba(0,0,0,0.3);
+                    `;
+            break;
+          case "tablet":
+            container.style.cssText += `
+                        width: 768px;
+                        height: 1024px;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        border-radius: 15px;
+                        box-shadow: 0 0 30px rgba(0,0,0,0.3);
+                    `;
+            break;
+          case "web":
+            // Already set to full screen above
+            break;
+        }
+      }
+
+      function showCustomPanel() {
+        document.getElementById("customSizePanel").style.display = "block";
+      }
+
+      function hideCustomPanel() {
+        document.getElementById("customSizePanel").style.display = "none";
+      }
+
+      function showCustomCameraPanel() {
+        document.getElementById("customCameraPanel").style.display = "block";
+      }
+
+      function hideCustomCameraPanel() {
+        document.getElementById("customCameraPanel").style.display = "none";
+      }
+
+      function applyCustomSize() {
+        const width = document.getElementById("customWidth").value;
+        const height = document.getElementById("customHeight").value;
+
+        if (width && height) {
+          const container = document.getElementById("container__frame_wrapper");
+          container.style.cssText = `
+                    position: fixed;
+                    width: ${width}px;
+                    height: ${height}px;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 0 30px rgba(0,0,0,0.3);
+                    z-index: 1;
+                    background: #fff;
+                `;
+          hideCustomPanel();
+        }
+      }
+
+      function applyCustomCamera() {
+        const w = document.getElementById("customCameraWidth").value;
+        const h = document.getElementById("customCameraHeight").value;
+        currentCameraResolution = { width: w, height: h };
+        reinitializeSDK();
+        hideCustomCameraPanel();
+      }
+
+      function showModal(modalId) {
+        document.getElementById(modalId).style.display = "flex";
+      }
+
+      function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+      }
+
+      function showSubcategories(category) {
+        const subcategoryGrid = document.getElementById("subcategoryGrid");
+        const title = document.getElementById("subcategoryTitle");
+
+        title.textContent = `Select ${
+          category.charAt(0).toUpperCase() + category.slice(1)
+        } Type`;
+        subcategoryGrid.innerHTML = "";
+
+        subcategories[category].forEach((sub) => {
+          const btn = document.createElement("div");
+          btn.className = "subcategory-btn";
+          btn.textContent = sub.charAt(0).toUpperCase() + sub.slice(1);
+          btn.onclick = () => applyCategory(category, sub);
+          subcategoryGrid.appendChild(btn);
+        });
+
+        closeModal("categoryModal");
+        showModal("subcategoryModal");
+      }
+
+      function applySKU() {
+        const sku = document.getElementById("skuInput").value;
+        if (sku) {
+          // Store the SKU for later application when SDK is loaded
+          pendingData.sku = sku;
+          currentMode = "applyBySKU";
+
+          console.log("applySKU called with:", sku);
+          console.log("isSDKInitialized:", isSDKInitialized);
+
+          if (isSDKInitialized) {
+            // If SDK is already loaded, apply immediately
+            console.log("SDK is initialized - applying SKU immediately:", sku);
+            try {
+              if (typeof window.GlamAR.applyBySku === "function") {
+                window.GlamAR.applyBySku(sku);
+                pendingData.sku = null; // Clear after applying
+              } else {
+                console.error("applyBySku method not available");
+              }
+            } catch (error) {
+              console.error("Failed to apply SKU immediately:", error);
+            }
+          } else {
+            console.log(
+              "SDK not initialized - SKU stored for later application:",
+              sku
+            );
+          }
+
+          closeModal("skuModal");
+        } else {
+          alert("Please enter a SKU ID");
+        }
+      }
+
+      async function startSkinAnalysis() {
+        console.log("Skin analysis selected - showing App ID popup...");
+
+        // Close the category modal first
+        closeModal("categoryModal");
+
+        // Show App ID popup
+        const overlay = document.getElementById("appIdOverlay");
+        overlay.style.display = "flex";
+
+        // Try to load cached App ID and pre-fill
+        const appIdInput = document.getElementById("appIdInput");
+        const appIdButton = document.getElementById("appIdButton");
+
+        const cachedAppId = await loadAppId();
+        if (cachedAppId) {
+          console.log("Pre-filling with cached App ID...");
+          appIdInput.value = cachedAppId;
+          appIdButton.disabled = false;
+        } else {
+          console.log("No cached App ID found - starting with empty field...");
+          appIdInput.value = "";
+          appIdButton.disabled = true;
+        }
+      }
+
+      async function applyCategory(category, subcategory) {
+        // Special handling for skin analysis
+        if (subcategory === "skinanalysis") {
+          console.log("Skin analysis selected - showing App ID popup...");
+
+          // Show App ID popup
+          const overlay = document.getElementById("appIdOverlay");
+          overlay.style.display = "flex";
+
+          // Try to load cached App ID and pre-fill
+          const appIdInput = document.getElementById("appIdInput");
+          const appIdButton = document.getElementById("appIdButton");
+
+          const cachedAppId = await loadAppId();
+          if (cachedAppId) {
+            console.log("Pre-filling with cached App ID...");
+            appIdInput.value = cachedAppId;
+            appIdButton.disabled = false;
+          } else {
+            console.log(
+              "No cached App ID found - starting with empty field..."
+            );
+            appIdInput.value = "";
+            appIdButton.disabled = true;
+          }
+
+          return;
+        }
+
+        // Store the category for later application when SDK is loaded
+        pendingData.category = subcategory;
+        currentMode = "applyByCategory";
+
+        console.log("applyCategory called with:", subcategory);
+        console.log("isSDKInitialized:", isSDKInitialized);
+
+        if (isSDKInitialized) {
+          // If SDK is already loaded, apply immediately
+          console.log(
+            "SDK is initialized - applying category immediately:",
+            subcategory
+          );
+          try {
+            if (typeof window.GlamAR.applyByCategory === "function") {
+              window.GlamAR.applyByCategory(subcategory);
+              pendingData.category = null; // Clear after applying
+            } else {
+              console.error("applyByCategory method not available");
+            }
+          } catch (error) {
+            console.error("Failed to apply category immediately:", error);
+          }
+        } else {
+          console.log(
+            "SDK not initialized - category stored for later application:",
+            subcategory
+          );
+        }
+
+        closeModal("subcategoryModal");
+      }
+
+      function goBackToCategories() {
+        closeModal("subcategoryModal");
+        showModal("categoryModal");
+      }
+
+      function applyConfig() {
+        const config = document.getElementById("configInput").value;
+        try {
+          const parsedConfig = JSON.parse(config);
+
+          // Store the parsed config (JSON array) for later application when SDK is loaded
+          pendingData.config = parsedConfig;
+          currentMode = "multipleConfig";
+
+          console.log("applyConfig called with parsed config:", parsedConfig);
+          console.log("isSDKInitialized:", isSDKInitialized);
+
+          if (isSDKInitialized) {
+            // If SDK is already loaded, apply immediately
+            console.log(
+              "SDK is initialized - applying config immediately:",
+              parsedConfig
+            );
+            try {
+              if (
+                typeof window.GlamAR.applyByMultipleConfigData === "function"
+              ) {
+                window.GlamAR.applyByMultipleConfigData(parsedConfig);
+                pendingData.config = null; // Clear after applying
+              } else {
+                console.error("applyByMultipleConfigData method not available");
+              }
+            } catch (error) {
+              console.error("Failed to apply config immediately:", error);
+            }
+          } else {
+            console.log(
+              "SDK not initialized - parsed config stored for later application:",
+              parsedConfig
+            );
+          }
+
+          closeModal("configModal");
+        } catch (e) {
+          alert("Invalid JSON format. Please check your configuration.");
+        }
+      }
+
+      // Initialize with Web size selected on load
+      window.addEventListener("load", function () {
+        // Set web as default in dropdown
+        const webItem = document.querySelector(
+          "#sizeDropdown .dropdown-item:nth-child(2)"
+        );
+        if (webItem) {
+          webItem.classList.add("active");
+        }
+        currentSize = "web";
+      });
+
+      function ensureVTOFullScreen() {
+        // Implementation of ensureVTOFullScreen function
+        console.log("Ensuring VTO containers are full screen");
+
+        // Function to apply full screen styles to VTO containers
+        const applyFullScreenStyles = () => {
+          // Find VTO containers by class name pattern
+          const vtoContainers = document.querySelectorAll(
+            '[class*="vtoLiveContainer"]'
+          );
+          const renderWindows = document.querySelectorAll(
+            '[id*="renderWindow"]'
+          );
+          const allContainers = [...vtoContainers, ...renderWindows];
+
+          allContainers.forEach((container) => {
+            if (container) {
+              console.log(
+                "Applying full screen styles to VTO container:",
+                container
+              );
+              container.style.cssText = `
+                            position: fixed !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            width: 100vw !important;
+                            height: 100vh !important;
+                            z-index: 1000 !important;
+                            background: #fff !important;
+                            border-radius: 0 !important;
+                            overflow: hidden !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            border: none !important;
+                            max-width: none !important;
+                            max-height: none !important;
+                        `;
+            }
+          });
+
+          // Also ensure the main container stays full screen
+          const mainContainer = document.getElementById(
+            "container__frame_wrapper"
+          );
+          if (mainContainer) {
+            mainContainer.style.cssText = `
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        z-index: 1 !important;
+                        background: #fff !important;
+                        border-radius: 0 !important;
+                        overflow: hidden !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        border: none !important;
+                    `;
+          }
+        };
+
+        // Apply styles immediately
+        applyFullScreenStyles();
+
+        // Set up mutation observer to watch for dynamically created VTO containers
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+              if (node.nodeType === 1) {
+                // Element node
+                // Check if the added node or its children contain VTO containers
+                const vtoElements = node.querySelectorAll
+                  ? node.querySelectorAll(
+                      '[class*="vtoLiveContainer"], [id*="renderWindow"]'
+                    )
+                  : [];
+
+                if (
+                  vtoElements.length > 0 ||
+                  (node.className &&
+                    node.className.includes &&
+                    node.className.includes("vtoLiveContainer")) ||
+                  (node.id &&
+                    node.id.includes &&
+                    node.id.includes("renderWindow"))
+                ) {
+                  console.log(
+                    "New VTO container detected, applying full screen styles"
+                  );
+                  setTimeout(applyFullScreenStyles, 100); // Small delay to ensure DOM is ready
+                }
+              }
+            });
+          });
+        });
+
+        // Start observing
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
+
+        // Also periodically check for new containers (fallback)
+        const intervalCheck = setInterval(() => {
+          const vtoContainers = document.querySelectorAll(
+            '[class*="vtoLiveContainer"], [id*="renderWindow"]'
+          );
+          if (vtoContainers.length > 0) {
+            applyFullScreenStyles();
+          }
+        }, 1000);
+
+        // Clear interval after 30 seconds to avoid memory leaks
+        setTimeout(() => {
+          clearInterval(intervalCheck);
+        }, 30000);
+      }
+
+      // Unified GlamAR event listener for both VTO and Skin Analysis
+      window.GlamAR.addEventListener("*", function (event, payload) {
+        // 1. Determine current mode/category
+        const mode = window.currentMode || "unknown";
+        const category =
+          window.currentCategory ||
+          (mode === "skinanalysis" ? "skinanalysis" : "vto");
+
+        // 2. Analytics: Send to Boltic Streams
+        if (window.stelios && typeof window.stelios.track === "function") {
+          console.log("Sending event to Boltic Streams:", event, payload);
+          window.stelios.track(`GlamAR ${event}`, {
+            mode,
+            category,
+            payload,
+          });
+        }
+
+        // 3. Logging for debugging and observability
+        console.log(`[GlamAR][${mode}] Event:`, event, payload);
+
+        // 4. Business logic for Skin Analysis
+        if (category === "skinanalysis") {
+          switch (event) {
+            case "skin-analysis":
+              if (payload?.options === "result" && payload.value) {
+                // Store and log skin analysis result
+                window.glamarSkinAnalysisResult = payload.value;
+                console.log("[SkinAnalysis] Result:", payload.value);
+              }
+              if (payload?.options === "recommendation" && payload.value) {
+                // Store and log skin analysis recommendation
+                window.glamarSkinAnalysisRecommendation = payload.value;
+                console.log("[SkinAnalysis] Recommendation:", payload.value);
+              }
+              break;
+            case "loaded":
+              console.log("[SkinAnalysis] SDK Loaded");
+              break;
+            case "error":
+              window.glamarSkinAnalysisError = payload?.Error || payload;
+              console.error(
+                "[SkinAnalysis] Error:",
+                window.glamarSkinAnalysisError
+              );
+              break;
+            // Add more skin analysis-specific events as needed
+          }
+        } else {
+          // VTO business logic
+          switch (event) {
+            case "sku-applied":
+              // Store and log last applied SKU (if available)
+              if (payload?.sku) {
+                window.glamarLastAppliedSku = payload.sku;
+              } else if (pendingData && pendingData.sku) {
+                window.glamarLastAppliedSku = pendingData.sku;
+              }
+              console.log(
+                "[VTO] SKU Applied:",
+                window.glamarLastAppliedSku || "unknown"
+              );
+              break;
+            case "sku-failed":
+              // Increment and log SKU fail count
+              window.glamarSkuFailCount = (window.glamarSkuFailCount || 0) + 1;
+              console.warn(
+                "[VTO] SKU Failed. Total failures:",
+                window.glamarSkuFailCount
+              );
+              break;
+            case "photo-loaded":
+              // Store and log last photo
+              window.glamarLastPhoto = {
+                status: payload?.Status,
+                image: payload?.Image,
+              };
+              console.log("[VTO] Photo Loaded:", window.glamarLastPhoto);
+              break;
+            case "loaded":
+              console.log("[VTO] SDK Loaded");
+              break;
+            case "error":
+              window.glamarVtoError = payload?.Error || payload;
+              console.error("[VTO] Error:", window.glamarVtoError);
+              break;
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
