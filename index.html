@@ -132,7 +132,7 @@
     />
 
     <!-- Load GlamAR SDK via script tag as per documentation -->
-    <script src="https://cdn.glamarz0.de/sdk/wrapper?"></script>
+    <script src="https://cdn.glamarz0.de/sdk/wrapper"></script>
     <style>
       * {
         margin: 0;
@@ -395,10 +395,10 @@
         background: white;
         border-radius: 12px;
         padding: 30px;
-        max-width: 400px;
-        width: 90%;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         position: relative;
+        max-width: 1200px;
+        width: 90%;
       }
 
       .modal h2 {
@@ -438,8 +438,8 @@
 
       .close-btn {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 10px;
+        right: 10px;
         background: none;
         border: none;
         font-size: 28px;
@@ -465,9 +465,44 @@
       /* Category Grid */
       .category-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-template-rows: auto;
         gap: 10px;
         margin-top: 15px;
+      }
+
+      .category-grid .each-category {
+        min-width: 0;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 10px;
+        transition: all 0.3s ease-in-out;
+      }
+
+      .image-wrapper img {
+        transform: scale(1);
+        transform-origin: center center;
+        transition: transform 0.5s ease-in-out;
+        will-change: transform;
+      }
+
+      .each-category:hover .image-wrapper img {
+        transform: scale(1.1);
+      }
+
+      .image-wrapper {
+        width: 100%;
+        overflow: hidden;
+        border-radius: 8px;
+      }
+      .image-wrapper img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-width: 100%;
       }
 
       .category-btn,
@@ -640,37 +675,20 @@
         font-size: 14px;
         color: #333;
       }
+
+      @media (max-width: 991px) {
+        .category-grid {
+          grid-template-columns: 1fr 1fr 1fr;
+          max-height: 623px;
+          overflow-y: auto;
+        }
+      }
+
+      .home {
+      }
     </style>
   </head>
   <body>
-    <!-- Access Token Popup - Appears on first load -->
-    <div id="accessTokenOverlay" class="access-token-overlay">
-      <div class="access-token-modal">
-        <div class="access-token-icon">🔑</div>
-        <h2>GlamAR SDK Access Required</h2>
-        <p>
-          Please enter your GlamAR SDK Access Token to continue. This token is
-          required to initialize the SDK.
-        </p>
-        <input
-          type="text"
-          id="accessTokenInput"
-          placeholder="Enter your GlamAR SDK Access Token"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button id="accessTokenButton" onclick="setAccessToken()">
-          Initialize SDK
-        </button>
-        <p style="font-size: 12px; color: #666; margin-top: 15px">
-          💾
-          <span style="color: #28a745"
-            >Token will be saved automatically for future visits</span
-          >
-        </p>
-      </div>
-    </div>
-
     <!-- App ID Popup for Skin Analysis -->
     <div id="appIdOverlay" class="access-token-overlay" style="display: none">
       <div class="access-token-modal">
@@ -702,6 +720,15 @@
 
     <!-- Header Overlay -->
     <div class="header-overlay">
+      <!--  Close Button -->
+      <button
+        class="mode-dropdown-btn"
+        style="pointer-events: all"
+        onclick="onHomeBtnClick()"
+      >
+        Home
+      </button>
+
       <div class="header-left">
         <div class="mode-dropdown" id="modeDropdown">
           <button class="mode-dropdown-btn" onclick="toggleDropdown()">
@@ -779,7 +806,7 @@
 
     <!-- SKU Modal -->
     <div id="skuModal" class="modal-overlay">
-      <div class="modal">
+      <div class="modal" style="max-width: 400px">
         <button class="close-btn" onclick="closeModal('skuModal')">✕</button>
         <h2>Enter SKU</h2>
         <div class="modal-content">
@@ -792,32 +819,91 @@
     <!-- Category Modal -->
     <div id="categoryModal" class="modal-overlay">
       <div class="modal">
-        <button class="close-btn" onclick="closeModal('categoryModal')">
-          ✕
-        </button>
         <div class="modal-content">
-          <h2>Select Category</h2>
+          <h2>Explore our categories</h2>
           <div class="category-grid">
-            <div class="category-btn" onclick="showSubcategories('eyewear')">
-              Eyewear
-            </div>
-            <div class="category-btn" onclick="showSubcategories('makeup')">
-              Makeup
-            </div>
-            <div class="category-btn" onclick="showSubcategories('jewellery')">
-              Jewellery
+            <div
+              class="each-category"
+              onclick="handleOnCategoryClick('makeup')"
+            >
+              <div class="image-wrapper">
+                <img
+                  src="https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/original/webflow-team/GlamAR/Assests/women.webp"
+                  alt="makeup-category"
+                />
+              </div>
+              <p class="category-name">Makeup</p>
             </div>
             <div
-              class="category-btn"
-              onclick="showSubcategories('accessories')"
+              class="each-category"
+              onclick="handleOnCategoryClick('eyewear')"
             >
-              Accessories
+              <div class="image-wrapper">
+                <img
+                  src="https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/original/webflow-team/GlamAR/Assests/eyewearimage.webp"
+                  alt="eyewear-category"
+                />
+              </div>
+              <p class="category-name">Eyewear</p>
             </div>
-            <div class="category-btn" onclick="showSubcategories('home')">
-              Home
+            <div
+              class="each-category"
+              onclick="handleOnCategoryClick('jewellery')"
+            >
+              <div class="image-wrapper">
+                <img
+                  src="https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/original/webflow-team/GlamAR/Assests/jewellery.webp"
+                  alt="jewellery-category"
+                />
+              </div>
+              <p class="category-name">Jewellery</p>
             </div>
-            <div class="category-btn" onclick="startSkinAnalysis()">
-              Skin Analysis
+            <div
+              class="each-category"
+              onclick="handleOnCategoryClick('accessories')"
+            >
+              <div class="image-wrapper">
+                <img
+                  src="https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/original/webflow-team/GlamAR/Assests/hatimage.webp"
+                  alt="accessories-category"
+                />
+              </div>
+              <p class="category-name">Accessories</p>
+            </div>
+            <div class="each-category" onclick="handleOnCategoryClick('home')">
+              <div class="image-wrapper">
+                <img
+                  src="https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/original/webflow-team/GlamAR/Assests/furninute.webp"
+                  alt="home-category"
+                />
+              </div>
+              <p class="category-name">Home</p>
+            </div>
+
+            <div
+              class="each-category"
+              onclick="handleOnCategoryClick('apparel')"
+            >
+              <div class="image-wrapper">
+                <img
+                  src="https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/original/webflow-team/GlamAR/Assests/tshirt.png"
+                  alt="apparel-category"
+                />
+              </div>
+              <p class="category-name">Apparel</p>
+            </div>
+
+            <div
+              class="each-category"
+              onclick="handleOnCategoryClick('luggage')"
+            >
+              <div class="image-wrapper">
+                <img
+                  src="https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/t.toFormat(f:webp)/webflow-team/GlamAR/Assests/luggage.png?_gl=1*1v4hxl3*_ga*ODY0MDUxNjYyLjE3NDk4MDk1OTE.*_ga_MYFKDWYJ87*czE3NTI3Njc4NzQkbzQzJGcxJHQxNzUyNzY3OTI3JGo3JGwwJGgw"
+                  alt="luggage-category"
+                />
+              </div>
+              <p class="category-name">Luggage</p>
             </div>
           </div>
         </div>
@@ -826,7 +912,7 @@
 
     <!-- Subcategory Modal -->
     <div id="subcategoryModal" class="modal-overlay">
-      <div class="modal">
+      <div class="modal" style="max-width: 400px">
         <button class="close-btn" onclick="closeModal('subcategoryModal')">
           ✕
         </button>
@@ -875,13 +961,14 @@
       let currentMode = "applyBySKU";
       let currentSize = "web";
       let isSDKInitialized = false;
-      let accessToken = null; // Store the user's access token
-      let appId = null; // Store the skin analysis app ID
+      let accessToken = "84145fd2-8b99-478b-a003-0cb4228f042e";
+
       let currentCameraResolution = null;
       let isDebugTextOn = false;
+      let currentSelectedCategory = null;
 
       // Initialize default SDK version
-      window.selectedSdkVersion = "1.0.0";
+      window.selectedSdkVersion = "2.0.0";
 
       // Store the data for each mode
       let pendingData = {
@@ -918,261 +1005,30 @@
           "kitchen",
           "appliances",
         ],
-        skinanalysis: ["skinanalysis"],
+        apparel: ["bottomwear", "topwear", "full-outfit"],
+        luggage: [
+          "handbags",
+          "slingbags",
+          "backpack",
+          "totes",
+          "suitcase-trolley",
+          "backpack-travel-bag",
+        ],
+        automotive: ["bike", "car", "accessories"],
       };
-
-      // IndexedDB functions for access token caching
-      const DB_NAME = "GlamARSDK";
-      const DB_VERSION = 1;
-      const STORE_NAME = "tokens";
-
-      // Initialize IndexedDB
-      function initDB() {
-        return new Promise((resolve, reject) => {
-          const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-          request.onerror = () => reject(request.error);
-          request.onsuccess = () => resolve(request.result);
-
-          request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-              db.createObjectStore(STORE_NAME, { keyPath: "id" });
-            }
-          };
-        });
-      }
-
-      // Save access token to IndexedDB
-      async function saveAccessToken(token) {
-        try {
-          const db = await initDB();
-          const transaction = db.transaction([STORE_NAME], "readwrite");
-          const store = transaction.objectStore(STORE_NAME);
-          await store.put({
-            id: "accessToken",
-            value: token,
-            timestamp: Date.now(),
-          });
-          console.log("Access token saved to IndexedDB");
-        } catch (error) {
-          console.error("Error saving access token:", error);
-        }
-      }
-
-      // Load access token from IndexedDB
-      async function loadAccessToken() {
-        try {
-          const db = await initDB();
-          const transaction = db.transaction([STORE_NAME], "readonly");
-          const store = transaction.objectStore(STORE_NAME);
-          const request = store.get("accessToken");
-
-          return new Promise((resolve) => {
-            request.onsuccess = () => {
-              if (request.result) {
-                console.log("Access token loaded from IndexedDB");
-                resolve(request.result.value);
-              } else {
-                resolve(null);
-              }
-            };
-            request.onerror = () => {
-              console.error("Error loading access token:", request.error);
-              resolve(null);
-            };
-          });
-        } catch (error) {
-          console.error("Error loading access token:", error);
-          return null;
-        }
-      }
-
-      // Clear access token from IndexedDB
-      async function clearAccessToken() {
-        try {
-          const db = await initDB();
-          const transaction = db.transaction([STORE_NAME], "readwrite");
-          const store = transaction.objectStore(STORE_NAME);
-          await store.delete("accessToken");
-          console.log("Access token cleared from IndexedDB");
-        } catch (error) {
-          console.error("Error clearing access token:", error);
-        }
-      }
-
-      // Save App ID to IndexedDB
-      async function saveAppId(id) {
-        try {
-          const db = await initDB();
-          const transaction = db.transaction([STORE_NAME], "readwrite");
-          const store = transaction.objectStore(STORE_NAME);
-          await store.put({ id: "appId", value: id, timestamp: Date.now() });
-          console.log("App ID saved to IndexedDB");
-        } catch (error) {
-          console.error("Error saving App ID:", error);
-        }
-      }
-
-      // Load App ID from IndexedDB
-      async function loadAppId() {
-        try {
-          const db = await initDB();
-          const transaction = db.transaction([STORE_NAME], "readonly");
-          const store = transaction.objectStore(STORE_NAME);
-          const request = store.get("appId");
-
-          return new Promise((resolve) => {
-            request.onsuccess = () => {
-              if (request.result) {
-                console.log("App ID loaded from IndexedDB");
-                resolve(request.result.value);
-              } else {
-                resolve(null);
-              }
-            };
-            request.onerror = () => {
-              console.error("Error loading App ID:", request.error);
-              resolve(null);
-            };
-          });
-        } catch (error) {
-          console.error("Error loading App ID:", error);
-          return null;
-        }
-      }
 
       // Initialize GlamAR SDK following documentation steps
       document.addEventListener("DOMContentLoaded", async function () {
-        console.log("Page loaded - checking for cached access token...");
-
         // Initialize SDK version
-        window.selectedSdkVersion = "1.0.0";
+        window.selectedSdkVersion = "2.0.0";
 
-        // Try to load cached access token
-        const cachedToken = await loadAccessToken();
-        if (cachedToken) {
-          console.log("Found cached access token, auto-filling...");
-          document.getElementById("accessTokenInput").value = cachedToken;
-
-          // Enable the button since we have a token
-          const tokenButton = document.getElementById("accessTokenButton");
-          tokenButton.disabled = false;
-
-          // Optional: Auto-initialize with cached token (uncomment if desired)
-          // accessToken = cachedToken;
-          // document.getElementById('accessTokenOverlay').style.display = 'none';
-          // initializeSDK();
-        } else {
-          console.log(
-            "No cached access token found - waiting for user input..."
-          );
-        }
-      });
-
-      async function setAccessToken() {
-        const tokenInput = document.getElementById("accessTokenInput");
-        const token = tokenInput.value.trim();
-
-        if (!token) {
-          alert("Please enter a valid access token");
-          return;
-        }
-
-        // Basic validation for access token format (should be a reasonable length)
-        if (token.length < 10) {
-          alert(
-            "Access token appears to be too short. Please check and try again."
-          );
-          return;
-        }
-
-        // Store the access token
-        accessToken = token;
-        console.log("Access token set:", accessToken);
-
-        // Save token to IndexedDB for future use
-        await saveAccessToken(token);
-
-        // Hide the popup
-        const overlay = document.getElementById("accessTokenOverlay");
-        overlay.style.display = "none";
         showModal("categoryModal");
         // Initialize the SDK with the provided token
         initializeSDK();
-      }
-
-      async function setAppId() {
-        const appIdInput = document.getElementById("appIdInput");
-        const id = appIdInput.value.trim();
-
-        if (!id) {
-          alert("Please enter a valid App ID");
-          return;
-        }
-
-        // Basic validation for App ID format (should be a UUID-like format)
-        if (id.length < 10) {
-          alert("App ID appears to be too short. Please check and try again.");
-          return;
-        }
-
-        // Store the App ID
-        appId = id;
-        console.log("App ID set:", appId);
-
-        // Save App ID to IndexedDB for future use
-        await saveAppId(id);
-
-        // Hide the popup
-        const overlay = document.getElementById("appIdOverlay");
-        overlay.style.display = "none";
-
-        // Now proceed with skin analysis initialization
-        initializeSkinAnalysisSDK();
-      }
+      });
 
       // Add input validation and Enter key support for access token
       document.addEventListener("DOMContentLoaded", function () {
-        const tokenInput = document.getElementById("accessTokenInput");
-        const tokenButton = document.getElementById("accessTokenButton");
-
-        // Enable/disable button based on input
-        tokenInput.addEventListener("input", function () {
-          const hasValue = this.value.trim().length > 0;
-          tokenButton.disabled = !hasValue;
-        });
-
-        // Handle Enter key
-        tokenInput.addEventListener("keypress", function (e) {
-          if (e.key === "Enter" && this.value.trim().length > 0) {
-            setAccessToken();
-          }
-        });
-
-        // Initially disable button
-        tokenButton.disabled = true;
-
-        // App ID input validation and Enter key support
-        const appIdInput = document.getElementById("appIdInput");
-        const appIdButton = document.getElementById("appIdButton");
-
-        // Enable/disable button based on input
-        appIdInput.addEventListener("input", function () {
-          const hasValue = this.value.trim().length > 0;
-          appIdButton.disabled = !hasValue;
-        });
-
-        // Handle Enter key
-        appIdInput.addEventListener("keypress", function (e) {
-          if (e.key === "Enter" && this.value.trim().length > 0) {
-            setAppId();
-          }
-        });
-
-        // Initially disable button
-        appIdButton.disabled = true;
-
         // Global click handler to close dropdowns when clicking outside
         document.addEventListener("click", function (e) {
           const modeDropdown = document.getElementById("modeDropdown");
@@ -1213,10 +1069,10 @@
           try {
             // Use absolute minimal configuration
             let config = {
-              platform: "web",
+              platform: currentSize || "web",
               meta: {
-                sdkVersion: "2.0.0",
                 cameraResolution: currentCameraResolution,
+                sdkVersion: "2.0.0",
               },
             };
 
@@ -1347,6 +1203,7 @@
                 case "closed":
                   console.log("SDK Closed");
                   isSDKInitialized = false; // Reset flag when SDK is closed
+                  showModal("categoryModal");
                   break;
                 case "camera-failed":
                   console.log("SDK Camera Failed");
@@ -1359,7 +1216,9 @@
                   break;
                 case "error":
                   console.log("SDK Error", event);
-                  isSDKInitialized = false; // Reset flag on error
+                  // isSDKInitialized = false; // Reset flag on error
+                  console.log("Testing Exp ", "initializeSDK event listners");
+                  reinitializeSDK();
                   break;
               }
             });
@@ -1410,9 +1269,9 @@
                 },
               },
               meta: {
-                sdkVersion: "2.0.0",
                 debugText: isDebugTextOn,
                 cameraResolution: currentCameraResolution,
+                sdkVersion: "2.0.0",
               },
             };
 
@@ -1478,13 +1337,14 @@
             case "closed":
               console.log("Skin Analysis SDK Closed");
               isSDKInitialized = false;
+              showModal("categoryModal");
               break;
             case "camera-failed":
               console.log("Skin Analysis Camera Failed");
               break;
             case "error":
               console.log("Skin Analysis SDK Error", e, payload);
-              isSDKInitialized = false;
+              // isSDKInitialized = false;
               break;
             default:
               console.log("Other Skin Analysis Event:", e, payload);
@@ -1533,17 +1393,26 @@
         dropdown.classList.remove("open");
 
         // Reinitialize SDK for the new mode
-        reinitializeSDK();
+        // reinitializeSDK();
 
         // Show appropriate modal based on mode
         if (mode === "applyBySKU") {
           showModal("skuModal");
         } else if (mode === "applyByCategory") {
-          // TODO OPEN USING THIS
-          showModal("categoryModal");
+          console.log("### currentSelectedCategory", currentSelectedCategory);
+          if (currentSelectedCategory) {
+            showSubcategories(currentSelectedCategory);
+          } else {
+            console.error("currentSelectedCategory doesnot exists");
+          }
         } else if (mode === "multipleConfig") {
           showModal("configModal");
         }
+      }
+
+      function onHomeBtnClick() {
+        reinitializeSDK();
+        showModal("categoryModal");
       }
 
       function reinitializeSDK() {
@@ -1580,186 +1449,180 @@
         }
 
         // Add delay before reinitializing
-        setTimeout(() => {
-          try {
-            // Use absolute minimal configuration
-            let config = {
-              platform: "web",
-              meta: {
-                sdkVersion: "2.0.0",
-                debugText: isDebugTextOn,
-                cameraResolution: currentCameraResolution,
-              },
-            };
 
-            console.log("Reinitializing GlamAR SDK with minimal config...");
-            console.log("isSDKInitialized before init:", isSDKInitialized);
+        try {
+          // Use absolute minimal configuration
+          let config = {
+            platform: currentSize || web,
+            meta: {
+              debugText: isDebugTextOn,
+              cameraResolution: currentCameraResolution,
+              sdkVersion: "2.0.0",
+            },
+          };
 
-            // Initialize SDK with minimal configuration
-            window.GlamAR.init(
-              "container__frame_wrapper", // Container ID
-              accessToken, // Use user-provided access token
-              config
-            );
+          console.log("Reinitializing GlamAR SDK with minimal config...");
+          console.log("isSDKInitialized before init:", isSDKInitialized);
 
-            // Re-add event listeners for the reinitialized SDK
-            window.GlamAR.addEventListener("*", (event) => {
-              console.log("GlamAR SDK Event (reinit):", event);
-              console.log("Current isSDKInitialized state:", isSDKInitialized);
-              console.log("Pending data:", pendingData);
+          // Initialize SDK with minimal configuration
+          window.GlamAR.init(
+            "container__frame_wrapper", // Container ID
+            accessToken, // Use user-provided access token
+            config
+          );
 
-              switch (event) {
-                case "loaded":
-                  console.log(
-                    "SDK Loaded (reinit) - setting isSDKInitialized to true"
-                  );
-                  isSDKInitialized = true;
-                  console.log("isSDKInitialized now:", isSDKInitialized);
+          // Re-add event listeners for the reinitialized SDK
+          window.GlamAR.addEventListener("*", (event) => {
+            console.log("GlamAR SDK Event (reinit):", event);
+            console.log("Current isSDKInitialized state:", isSDKInitialized);
+            console.log("Pending data:", pendingData);
 
-                  // Ensure VTO containers are full screen
-                  ensureVTOFullScreen();
+            switch (event) {
+              case "loaded":
+                console.log(
+                  "SDK Loaded (reinit) - setting isSDKInitialized to true"
+                );
+                isSDKInitialized = true;
+                console.log("isSDKInitialized now:", isSDKInitialized);
 
-                  // Add a small delay to ensure SDK is fully ready before applying methods
-                  setTimeout(() => {
+                // Ensure VTO containers are full screen
+                ensureVTOFullScreen();
+
+                // Add a small delay to ensure SDK is fully ready before applying methods
+                setTimeout(() => {
+                  console.log("Checking for pending data to apply (reinit)...");
+                  console.log("Current mode:", currentMode);
+                  console.log("Pending data check:", pendingData);
+
+                  // Check if SDK methods are available before calling
+                  if (!window.GlamAR) {
+                    console.error("GlamAR SDK not available (reinit)");
+                    return;
+                  }
+
+                  // Call appropriate method based on current mode and pending data
+                  if (currentMode === "applyBySKU" && pendingData.sku) {
                     console.log(
-                      "Checking for pending data to apply (reinit)..."
+                      "Applying pending SKU (reinit):",
+                      pendingData.sku
                     );
-                    console.log("Current mode:", currentMode);
-                    console.log("Pending data check:", pendingData);
-
-                    // Check if SDK methods are available before calling
-                    if (!window.GlamAR) {
-                      console.error("GlamAR SDK not available (reinit)");
-                      return;
-                    }
-
-                    // Call appropriate method based on current mode and pending data
-                    if (currentMode === "applyBySKU" && pendingData.sku) {
-                      console.log(
-                        "Applying pending SKU (reinit):",
-                        pendingData.sku
-                      );
-                      try {
-                        if (typeof window.GlamAR.applyBySku === "function") {
-                          window.GlamAR.applyBySku(pendingData.sku);
-                          pendingData.sku = null; // Clear after applying
-                          console.log(
-                            "SKU applied successfully (reinit), cleared from pending data"
-                          );
-                        } else {
-                          console.error(
-                            "applyBySku method not available (reinit)"
-                          );
-                        }
-                      } catch (error) {
-                        console.error("Failed to apply SKU (reinit):", error);
+                    try {
+                      if (typeof window.GlamAR.applyBySku === "function") {
+                        window.GlamAR.applyBySku(pendingData.sku);
+                        pendingData.sku = null; // Clear after applying
+                        console.log(
+                          "SKU applied successfully (reinit), cleared from pending data"
+                        );
+                      } else {
+                        console.error(
+                          "applyBySku method not available (reinit)"
+                        );
                       }
-                    } else if (
-                      currentMode === "applyByCategory" &&
+                    } catch (error) {
+                      console.error("Failed to apply SKU (reinit):", error);
+                    }
+                  } else if (
+                    currentMode === "applyByCategory" &&
+                    pendingData.category
+                  ) {
+                    console.log(
+                      "Applying pending Category (reinit):",
                       pendingData.category
-                    ) {
-                      console.log(
-                        "Applying pending Category (reinit):",
-                        pendingData.category
-                      );
-                      try {
-                        if (
-                          typeof window.GlamAR.applyByCategory === "function"
-                        ) {
-                          window.GlamAR.applyByCategory(pendingData.category);
-                          pendingData.category = null; // Clear after applying
-                          console.log(
-                            "Category applied successfully (reinit), cleared from pending data"
-                          );
-                        } else {
-                          console.error(
-                            "applyByCategory method not available (reinit)"
-                          );
-                        }
-                      } catch (error) {
+                    );
+                    try {
+                      if (typeof window.GlamAR.applyByCategory === "function") {
+                        window.GlamAR.applyByCategory(pendingData.category);
+                        pendingData.category = null; // Clear after applying
+                        console.log(
+                          "Category applied successfully (reinit), cleared from pending data"
+                        );
+                      } else {
                         console.error(
-                          "Failed to apply Category (reinit):",
-                          error
+                          "applyByCategory method not available (reinit)"
                         );
                       }
-                    } else if (
-                      currentMode === "multipleConfig" &&
-                      pendingData.config
-                    ) {
-                      console.log(
-                        "Applying pending Config (reinit):",
-                        pendingData.config
-                      );
-                      try {
-                        if (
-                          typeof window.GlamAR.applyByMultipleConfigData ===
-                          "function"
-                        ) {
-                          window.GlamAR.applyByMultipleConfigData(
-                            pendingData.config
-                          );
-                          pendingData.config = null; // Clear after applying
-                          console.log(
-                            "Config applied successfully (reinit), cleared from pending data"
-                          );
-                        } else {
-                          console.error(
-                            "applyByMultipleConfigData method not available (reinit)"
-                          );
-                        }
-                      } catch (error) {
-                        console.error(
-                          "Failed to apply Config (reinit):",
-                          error
-                        );
-                      }
-                    } else {
-                      console.log(
-                        "No pending data to apply or mode mismatch (reinit)"
-                      );
-                      console.log(
-                        "Current mode:",
-                        currentMode,
-                        "Pending SKU:",
-                        pendingData.sku,
-                        "Pending Category:",
-                        pendingData.category,
-                        "Pending Config:",
-                        pendingData.config
+                    } catch (error) {
+                      console.error(
+                        "Failed to apply Category (reinit):",
+                        error
                       );
                     }
-                  }, 1000); // Same delay as initial setup
-                  break;
-                case "opened":
-                  console.log("SDK Opened (reinit)");
-                  ensureVTOFullScreen();
-                  break;
-                case "closed":
-                  console.log("SDK Closed (reinit)");
-                  isSDKInitialized = false;
-                  break;
-                case "camera-failed":
-                  console.log("SDK Camera Failed (reinit)");
-                  break;
-                case "sku-applied":
-                  console.log("SDK Sku applied (reinit)");
-                  break;
-                case "sku-failed":
-                  console.log("SDK Sku Failed (reinit)");
-                  break;
-                case "error":
-                  console.log("SDK Error (reinit)", event);
-                  isSDKInitialized = false;
-                  break;
-              }
-            });
+                  } else if (
+                    currentMode === "multipleConfig" &&
+                    pendingData.config
+                  ) {
+                    console.log(
+                      "Applying pending Config (reinit):",
+                      pendingData.config
+                    );
+                    try {
+                      if (
+                        typeof window.GlamAR.applyByMultipleConfigData ===
+                        "function"
+                      ) {
+                        window.GlamAR.applyByMultipleConfigData(
+                          pendingData.config
+                        );
+                        pendingData.config = null; // Clear after applying
+                        console.log(
+                          "Config applied successfully (reinit), cleared from pending data"
+                        );
+                      } else {
+                        console.error(
+                          "applyByMultipleConfigData method not available (reinit)"
+                        );
+                      }
+                    } catch (error) {
+                      console.error("Failed to apply Config (reinit):", error);
+                    }
+                  } else {
+                    console.log(
+                      "No pending data to apply or mode mismatch (reinit)"
+                    );
+                    console.log(
+                      "Current mode:",
+                      currentMode,
+                      "Pending SKU:",
+                      pendingData.sku,
+                      "Pending Category:",
+                      pendingData.category,
+                      "Pending Config:",
+                      pendingData.config
+                    );
+                  }
+                }, 1000); // Same delay as initial setup
+                break;
+              case "opened":
+                console.log("SDK Opened (reinit)");
+                ensureVTOFullScreen();
+                break;
+              case "closed":
+                console.log("SDK Closed (reinit)");
+                isSDKInitialized = false;
+                showModal("categoryModal");
+                break;
+              case "camera-failed":
+                console.log("SDK Camera Failed (reinit)");
+                break;
+              case "sku-applied":
+                console.log("SDK Sku applied (reinit)");
+                break;
+              case "sku-failed":
+                console.log("SDK Sku Failed (reinit)");
+                break;
+              case "error":
+                console.log("SDK Error (reinit)", event);
+                isSDKInitialized = false;
+                reinitializeSDK();
+                break;
+            }
+          });
 
-            console.log("SDK reinitialization started successfully");
-          } catch (error) {
-            console.error("Failed to reinitialize SDK:", error);
-            isSDKInitialized = false; // Ensure flag is false on error
-          }
-        }, 500); // Delay before reinitializing
+          console.log("SDK reinitialization started successfully");
+        } catch (error) {
+          console.error("Failed to reinitialize SDK:", error);
+          isSDKInitialized = false; // Ensure flag is false on error
+        }
       }
 
       function resetSizeDropDown(dropdown) {
@@ -1816,39 +1679,39 @@
 
         // Reset to full screen first
         container.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                z-index: 1;
-                background: #fff;
-                border-radius: 0;
-                overflow: hidden;
-            `;
+                              position: fixed;
+                              top: 0;
+                              left: 0;
+                              width: 100vw;
+                              height: 100vh;
+                              z-index: 1;
+                              background: #fff;
+                              border-radius: 0;
+                              overflow: hidden;
+                          `;
 
         switch (size) {
           case "mobile":
             container.style.cssText += `
-                        width: 375px;
-                        height: 667px;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        border-radius: 20px;
-                        box-shadow: 0 0 30px rgba(0,0,0,0.3);
-                    `;
+                                      width: 375px;
+                                      height: 667px;
+                                      top: 50%;
+                                      left: 50%;
+                                      transform: translate(-50%, -50%);
+                                      border-radius: 20px;
+                                      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+                                  `;
             break;
           case "tablet":
             container.style.cssText += `
-                        width: 768px;
-                        height: 1024px;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        border-radius: 15px;
-                        box-shadow: 0 0 30px rgba(0,0,0,0.3);
-                    `;
+                                      width: 768px;
+                                      height: 1024px;
+                                      top: 50%;
+                                      left: 50%;
+                                      transform: translate(-50%, -50%);
+                                      border-radius: 15px;
+                                      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+                                  `;
             break;
           case "web":
             // Already set to full screen above
@@ -1858,6 +1721,11 @@
 
       function showCustomPanel() {
         document.getElementById("customSizePanel").style.display = "block";
+      }
+
+      function handleOnCategoryClick(category) {
+        currentSelectedCategory = category;
+        showSubcategories(category);
       }
 
       function hideCustomPanel() {
@@ -1879,18 +1747,18 @@
         if (width && height) {
           const container = document.getElementById("container__frame_wrapper");
           container.style.cssText = `
-                    position: fixed;
-                    width: ${width}px;
-                    height: ${height}px;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    border-radius: 10px;
-                    overflow: hidden;
-                    box-shadow: 0 0 30px rgba(0,0,0,0.3);
-                    z-index: 1;
-                    background: #fff;
-                `;
+                                  position: fixed;
+                                  width: ${width}px;
+                                  height: ${height}px;
+                                  top: 50%;
+                                  left: 50%;
+                                  transform: translate(-50%, -50%);
+                                  border-radius: 10px;
+                                  overflow: hidden;
+                                  box-shadow: 0 0 30px rgba(0,0,0,0.3);
+                                  z-index: 1;
+                                  background: #fff;
+                              `;
           hideCustomPanel();
         }
       }
@@ -1932,6 +1800,11 @@
         showModal("subcategoryModal");
       }
 
+      // function onCategoryClick(category, subCategory){
+      //   closeModal("categoryModal");
+      //   showModal("subcategoryModal");
+      // }
+
       function applySKU() {
         const sku = document.getElementById("skuInput").value;
         if (sku) {
@@ -1965,32 +1838,6 @@
           closeModal("skuModal");
         } else {
           alert("Please enter a SKU ID");
-        }
-      }
-
-      async function startSkinAnalysis() {
-        console.log("Skin analysis selected - showing App ID popup...");
-
-        // Close the category modal first
-        closeModal("categoryModal");
-
-        // Show App ID popup
-        const overlay = document.getElementById("appIdOverlay");
-        overlay.style.display = "flex";
-
-        // Try to load cached App ID and pre-fill
-        const appIdInput = document.getElementById("appIdInput");
-        const appIdButton = document.getElementById("appIdButton");
-
-        const cachedAppId = await loadAppId();
-        if (cachedAppId) {
-          console.log("Pre-filling with cached App ID...");
-          appIdInput.value = cachedAppId;
-          appIdButton.disabled = false;
-        } else {
-          console.log("No cached App ID found - starting with empty field...");
-          appIdInput.value = "";
-          appIdButton.disabled = true;
         }
       }
 
@@ -2051,6 +1898,7 @@
             "SDK not initialized - category stored for later application:",
             subcategory
           );
+          reinitializeSDK();
         }
 
         closeModal("subcategoryModal");
@@ -2138,21 +1986,21 @@
                 container
               );
               container.style.cssText = `
-                            position: fixed !important;
-                            top: 0 !important;
-                            left: 0 !important;
-                            width: 100vw !important;
-                            height: 100vh !important;
-                            z-index: 1000 !important;
-                            background: #fff !important;
-                            border-radius: 0 !important;
-                            overflow: hidden !important;
-                            margin: 0 !important;
-                            padding: 0 !important;
-                            border: none !important;
-                            max-width: none !important;
-                            max-height: none !important;
-                        `;
+                                          position: fixed !important;
+                                          top: 0 !important;
+                                          left: 0 !important;
+                                          width: 100vw !important;
+                                          height: 100vh !important;
+                                          z-index: 1000 !important;
+                                          background: #fff !important;
+                                          border-radius: 0 !important;
+                                          overflow: hidden !important;
+                                          margin: 0 !important;
+                                          padding: 0 !important;
+                                          border: none !important;
+                                          max-width: none !important;
+                                          max-height: none !important;
+                                      `;
             }
           });
 
@@ -2162,19 +2010,19 @@
           );
           if (mainContainer) {
             mainContainer.style.cssText = `
-                        position: fixed !important;
-                        top: 0 !important;
-                        left: 0 !important;
-                        width: 100vw !important;
-                        height: 100vh !important;
-                        z-index: 1 !important;
-                        background: #fff !important;
-                        border-radius: 0 !important;
-                        overflow: hidden !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        border: none !important;
-                    `;
+                                      position: fixed !important;
+                                      top: 0 !important;
+                                      left: 0 !important;
+                                      width: 100vw !important;
+                                      height: 100vh !important;
+                                      z-index: 1 !important;
+                                      background: #fff !important;
+                                      border-radius: 0 !important;
+                                      overflow: hidden !important;
+                                      margin: 0 !important;
+                                      padding: 0 !important;
+                                      border: none !important;
+                                  `;
           }
         };
 
