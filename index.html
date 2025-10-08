@@ -978,7 +978,7 @@
       };
 
       let currentData = {
-        l1category: null,
+        l1Category: null,
       };
 
       const subcategories = {
@@ -1535,7 +1535,7 @@
                       if (typeof window.GlamAR.applyByCategory === "function") {
                         window.GlamAR.applyByCategory(pendingData.category);
                         pendingData.category = null; // Clear after applying
-                        currentData.l1Catetory = category;
+                        currentData.l1Category = category;
                         console.log(
                           "Category applied successfully (reinit), cleared from pending data"
                         );
@@ -1875,15 +1875,17 @@
 
         // Store the category for later application when SDK is loaded
         pendingData.category = subcategory;
-        currentData.l1Catetory = category;
+        currentData.l1Category = category;
         currentMode = "applyByCategory";
 
         console.log("applyCategory called with:", subcategory);
         console.log("isSDKInitialized:", isSDKInitialized);
         const RESET_CATEGORIES = ["home", "luggage", "automotive", "apparel"];
         if (
-          RESET_CATEGORIES.includes(currentData.l1Catetory) &&
-          category === "makeup"
+          (RESET_CATEGORIES.includes(currentData.l1Category) &&
+            category === "makeup") ||
+          (RESET_CATEGORIES.includes(category) &&
+            currentData.l1Category === "makeup")
         ) {
           reinitializeSDK();
           return;
@@ -1899,7 +1901,7 @@
             if (typeof window.GlamAR.applyByCategory === "function") {
               window.GlamAR.applyByCategory(subcategory);
               pendingData.category = null; // Clear after applying
-              currentData.l1Catetory = category;
+              currentData.l1Category = category;
             } else {
               console.error("applyByCategory method not available");
             }
