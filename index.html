@@ -1873,13 +1873,14 @@
           return;
         }
 
-        const RESET_CATEGORIES = ["home", "luggage", "automotive", "apparel"];
+        const onlyARCategories = ["home", "luggage", "automotive", "apparel"];
+        const VTOCategories = ["eyewear", "jewellery", "accessories", "makeup"];
         let shouldReInit = false;
         if (
-          (RESET_CATEGORIES.includes(currentData.l1Category) &&
-            category === "makeup") ||
-          (RESET_CATEGORIES.includes(category) &&
-            currentData.l1Category === "makeup")
+          (onlyARCategories.includes(currentData.l1Category) &&
+            VTOCategories.includes(category)) ||
+          (onlyARCategories.includes(category) &&
+            VTOCategories.includes(currentData.l1Category))
         ) {
           shouldReInit = true;
         }
