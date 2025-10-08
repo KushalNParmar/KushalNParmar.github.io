@@ -1873,6 +1873,17 @@
           return;
         }
 
+        const RESET_CATEGORIES = ["home", "luggage", "automotive", "apparel"];
+        let shouldReInit = false;
+        if (
+          (RESET_CATEGORIES.includes(currentData.l1Category) &&
+            category === "makeup") ||
+          (RESET_CATEGORIES.includes(category) &&
+            currentData.l1Category === "makeup")
+        ) {
+          shouldReInit = true;
+        }
+
         // Store the category for later application when SDK is loaded
         pendingData.category = subcategory;
         currentData.l1Category = category;
@@ -1880,18 +1891,8 @@
 
         console.log("applyCategory called with:", subcategory);
         console.log("isSDKInitialized:", isSDKInitialized);
-        const RESET_CATEGORIES = ["home", "luggage", "automotive", "apparel"];
-        if (
-          (RESET_CATEGORIES.includes(currentData.l1Category) &&
-            category === "makeup") ||
-          (RESET_CATEGORIES.includes(category) &&
-            currentData.l1Category === "makeup")
-        ) {
-          reinitializeSDK();
-          return;
-        }
 
-        if (isSDKInitialized) {
+        if (isSDKInitialized && !shouldReInit) {
           // If SDK is already loaded, apply immediately
           console.log(
             "SDK is initialized - applying category immediately:",
@@ -1910,7 +1911,7 @@
           }
         } else {
           console.log(
-            "SDK not initialized - category stored for later application:",
+            "SDK not initialized or not Compatible - category stored for later application:",
             subcategory
           );
           reinitializeSDK();
