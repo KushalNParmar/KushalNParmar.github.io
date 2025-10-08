@@ -1535,6 +1535,7 @@
                       if (typeof window.GlamAR.applyByCategory === "function") {
                         window.GlamAR.applyByCategory(pendingData.category);
                         pendingData.category = null; // Clear after applying
+                        currentData.l1Catetory = category;
                         console.log(
                           "Category applied successfully (reinit), cleared from pending data"
                         );
@@ -1844,14 +1845,6 @@
       }
 
       async function applyCategory(category, subcategory) {
-        const RESET_CATEGORIES = ["home", "luggage", "automotive", "apparel"];
-        if (
-          RESET_CATEGORIES.includes(currentData.l1Catetory) &&
-          category === "makeup"
-        ) {
-          reinitializeSDK();
-          return;
-        }
         if (subcategory === "skinanalysis") {
           // Special handling for skin analysis
           console.log("Skin analysis selected - showing App ID popup...");
@@ -1882,10 +1875,19 @@
 
         // Store the category for later application when SDK is loaded
         pendingData.category = subcategory;
+        currentData.l1Catetory = category;
         currentMode = "applyByCategory";
 
         console.log("applyCategory called with:", subcategory);
         console.log("isSDKInitialized:", isSDKInitialized);
+        const RESET_CATEGORIES = ["home", "luggage", "automotive", "apparel"];
+        if (
+          RESET_CATEGORIES.includes(currentData.l1Catetory) &&
+          category === "makeup"
+        ) {
+          reinitializeSDK();
+          return;
+        }
 
         if (isSDKInitialized) {
           // If SDK is already loaded, apply immediately
