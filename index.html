@@ -977,6 +977,10 @@
         config: null,
       };
 
+      let currentData = {
+        l1category: null,
+      };
+
       const subcategories = {
         eyewear: ["sunglasses", "eyeglasses"],
         makeup: [
@@ -1216,9 +1220,7 @@
                   break;
                 case "error":
                   console.log("SDK Error", event);
-                  // isSDKInitialized = false; // Reset flag on error
-                  console.log("Testing Exp ", "initializeSDK event listners");
-                  //reinitializeSDK();
+
                   break;
               }
             });
@@ -1612,8 +1614,8 @@
                 break;
               case "error":
                 console.log("SDK Error (reinit)", event);
-                isSDKInitialized = false;
-                reinitializeSDK();
+                // isSDKInitialized = false;
+                // reinitializeSDK();
                 break;
             }
           });
@@ -1842,8 +1844,16 @@
       }
 
       async function applyCategory(category, subcategory) {
-        // Special handling for skin analysis
+        const RESET_CATEGORIES = ["home", "luggage", "automotive", "apparel"];
+        if (
+          RESET_CATEGORIES.includes(currentData.l1Catetory) &&
+          category === "makeup"
+        ) {
+          reinitializeSDK();
+          return;
+        }
         if (subcategory === "skinanalysis") {
+          // Special handling for skin analysis
           console.log("Skin analysis selected - showing App ID popup...");
 
           // Show App ID popup
