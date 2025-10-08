@@ -1897,6 +1897,7 @@
             if (typeof window.GlamAR.applyByCategory === "function") {
               window.GlamAR.applyByCategory(subcategory);
               pendingData.category = null; // Clear after applying
+              currentData.l1Catetory = category;
             } else {
               console.error("applyByCategory method not available");
             }
