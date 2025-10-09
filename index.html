@@ -35,24 +35,25 @@
 
     <script>
       (function initSDK() {
-        const container = document.getElementById('container');
-        const iframe = document.createElement('iframe');
+        const container = document.getElementById("container");
+        const iframe = document.createElement("iframe");
 
-        iframe.setAttribute('id', 'GlamAR-Module__iframe');
+        iframe.setAttribute("id", "GlamAR-Module__iframe");
         iframe.setAttribute(
-          'allow',
-          'camera *; xr-spatial-tracking *; fullscreen *;'
+          "allow",
+          "camera *; xr-spatial-tracking *; fullscreen *;"
         );
         iframe.setAttribute(
-          'sandbox',
-          'allow-same-origin allow-scripts allow-modals allow-downloads allow-popups allow-top-navigation-by-user-activation allow-popups-to-escape-sandbox'
+          "sandbox",
+          "allow-same-origin allow-scripts allow-modals allow-downloads allow-popups allow-top-navigation-by-user-activation allow-popups-to-escape-sandbox"
         );
+        iframe.setAttribute("allowfullscreen", "");
 
-        iframe.src = 'https://rakeshparihar.github.io/ar-test/';
+        iframe.src = "https://rakeshparihar.github.io/ar-test/";
         container.appendChild(iframe);
 
-        window.addEventListener('message', (event) => {
-          console.log('Received message:', event.data);
+        window.addEventListener("message", (event) => {
+          console.log("Received message:", event.data);
         });
       })();
     </script>
