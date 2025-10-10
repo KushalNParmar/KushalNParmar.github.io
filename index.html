@@ -1457,7 +1457,7 @@
           // Use absolute minimal configuration
           let config = {
             platform: currentSize || web,
-            category: pendingData?.category,
+            // category: pendingData?.category,
             meta: {
               debugText: isDebugTextOn,
               cameraResolution: currentCameraResolution,
@@ -1482,7 +1482,7 @@
             console.log("Pending data:", pendingData);
 
             switch (event) {
-              case "loaded":
+              case "loading":
                 console.log(
                   "SDK Loaded (reinit) - setting isSDKInitialized to true"
                 );
