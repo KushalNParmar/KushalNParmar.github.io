@@ -1535,7 +1535,7 @@
                     );
                     try {
                       if (typeof window.GlamAR.applyByCategory === "function") {
-                        window.GlamAR.applyByCategory(pendingData.category);
+                        window.GlamAR.applyBySubCategory(pendingData.category);
                         pendingData.category = null; // Clear after applying
                         currentData.l1Category = category;
                         console.log(
