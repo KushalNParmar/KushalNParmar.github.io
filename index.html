@@ -1491,7 +1491,7 @@
             console.log("Pending data:", pendingData);
 
             switch (event) {
-              case "loaded":
+              case "loading":
                 console.log(
                   "SDK Loaded (reinit) - setting isSDKInitialized to true"
                 );
@@ -1545,8 +1545,9 @@
                     try {
                       if (typeof window.GlamAR.applyByCategory === "function") {
                         window.GlamAR.applyBySubCategory(pendingData.category);
+                        currentData.l1Category = pendingData.category;
                         pendingData.category = null; // Clear after applying
-                        currentData.l1Category = category;
+
                         console.log(
                           "Category applied successfully (reinit), cleared from pending data"
                         );
