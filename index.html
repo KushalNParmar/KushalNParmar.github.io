@@ -981,6 +981,9 @@
         l1Category: null,
       };
 
+      const onlyARCategories = ["home", "luggage", "automotive", "apparel"];
+      const VTOCategories = ["eyewear", "jewellery", "accessories", "makeup"];
+
       const subcategories = {
         eyewear: ["sunglasses", "eyeglasses"],
         makeup: [
@@ -1074,6 +1077,9 @@
             // Use absolute minimal configuration
             let config = {
               platform: currentSize || "web",
+              category: onlyARCategories.includes(pendingData?.category)
+                ? pendingData?.category
+                : null,
               meta: {
                 cameraResolution: currentCameraResolution,
                 sdkVersion: "2.0.0",
@@ -1458,6 +1464,9 @@
           // Use absolute minimal configuration
           let config = {
             platform: currentSize || web,
+            category: onlyARCategories.includes(pendingData?.category)
+              ? pendingData?.category
+              : null,
             meta: {
               debugText: isDebugTextOn,
               cameraResolution: currentCameraResolution,
