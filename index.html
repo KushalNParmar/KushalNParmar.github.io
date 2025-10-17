@@ -1903,7 +1903,7 @@
           );
           try {
             if (typeof window.GlamAR.applyByCategory === "function") {
-              window.GlamAR.applyByCategory(subcategory);
+              window.GlamAR.applyBySubCategory(subcategory);
               pendingData.category = null; // Clear after applying
               currentData.l1Category = category;
             } else {
