@@ -1077,8 +1077,8 @@
             // Use absolute minimal configuration
             let config = {
               platform: currentSize || "web",
-              category: onlyARCategories.includes(pendingData?.category)
-                ? pendingData?.category
+              category: onlyARCategories.includes(currentData?.l1Category)
+                ? currentData?.l1Category
                 : null,
               meta: {
                 cameraResolution: currentCameraResolution,
@@ -1464,8 +1464,8 @@
           // Use absolute minimal configuration
           let config = {
             platform: currentSize || web,
-            category: onlyARCategories.includes(pendingData?.category)
-              ? pendingData?.category
+            category: onlyARCategories.includes(currentData?.l1Category)
+              ? currentData?.l1Category
               : null,
             meta: {
               debugText: isDebugTextOn,
