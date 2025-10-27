@@ -1485,7 +1485,7 @@
           );
 
           // Re-add event listeners for the reinitialized SDK
-          window.GlamAR.addEventListener("*", (event) => {
+          window.GlamAR.addEventListener("*", (event, payload) => {
             console.log("GlamAR SDK Event (reinit):", event);
             console.log("Current isSDKInitialized state:", isSDKInitialized);
             console.log("Pending data:", pendingData);
@@ -1629,12 +1629,18 @@
                 // isSDKInitialized = false;
                 // reinitializeSDK();
                 break;
+              case "ui-interaction":
+                console.log("SDK ui interaction", event, payload);
+                alert(payload);
+                // isSDKInitialized = false;
+                // reinitializeSDK();
+                break;
             }
           });
 
           console.log("SDK reinitialization started successfully");
         } catch (error) {
-          console.error("Failed to reinitialize SDK:", error);
+          console.error("Failed to reinitialize SDK:", error, payload);
           isSDKInitialized = false; // Ensure flag is false on error
         }
       }
