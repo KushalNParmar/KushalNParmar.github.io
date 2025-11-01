@@ -1629,14 +1629,8 @@
                 // isSDKInitialized = false;
                 // reinitializeSDK();
                 break;
-              case "ui-interaction":
-                console.log("SDK ui interaction", event, payload);
-                alert(
-                  `${payload.screenType} ${payload.buttonType} ${payload.value}`
-                );
-
-                // isSDKInitialized = false;
-                // reinitializeSDK();
+              case "close":
+                alert(`closing`);
                 break;
             }
           });
