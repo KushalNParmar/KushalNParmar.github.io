@@ -1077,9 +1077,6 @@
             // Use absolute minimal configuration
             let config = {
               platform: currentSize || "web",
-              category: onlyARCategories.includes(currentData?.l1Category)
-                ? currentData?.l1Category
-                : null,
               meta: {
                 cameraResolution: currentCameraResolution,
                 sdkVersion: "2.0.0",
@@ -1151,9 +1148,7 @@
                         if (
                           typeof window.GlamAR.applyByCategory === "function"
                         ) {
-                          window.GlamAR.applyBySubCategory(
-                            pendingData.category
-                          );
+                          window.GlamAR.applyByCategory(pendingData.category);
                           pendingData.category = null; // Clear after applying
                           console.log(
                             "Category applied successfully, cleared from pending data"
@@ -1409,12 +1404,13 @@
         if (mode === "applyBySKU") {
           showModal("skuModal");
         } else if (mode === "applyByCategory") {
-          console.log("### currentSelectedCategory", currentSelectedCategory);
-          if (currentSelectedCategory) {
-            showSubcategories(currentSelectedCategory);
-          } else {
-            console.error("currentSelectedCategory doesnot exists");
-          }
+          //console.log("### currentSelectedCategory", currentSelectedCategory);
+          showModal("categoryModal");
+          // if (currentSelectedCategory) {
+          //   showSubcategories(currentSelectedCategory);
+          // } else {
+          //   console.error("currentSelectedCategory doesnot exists");
+          // }
         } else if (mode === "multipleConfig") {
           showModal("configModal");
         }
@@ -1464,8 +1460,8 @@
           // Use absolute minimal configuration
           let config = {
             platform: currentSize || web,
-            category: onlyARCategories.includes(currentData?.l1Category)
-              ? currentData?.l1Category
+            category: onlyARCategories.includes(pendingData?.category)
+              ? pendingData?.category
               : null,
             meta: {
               debugText: isDebugTextOn,
@@ -1485,7 +1481,7 @@
           );
 
           // Re-add event listeners for the reinitialized SDK
-          window.GlamAR.addEventListener("*", (event, payload) => {
+          window.GlamAR.addEventListener("*", (event) => {
             console.log("GlamAR SDK Event (reinit):", event);
             console.log("Current isSDKInitialized state:", isSDKInitialized);
             console.log("Pending data:", pendingData);
@@ -1544,9 +1540,9 @@
                     );
                     try {
                       if (typeof window.GlamAR.applyByCategory === "function") {
-                        window.GlamAR.applyBySubCategory(pendingData.category);
+                        window.GlamAR.applyByCategory(pendingData.category);
+                        currentData.l1Category = pendingData.category;
                         pendingData.category = null; // Clear after applying
-
                         console.log(
                           "Category applied successfully (reinit), cleared from pending data"
                         );
@@ -1634,7 +1630,7 @@
 
           console.log("SDK reinitialization started successfully");
         } catch (error) {
-          console.error("Failed to reinitialize SDK:", error, payload);
+          console.error("Failed to reinitialize SDK:", error);
           isSDKInitialized = false; // Ensure flag is false on error
         }
       }
@@ -1693,39 +1689,39 @@
 
         // Reset to full screen first
         container.style.cssText = `
-                                    position: fixed;
-                                    top: 0;
-                                    left: 0;
-                                    width: 100vw;
-                                    height: 100vh;
-                                    z-index: 1;
-                                    background: #fff;
-                                    border-radius: 0;
-                                    overflow: hidden;
-                                `;
+                              position: fixed;
+                              top: 0;
+                              left: 0;
+                              width: 100vw;
+                              height: 100vh;
+                              z-index: 1;
+                              background: #fff;
+                              border-radius: 0;
+                              overflow: hidden;
+                          `;
 
         switch (size) {
           case "mobile":
             container.style.cssText += `
-                                            width: 375px;
-                                            height: 667px;
-                                            top: 50%;
-                                            left: 50%;
-                                            transform: translate(-50%, -50%);
-                                            border-radius: 20px;
-                                            box-shadow: 0 0 30px rgba(0,0,0,0.3);
-                                        `;
+                                      width: 375px;
+                                      height: 667px;
+                                      top: 50%;
+                                      left: 50%;
+                                      transform: translate(-50%, -50%);
+                                      border-radius: 20px;
+                                      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+                                  `;
             break;
           case "tablet":
             container.style.cssText += `
-                                            width: 768px;
-                                            height: 1024px;
-                                            top: 50%;
-                                            left: 50%;
-                                            transform: translate(-50%, -50%);
-                                            border-radius: 15px;
-                                            box-shadow: 0 0 30px rgba(0,0,0,0.3);
-                                        `;
+                                      width: 768px;
+                                      height: 1024px;
+                                      top: 50%;
+                                      left: 50%;
+                                      transform: translate(-50%, -50%);
+                                      border-radius: 15px;
+                                      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+                                  `;
             break;
           case "web":
             // Already set to full screen above
@@ -1739,7 +1735,9 @@
 
       function handleOnCategoryClick(category) {
         currentSelectedCategory = category;
-        showSubcategories(category);
+        applyCategory(category, null);
+        closeModal("categoryModal");
+        // showSubcategories(category);
       }
 
       function hideCustomPanel() {
@@ -1761,18 +1759,18 @@
         if (width && height) {
           const container = document.getElementById("container__frame_wrapper");
           container.style.cssText = `
-                                        position: fixed;
-                                        width: ${width}px;
-                                        height: ${height}px;
-                                        top: 50%;
-                                        left: 50%;
-                                        transform: translate(-50%, -50%);
-                                        border-radius: 10px;
-                                        overflow: hidden;
-                                        box-shadow: 0 0 30px rgba(0,0,0,0.3);
-                                        z-index: 1;
-                                        background: #fff;
-                                    `;
+                                  position: fixed;
+                                  width: ${width}px;
+                                  height: ${height}px;
+                                  top: 50%;
+                                  left: 50%;
+                                  transform: translate(-50%, -50%);
+                                  border-radius: 10px;
+                                  overflow: hidden;
+                                  box-shadow: 0 0 30px rgba(0,0,0,0.3);
+                                  z-index: 1;
+                                  background: #fff;
+                              `;
           hideCustomPanel();
         }
       }
@@ -1856,7 +1854,7 @@
       }
 
       async function applyCategory(category, subcategory) {
-        if (subcategory === "skinanalysis") {
+        if (subcategory === "skinanalysis" || category === "skinanalysis") {
           // Special handling for skin analysis
           console.log("Skin analysis selected - showing App ID popup...");
 
@@ -1884,8 +1882,6 @@
           return;
         }
 
-        const onlyARCategories = ["home", "luggage", "automotive", "apparel"];
-        const VTOCategories = ["eyewear", "jewellery", "accessories", "makeup"];
         let shouldReInit = false;
         if (
           (onlyARCategories.includes(currentData.l1Category) &&
@@ -1897,22 +1893,22 @@
         }
 
         // Store the category for later application when SDK is loaded
-        pendingData.category = subcategory;
+        pendingData.category = category;
         currentData.l1Category = category;
         currentMode = "applyByCategory";
 
-        console.log("applyCategory called with:", subcategory);
+        console.log("applyCategory called with:", category);
         console.log("isSDKInitialized:", isSDKInitialized);
 
         if (isSDKInitialized && !shouldReInit) {
           // If SDK is already loaded, apply immediately
           console.log(
             "SDK is initialized - applying category immediately:",
-            subcategory
+            category
           );
           try {
             if (typeof window.GlamAR.applyByCategory === "function") {
-              window.GlamAR.applyBySubCategory(subcategory);
+              window.GlamAR.applyByCategory(category);
               pendingData.category = null; // Clear after applying
               currentData.l1Category = category;
             } else {
@@ -1924,7 +1920,7 @@
         } else {
           console.log(
             "SDK not initialized or not Compatible - category stored for later application:",
-            subcategory
+            category
           );
           reinitializeSDK();
         }
@@ -2014,21 +2010,21 @@
                 container
               );
               container.style.cssText = `
-                                                position: fixed !important;
-                                                top: 0 !important;
-                                                left: 0 !important;
-                                                width: 100vw !important;
-                                                height: 100vh !important;
-                                                z-index: 1000 !important;
-                                                background: #fff !important;
-                                                border-radius: 0 !important;
-                                                overflow: hidden !important;
-                                                margin: 0 !important;
-                                                padding: 0 !important;
-                                                border: none !important;
-                                                max-width: none !important;
-                                                max-height: none !important;
-                                            `;
+                                          position: fixed !important;
+                                          top: 0 !important;
+                                          left: 0 !important;
+                                          width: 100vw !important;
+                                          height: 100vh !important;
+                                          z-index: 1000 !important;
+                                          background: #fff !important;
+                                          border-radius: 0 !important;
+                                          overflow: hidden !important;
+                                          margin: 0 !important;
+                                          padding: 0 !important;
+                                          border: none !important;
+                                          max-width: none !important;
+                                          max-height: none !important;
+                                      `;
             }
           });
 
@@ -2038,19 +2034,19 @@
           );
           if (mainContainer) {
             mainContainer.style.cssText = `
-                                            position: fixed !important;
-                                            top: 0 !important;
-                                            left: 0 !important;
-                                            width: 100vw !important;
-                                            height: 100vh !important;
-                                            z-index: 1 !important;
-                                            background: #fff !important;
-                                            border-radius: 0 !important;
-                                            overflow: hidden !important;
-                                            margin: 0 !important;
-                                            padding: 0 !important;
-                                            border: none !important;
-                                        `;
+                                      position: fixed !important;
+                                      top: 0 !important;
+                                      left: 0 !important;
+                                      width: 100vw !important;
+                                      height: 100vh !important;
+                                      z-index: 1 !important;
+                                      background: #fff !important;
+                                      border-radius: 0 !important;
+                                      overflow: hidden !important;
+                                      margin: 0 !important;
+                                      padding: 0 !important;
+                                      border: none !important;
+                                  `;
           }
         };
 
