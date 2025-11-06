@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script src="https://unpkg.com/loglevel/dist/loglevel.min.js"></script>
     <script>
       !(function () {
         var e = (window.stelios = window.stelios || []);
@@ -70,6 +71,59 @@
         }
       })();
     </script>
+    <script>
+      (function () {
+        // Fallback if loglevel didn't load for any reason
+        if (!window.log || !log.methodFactory) {
+          const print = (lvl, args) => {
+            try {
+              window.console && console.log && console.log(`[${lvl}]`, ...args);
+            } catch {}
+          };
+          window.log = {
+            setLevel() {},
+            getLevel() {
+              return 0;
+            },
+            enableAll() {},
+            trace() {
+              print("TRACE", arguments);
+            },
+            debug() {
+              print("DEBUG", arguments);
+            },
+            info() {
+              print("INFO", arguments);
+            },
+            warn() {
+              print("WARN", arguments);
+            },
+            error() {
+              print("ERROR", arguments);
+            },
+          };
+          return;
+        }
+
+        // Mirror all loglevel output to console.log so it’s visible even if the Console is hiding "debug"
+        const baseFactory = log.methodFactory;
+        log.methodFactory = function (methodName, level, loggerName) {
+          const raw = baseFactory(methodName, level, loggerName);
+          return function () {
+            try {
+              raw.apply(this, arguments);
+            } catch {}
+            try {
+              console.log(`[${methodName.toUpperCase()}]`, ...arguments);
+            } catch {}
+          };
+        };
+        // Re-apply to activate the new factory and enable everything
+        log.setLevel(log.getLevel ? log.getLevel() : "trace", false);
+        if (log.enableAll) log.enableAll();
+      })();
+    </script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Ensure proper base URL resolution for cloud deployment -->
@@ -132,7 +186,9 @@
     />
 
     <!-- Load GlamAR SDK via script tag as per documentation -->
+
     <script src="https://cdn.glamar.io/sdk/wrapper?"></script>
+
     <style>
       * {
         margin: 0;
@@ -1234,9 +1290,10 @@
                     event,
                     `${payload.screenType} ${payload.buttonType} ${payload.value}`
                   );
-                  document.body.insertAdjacentHTML(
-                    "beforeend",
-                    `<pre>${JSON.stringify({ event, payload }, null, 2)}</pre>`
+                  log.info(
+                    "SDK ui interaction",
+                    event,
+                    `${payload.screenType} ${payload.buttonType} ${payload.value}`
                   );
                   break;
               }
@@ -1644,9 +1701,10 @@
                   event,
                   `${payload.screenType} ${payload.buttonType} ${payload.value}`
                 );
-                document.body.insertAdjacentHTML(
-                  "beforeend",
-                  `<pre>${JSON.stringify({ event, payload }, null, 2)}</pre>`
+                log.info(
+                  "SDK ui interaction",
+                  event,
+                  `${payload.screenType} ${payload.buttonType} ${payload.value}`
                 );
                 // alert(
                 //   `${payload.screenType} ${payload.buttonType} ${payload.value}`
@@ -2229,9 +2287,10 @@
                 event,
                 `${payload.screenType} ${payload.buttonType} ${payload.value}`
               );
-              document.body.insertAdjacentHTML(
-                "beforeend",
-                `<pre>${JSON.stringify({ event, payload }, null, 2)}</pre>`
+              log.info(
+                "SDK ui interaction",
+                event,
+                `${payload.screenType} ${payload.buttonType} ${payload.value}`
               );
           }
         }
