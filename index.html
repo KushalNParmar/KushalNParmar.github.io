@@ -1234,6 +1234,10 @@
                     event,
                     `${payload.screenType} ${payload.buttonType} ${payload.value}`
                   );
+                  document.body.insertAdjacentHTML(
+                    "beforeend",
+                    `<pre>${JSON.stringify({ event, payload }, null, 2)}</pre>`
+                  );
                   break;
               }
             });
@@ -1639,6 +1643,10 @@
                   "SDK ui interaction",
                   event,
                   `${payload.screenType} ${payload.buttonType} ${payload.value}`
+                );
+                document.body.insertAdjacentHTML(
+                  "beforeend",
+                  `<pre>${JSON.stringify({ event, payload }, null, 2)}</pre>`
                 );
                 // alert(
                 //   `${payload.screenType} ${payload.buttonType} ${payload.value}`
@@ -2220,6 +2228,10 @@
                 "SDK ui interaction",
                 event,
                 `${payload.screenType} ${payload.buttonType} ${payload.value}`
+              );
+              document.body.insertAdjacentHTML(
+                "beforeend",
+                `<pre>${JSON.stringify({ event, payload }, null, 2)}</pre>`
               );
           }
         }
