@@ -220,10 +220,13 @@
         console.log("wrapper index init ", apiKey, config);
         GlamAR.init("GlamAR-module", apiKey, config);
         GlamAR.addEventListener("loading", () => {
-          animation?.destroy();
-          lottieLoader.style.display = "none";
+          // GlamAR.applyBySubCategory("nail-polish");
+          // animation?.destroy();
+          // lottieLoader.style.display = "none";
         });
         GlamAR.addEventListener("loaded", () => {
+          animation?.destroy();
+          lottieLoader.style.display = "none";
           GlamAR.applyBySubCategory("nail-polish");
         });
       } else {
