@@ -160,7 +160,7 @@
       }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
-    <script src="https://cdn.glamar.io/sdk/wrapper?"></script>
+    <script src="https://cdn.glamarz0.de/sdk/wrapper?"></script>
   </head>
 
   <body>
@@ -193,7 +193,7 @@
       const version = urlParams.get("version");
       const viewInRoom = urlParams.get("viewInRoom");
 
-      const apiKey = "a9b90ac7-218e-4ee9-b0ba-acb6487f803b"; //
+      const apiKey = "ba843e66-4b93-48f6-a02e-ea48d920e52e";
       // const appId = '32f427e7-7be1-4919-93d8-8fdd8412158d';
 
       if (apiKey) {
@@ -220,13 +220,10 @@
         console.log("wrapper index init ", apiKey, config);
         GlamAR.init("GlamAR-module", apiKey, config);
         GlamAR.addEventListener("loading", () => {
-          // GlamAR.applyBySubCategory("nail-polish");
-          // animation?.destroy();
-          // lottieLoader.style.display = "none";
-        });
-        GlamAR.addEventListener("loaded", () => {
           animation?.destroy();
           lottieLoader.style.display = "none";
+        });
+        GlamAR.addEventListener("loaded", () => {
           GlamAR.applyBySubCategory("nail-polish");
         });
       } else {
