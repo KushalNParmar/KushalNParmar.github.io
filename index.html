@@ -189,12 +189,12 @@
       const urlParams = new URLSearchParams(window.location.search);
       const skuId = urlParams.get("skuId");
       // const apiKey = urlParams.get("accessKey");
-      const appId = urlParams.get("appId");
+      // const appId = urlParams.get("appId");
       const version = urlParams.get("version");
       const viewInRoom = urlParams.get("viewInRoom");
 
       const apiKey = "ba843e66-4b93-48f6-a02e-ea48d920e52e";
-      // const appId = '32f427e7-7be1-4919-93d8-8fdd8412158d';
+      const appId = "fecf3bc7-c9ec-4c47-8555-98a74df58288";
 
       if (apiKey) {
         const config = {
@@ -203,15 +203,13 @@
           category: appId ? "skinanalysis" : "",
           configuration: {},
           meta: {
-            sdkVersion: version || "1.0.0",
+            sdkVersion: version || "2.0.0",
+            debugText: true,
           },
         };
         if (appId) {
           config.configuration.skinAnalysis = {
             appId,
-            version: "GlamGen",
-            defaultFilter: true,
-            startScreen: true,
           };
         }
         if (viewInRoom) {
@@ -223,9 +221,9 @@
           animation?.destroy();
           lottieLoader.style.display = "none";
         });
-        GlamAR.addEventListener("loaded", () => {
-          GlamAR.applyBySubCategory("nail-polish");
-        });
+        // GlamAR.addEventListener("loaded", () => {
+        //   GlamAR.applyBySubCategory("nail-polish");
+        // });
       } else {
         errorText.textContent = "Invalid access key";
       }
