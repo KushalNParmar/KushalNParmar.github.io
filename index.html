@@ -3,380 +3,291 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tital Eye+ Style Studio</title>
-    <meta name="description" content="Tital Eye+ Style Studio." />
-    <meta
-      name="keywords"
-      content="titanplus, eyeware, recommendation, eyeware-recommendation"
-    />
-    <meta name="author" content="Tital Eye+" />
-    <meta
-      http-equiv="Permissions-Policy"
-      content="xr-spatial-tracking=(self)"
-    />
-
-    <!-- Favicon -->
-    <link
-      rel="icon"
-      type="image/png"
-      href="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
-    />
-    <link
-      rel="shortcut icon"
-      type="image/png"
-      href="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      href="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
-    />
-
-    <!-- Open Graph / Social Media Meta Tags -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="GlamAR Eye Recommendation" />
-    <meta property="og:description" content="Tital Eye+ Style Studio." />
-    <meta
-      property="og:image"
-      content="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
-    />
-
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="GlamAR Eye Recommendation" />
-    <meta name="twitter:description" content="Tital Eye+ Style Studio." />
-    <meta
-      name="twitter:image"
-      content="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
-    />
-  </head>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root {
-      background-color: black;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, sans-serif;
-      min-height: 100vh;
-      overflow: hidden;
-      margin: 0;
-      padding: 0;
-      background: white;
-    }
-
-    /* Allow body scrolling in iPad landscape mode */
-    @media screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
-      body {
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
+    <title>GlamAR</title>
+    <style>
+      html {
+        font-size: 1vw;
+        height: 100%;
       }
-    }
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Inter, sans-serif;
+      }
 
-    /* Default container styles for desktop/web */
-    #GlamAR-Container {
-      width: 700px;
-      height: 800px;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 1;
-      background: #ffffff;
-      border-radius: 0;
-      overflow: hidden;
-    }
-
-    /* iPad Portrait Mode - Full width/height with bottom margin */
-    @media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
-      #GlamAR-Container {
-        width: 100vw;
-        height: calc(
-          100vh - 80px
-        ); /* 80px bottom margin to prevent UI hiding */
+      .modal-overlay {
+        display: flex;
         position: fixed;
         top: 0;
         left: 0;
-        transform: none;
-        margin-bottom: 80px;
-      }
-    }
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
 
-    /* iPad Landscape Mode - Fixed width/height centered with scrolling */
-    @media screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
-      #GlamAR-Container {
-        width: 1024px;
-        height: 768px;
-        max-height: 100vh;
+        justify-content: center;
+        align-items: center;
+        z-index: 10001;
+      }
+
+      .modal {
+        justify-content: center;
+        display: flex;
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        position: relative;
+        max-width: 1200px;
+        width: 90%;
+        height: 100px;
+        gap: 20px;
+      }
+
+      .camera-btn {
+        background: white;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #333;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .container {
         position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        margin: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
-      }
-    }
-
-    /* VTO Live Container - Responsive based on parent container */
-    [class*="vtoLiveContainer"] {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 1000 !important;
-      background: white !important;
-      border-radius: 0 !important;
-      overflow: hidden !important;
-    }
-
-    /* iPad Portrait - VTO container respects parent with bottom margin */
-    @media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
-      [class*="vtoLiveContainer"],
-      div[class*="vtoLiveContainer"],
-      div[id*="renderWindow"] {
-        width: 100vw !important;
-        height: calc(100vh - 80px) !important;
-        top: 0 !important;
-        left: 0 !important;
-        transform: none !important;
-        margin-bottom: 80px !important;
-      }
-    }
-
-    /* iPad Landscape - VTO container uses fixed dimensions with scrolling */
-    @media screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
-      [class*="vtoLiveContainer"],
-      div[class*="vtoLiveContainer"],
-      div[id*="renderWindow"] {
-        width: 1024px !important;
-        height: 768px !important;
-        max-height: 100vh !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        margin: 0 !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        -webkit-overflow-scrolling: touch !important;
+        width: 100%;
+        height: 100%;
       }
 
-      /* Ensure nested scrollable content works */
-      #GlamAR-Container iframe,
-      #GlamAR-Container > div,
-      [class*="vtoLiveContainer"] iframe,
-      [class*="vtoLiveContainer"] > div {
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
+      #GlamAR-module {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 0;
       }
-    }
 
-    /* Additional selectors for VTO containers */
-    div[class*="vtoLiveContainer"],
-    div[id*="renderWindow"] {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 1000 !important;
-      background: white !important;
-      border-radius: 0 !important;
-      overflow: hidden !important;
-    }
-  </style>
-  <script src="https://cdn.glamarz0.de/sdk/wrapper?"></script>
+      #error {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .centeredLoader {
+        position: fixed;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        background: var(--layout-background-color);
+        justify-content: center;
+        align-items: center;
+        z-index: 5000;
+        background: white;
+      }
+      .lottieContainer {
+        display: flex;
+        padding: 7.5rem;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1.25rem;
+        flex-shrink: 0;
+      }
+      .lottie {
+        width: 20rem;
+        height: 20rem;
+        flex-shrink: 0;
+        aspect-ratio: 1/1;
+      }
+      .lottieText {
+        margin: 0px;
+        text-align: center;
+        font-size: 3.75rem;
+        font-style: normal;
+        font-weight: 400;
+      }
+
+      @media (min-width: 648px) {
+        .lottieContainer {
+          padding: 3.7rem;
+          gap: 0.62rem;
+        }
+        .lottie {
+          width: 12.35rem;
+          height: 12.35rem;
+        }
+        .lottieText {
+          font-size: 2.16rem;
+        }
+      }
+
+      /* Tablet Landscape */
+      @media (min-width: 720px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 3.33rem;
+          gap: 0.56rem;
+        }
+        .lottie {
+          width: 11.11rem;
+          height: 11.11rem;
+        }
+        .lottieText {
+          font-size: 1.94rem;
+        }
+      }
+
+      /* Web portrait */
+      @media (min-width: 846px) and (orientation: portrait) {
+        .lottieContainer {
+          padding: 2.84rem;
+          gap: 0.47rem;
+        }
+        .lottie {
+          width: 14.18rem;
+          height: 14.18rem;
+        }
+        .lottieText {
+          font-size: 2.36rem;
+        }
+      }
+
+      /* web Landscape */
+      @media (min-width: 1440px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 1.67rem;
+          gap: 0.28rem;
+        }
+        .lottie {
+          width: 8.33rem;
+          height: 8.33rem;
+        }
+        .lottieContainer h4 {
+          font-size: 1.39rem;
+        }
+      }
+
+      /* TV portrait */
+      @media (min-width: 1080px) and (orientation: portrait) {
+        .lottieContainer {
+          padding: 2.22rem;
+          gap: 0.37rem;
+        }
+        .lottie {
+          width: 14.81rem;
+          height: 14.81rem;
+        }
+        .lottieContainer h4 {
+          font-size: 2.22rem;
+        }
+      }
+
+      /* TV Landscape */
+      @media (min-width: 1920px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 1.25rem;
+          gap: 0.21rem;
+        }
+        .lottie {
+          width: 8.33rem;
+          height: 8.33rem;
+        }
+        .lottieContainer h4 {
+          font-size: 1.25rem;
+        }
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
+    <script src="https://cdn.glamarz0.de/sdk/wrapper"></script>
+  </head>
+
   <body>
-    <div id="GlamAR-Container"></div>
-  </body>
-  <script>
-    // Detect iPad
-    const isIPad =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    <div class="container">
+      <div id="GlamAR-module"></div>
+      <div id="error"><span class="error-text"></span></div>
+    </div>
+    <div class="centeredLoader" id="lottieLoader">
+      <div class="lottieContainer">
+        <div class="lottie" id="lottie"></div>
+        <h4 class="lottieText">Loading your experience</h4>
+      </div>
+    </div>
+    <div id="cameraModal" class="modal-overlay">
+      <div class="modal">
+        <button class="camera-btn" onclick="initSDK('user')">
+          Front Camera
+        </button>
+        <button class="camera-btn" onclick="initSDK('environment')">
+          Back Camera
+        </button>
+      </div>
+    </div>
+    <script>
+      const lottieContainer = document.getElementById("lottie");
+      const cameraModal = document.getElementById("cameraModal");
+      const lottieLoader = document.getElementById("lottieLoader");
+      var animation = lottie.loadAnimation({
+        container: lottieContainer,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        path: "https://cdn.pixelbin.io/v2/dummy-cloudname/original/__glam_ar/__sdk/loader_light.json",
+      });
 
-    // Function to update VTO container styles based on orientation
-    function updateVTOContainers() {
-      const isPortrait = window.innerHeight > window.innerWidth;
-      const isLandscape = window.innerWidth > window.innerHeight;
+      function initSDK(cameraMode) {
+        cameraModal.style.display = "none";
+        const errorText = document.querySelector(".error-text");
+        const urlParams = new URLSearchParams(window.location.search);
+        const skuId = urlParams.get("skuId");
+        // const apiKey = urlParams.get("accessKey");
+        const appId = urlParams.get("appId");
+        const version = urlParams.get("version");
+        const viewInRoom = urlParams.get("viewInRoom");
 
-      const vtoContainers = document.querySelectorAll(
-        '[class*="vtoLiveContainer"], [id*="renderWindow"]'
-      );
+        const apiKey = "ba843e66-4b93-48f6-a02e-ea48d920e52e";
+        // const appId = '32f427e7-7be1-4919-93d8-8fdd8412158d';
 
-      vtoContainers.forEach((container) => {
-        if (isIPad) {
-          if (isPortrait) {
-            // Portrait: Full width/height with bottom margin
-            container.style.cssText = `
-              position: fixed !important;
-              top: 0 !important;
-              left: 0 !important;
-              width: 100vw !important;
-              height: calc(100vh - 80px) !important;
-              z-index: 1000 !important;
-              background: white !important;
-              border-radius: 0 !important;
-              overflow: hidden !important;
-              transform: none !important;
-              margin-bottom: 80px !important;
-            `;
-          } else if (isLandscape) {
-            // Landscape: Fixed dimensions centered with scrolling
-            container.style.cssText = `
-              position: fixed !important;
-              top: 50% !important;
-              left: 50% !important;
-              width: 1024px !important;
-              height: 768px !important;
-              max-height: 100vh !important;
-              z-index: 1000 !important;
-              background: white !important;
-              border-radius: 0 !important;
-              overflow-y: auto !important;
-              overflow-x: hidden !important;
-              -webkit-overflow-scrolling: touch !important;
-              transform: translate(-50%, -50%) !important;
-              margin: 0 !important;
-            `;
-
-            // Enable scrolling on nested elements
-            const nestedElements = container.querySelectorAll(
-              'iframe, div, [class*="scroll"], [class*="content"]'
-            );
-            nestedElements.forEach((el) => {
-              if (el.offsetHeight > container.offsetHeight) {
-                el.style.overflowY = "auto";
-                el.style.webkitOverflowScrolling = "touch";
-              }
-            });
+        if (apiKey) {
+          const config = {
+            platform: "web",
+            mode: "private",
+            category: appId ? "skinanalysis" : "",
+            configuration: {},
+            meta: {
+              sdkVersion: version || "1.0.0",
+              cameraFacingMode: cameraMode,
+            },
+          };
+          if (appId) {
+            config.configuration.skinAnalysis = {
+              appId,
+              version: "GlamGen",
+              defaultFilter: true,
+              startScreen: true,
+            };
           }
+          if (viewInRoom) {
+            config.meta.viewInRoom = viewInRoom;
+          }
+          console.log("wrapper index init ", apiKey, config);
+          GlamAR.init("GlamAR-module", apiKey, config);
+          GlamAR.addEventListener("loading", () => {
+            animation?.destroy();
+            lottieLoader.style.display = "none";
+          });
+          GlamAR.addEventListener("loaded", () => {
+            GlamAR.applyBySubCategory("nail-polish");
+          });
         } else {
-          // Desktop/Web: Full screen
-          container.style.cssText = `
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 1000 !important;
-            background: white !important;
-            border-radius: 0 !important;
-            overflow: hidden !important;
-          `;
-        }
-      });
-    }
-
-    // Observer to watch for dynamically created VTO containers
-    const observer = new MutationObserver(() => {
-      updateVTOContainers();
-    });
-
-    // Start observing
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-
-    // Handle orientation and resize changes
-    function handleOrientationChange() {
-      const container = document.getElementById("GlamAR-Container");
-      if (!container) return;
-
-      const isPortrait = window.innerHeight > window.innerWidth;
-      const isLandscape = window.innerWidth > window.innerHeight;
-
-      console.log("Orientation changed:", {
-        isIPad,
-        isPortrait,
-        isLandscape,
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-
-      // Update main container
-      if (isIPad) {
-        if (isPortrait) {
-          container.style.width = "100vw";
-          container.style.height = "calc(100vh - 80px)";
-          container.style.top = "0";
-          container.style.left = "0";
-          container.style.transform = "none";
-          container.style.marginBottom = "80px";
-        } else if (isLandscape) {
-          container.style.width = "1024px";
-          container.style.height = "768px";
-          container.style.maxHeight = "100vh";
-          container.style.top = "50%";
-          container.style.left = "50%";
-          container.style.transform = "translate(-50%, -50%)";
-          container.style.marginBottom = "0";
-          container.style.overflowY = "auto";
-          container.style.overflowX = "hidden";
-          container.style.webkitOverflowScrolling = "touch";
+          errorText.textContent = "Invalid access key";
         }
       }
-
-      // Update VTO containers
-      setTimeout(updateVTOContainers, 100);
-    }
-
-    // Listen for orientation and resize changes
-    window.addEventListener("orientationchange", () => {
-      setTimeout(handleOrientationChange, 200);
-    });
-    window.addEventListener("resize", handleOrientationChange);
-
-    function InitGlamAr() {
-      console.log("Glamar AR ", GlamAR);
-
-      const isPortrait = window.innerHeight > window.innerWidth;
-      const isLandscape = window.innerWidth > window.innerHeight;
-
-      console.log("Device Info:", {
-        isIPad,
-        isPortrait,
-        isLandscape,
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-
-      const config = {
-        platform: "web",
-        category: "eyewearrecommendation",
-        meta: {
-          sdkVersion: "2.0.0",
-          debugText: true,
-        },
-      };
-
-      GlamAR.init(
-        "GlamAR-Container",
-        "0cd10539-e91f-41f1-87d8-71330a1e175a",
-        config
-      );
-
-      window.GlamAR.addEventListener("*", function (event, payload) {
-        console.log(`GlamAR Event:`, event, payload);
-
-        // When SDK opens/loads, update VTO containers
-        if (event === "opened" || event === "loaded") {
-          setTimeout(updateVTOContainers, 500);
-        }
-      });
-
-      // Initial update
-      handleOrientationChange();
-    }
-
-    InitGlamAr();
-  </script>
+    </script>
+  </body>
 </html>
