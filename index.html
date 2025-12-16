@@ -3,291 +3,111 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GlamAR</title>
-    <style>
-      html {
-        font-size: 1vw;
-        height: 100%;
-      }
-      body {
-        margin: 0;
-        overflow: hidden;
-        font-family: Inter, sans-serif;
-      }
+    <title>Tital Eye+ Style Studio</title>
+    <meta name="description" content="Tital Eye+ Style Studio." />
+    <meta
+      name="keywords"
+      content="titanplus, eyeware, recommendation, eyeware-recommendation"
+    />
+    <meta name="author" content="Tital Eye+" />
+    <meta
+      http-equiv="Permissions-Policy"
+      content="xr-spatial-tracking=(self)"
+    />
 
-      .modal-overlay {
-        display: flex;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
+    />
+    <link
+      rel="shortcut icon"
+      type="image/png"
+      href="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
+    />
 
-        justify-content: center;
-        align-items: center;
-        z-index: 10001;
-      }
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="GlamAR Eye Recommendation" />
+    <meta property="og:description" content="Tital Eye+ Style Studio." />
+    <meta
+      property="og:image"
+      content="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
+    />
 
-      .modal {
-        justify-content: center;
-        display: flex;
-        background: white;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        position: relative;
-        max-width: 1200px;
-        width: 90%;
-        height: 100px;
-        gap: 20px;
-      }
-
-      .camera-btn {
-        background: white;
-        border: 2px solid #e1e8ed;
-        border-radius: 8px;
-        padding: 8px 16px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        color: #333;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .container {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-      }
-
-      #GlamAR-module {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border: 0;
-      }
-
-      #error {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        font-weight: bold;
-        font-size: 16px;
-      }
-
-      .centeredLoader {
-        position: fixed;
-        display: flex;
-        width: 100%;
-        height: 100%;
-        background: var(--layout-background-color);
-        justify-content: center;
-        align-items: center;
-        z-index: 5000;
-        background: white;
-      }
-      .lottieContainer {
-        display: flex;
-        padding: 7.5rem;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 1.25rem;
-        flex-shrink: 0;
-      }
-      .lottie {
-        width: 20rem;
-        height: 20rem;
-        flex-shrink: 0;
-        aspect-ratio: 1/1;
-      }
-      .lottieText {
-        margin: 0px;
-        text-align: center;
-        font-size: 3.75rem;
-        font-style: normal;
-        font-weight: 400;
-      }
-
-      @media (min-width: 648px) {
-        .lottieContainer {
-          padding: 3.7rem;
-          gap: 0.62rem;
-        }
-        .lottie {
-          width: 12.35rem;
-          height: 12.35rem;
-        }
-        .lottieText {
-          font-size: 2.16rem;
-        }
-      }
-
-      /* Tablet Landscape */
-      @media (min-width: 720px) and (orientation: landscape) {
-        .lottieContainer {
-          padding: 3.33rem;
-          gap: 0.56rem;
-        }
-        .lottie {
-          width: 11.11rem;
-          height: 11.11rem;
-        }
-        .lottieText {
-          font-size: 1.94rem;
-        }
-      }
-
-      /* Web portrait */
-      @media (min-width: 846px) and (orientation: portrait) {
-        .lottieContainer {
-          padding: 2.84rem;
-          gap: 0.47rem;
-        }
-        .lottie {
-          width: 14.18rem;
-          height: 14.18rem;
-        }
-        .lottieText {
-          font-size: 2.36rem;
-        }
-      }
-
-      /* web Landscape */
-      @media (min-width: 1440px) and (orientation: landscape) {
-        .lottieContainer {
-          padding: 1.67rem;
-          gap: 0.28rem;
-        }
-        .lottie {
-          width: 8.33rem;
-          height: 8.33rem;
-        }
-        .lottieContainer h4 {
-          font-size: 1.39rem;
-        }
-      }
-
-      /* TV portrait */
-      @media (min-width: 1080px) and (orientation: portrait) {
-        .lottieContainer {
-          padding: 2.22rem;
-          gap: 0.37rem;
-        }
-        .lottie {
-          width: 14.81rem;
-          height: 14.81rem;
-        }
-        .lottieContainer h4 {
-          font-size: 2.22rem;
-        }
-      }
-
-      /* TV Landscape */
-      @media (min-width: 1920px) and (orientation: landscape) {
-        .lottieContainer {
-          padding: 1.25rem;
-          gap: 0.21rem;
-        }
-        .lottie {
-          width: 8.33rem;
-          height: 8.33rem;
-        }
-        .lottieContainer h4 {
-          font-size: 1.25rem;
-        }
-      }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
-    <script src="https://cdn.glamarz0.de/sdk/wrapper"></script>
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="GlamAR Eye Recommendation" />
+    <meta name="twitter:description" content="Tital Eye+ Style Studio." />
+    <meta
+      name="twitter:image"
+      content="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
+    />
   </head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
+    :root {
+      background-color: black;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, sans-serif;
+      min-height: 100%;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      background: white;
+    }
+
+    /* Default container styles for desktop/web */
+    #GlamAR-Container {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      z-index: 1;
+      background: #ffffff;
+      border-radius: 0;
+      overflow: hidden;
+    }
+  </style>
+  <script src="https://cdn.glamarz0.de/sdk/wrapper?"></script>
   <body>
-    <div class="container">
-      <div id="GlamAR-module"></div>
-      <div id="error"><span class="error-text"></span></div>
-    </div>
-    <div class="centeredLoader" id="lottieLoader">
-      <div class="lottieContainer">
-        <div class="lottie" id="lottie"></div>
-        <h4 class="lottieText">Loading your experience</h4>
-      </div>
-    </div>
-    <div id="cameraModal" class="modal-overlay">
-      <div class="modal">
-        <button class="camera-btn" onclick="initSDK('user')">
-          Front Camera
-        </button>
-        <button class="camera-btn" onclick="initSDK('environment')">
-          Back Camera
-        </button>
-      </div>
-    </div>
-    <script>
-      const lottieContainer = document.getElementById("lottie");
-      const cameraModal = document.getElementById("cameraModal");
-      const lottieLoader = document.getElementById("lottieLoader");
-      var animation = lottie.loadAnimation({
-        container: lottieContainer,
-        renderer: "svg",
-        loop: true,
-        autoplay: true,
-        path: "https://cdn.pixelbin.io/v2/dummy-cloudname/original/__glam_ar/__sdk/loader_light.json",
-      });
-
-      function initSDK(cameraMode) {
-        cameraModal.style.display = "none";
-        const errorText = document.querySelector(".error-text");
-        const urlParams = new URLSearchParams(window.location.search);
-        const skuId = urlParams.get("skuId");
-        // const apiKey = urlParams.get("accessKey");
-        const appId = urlParams.get("appId");
-        const version = urlParams.get("version");
-        const viewInRoom = urlParams.get("viewInRoom");
-
-        const apiKey = "ba843e66-4b93-48f6-a02e-ea48d920e52e";
-        // const appId = '32f427e7-7be1-4919-93d8-8fdd8412158d';
-
-        if (apiKey) {
-          const config = {
-            platform: "web",
-            mode: "private",
-            category: appId ? "skinanalysis" : "",
-            configuration: {},
-            meta: {
-              sdkVersion: version || "1.0.0",
-              cameraFacingMode: cameraMode,
-            },
-          };
-          if (appId) {
-            config.configuration.skinAnalysis = {
-              appId,
-              version: "GlamGen",
-              defaultFilter: true,
-              startScreen: true,
-            };
-          }
-          if (viewInRoom) {
-            config.meta.viewInRoom = viewInRoom;
-          }
-          console.log("wrapper index init ", apiKey, config);
-          GlamAR.init("GlamAR-module", apiKey, config);
-          GlamAR.addEventListener("loading", () => {
-            animation?.destroy();
-            lottieLoader.style.display = "none";
-          });
-          GlamAR.addEventListener("loaded", () => {
-            GlamAR.applyBySubCategory("nail-polish");
-          });
-        } else {
-          errorText.textContent = "Invalid access key";
-        }
-      }
-    </script>
+    <div id="GlamAR-Container"></div>
   </body>
+  <script>
+    function InitGlamAr() {
+      console.log("Glamar AR ", GlamAR);
+      const config = {
+        platform: "web",
+        category: "eyewearrecommendation",
+        meta: {
+          sdkVersion: "2.0.0",
+        },
+      };
+
+      GlamAR.init(
+        "GlamAR-Container",
+        // "0cd10539-e91f-41f1-87d8-71330a1e175a",
+        "c64b8d91-bdbb-4571-8585-16831f53d552",
+        config
+      );
+
+      window.GlamAR.addEventListener("*", function (event, payload) {
+        console.log(`GlamAR Event:`, event, payload);
+      });
+    }
+
+    InitGlamAr();
+  </script>
 </html>
