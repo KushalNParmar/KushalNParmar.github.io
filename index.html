@@ -3,112 +3,318 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tital Eye+ Style Studio</title>
-    <meta name="description" content="Tital Eye+ Style Studio." />
-    <meta
-      name="keywords"
-      content="titanplus, eyeware, recommendation, eyeware-recommendation"
-    />
-    <meta name="author" content="Tital Eye+" />
-    <meta
-      http-equiv="Permissions-Policy"
-      content="xr-spatial-tracking=(self)"
-    />
+    <title>3D Model Viewer with AR</title>
+    <script
+      type="module"
+      src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
+    <style>
+      html {
+        font-size: 1vw;
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Inter, sans-serif;
+        width: 100%;
+        height: 100%;
+      }
 
-    <!-- Favicon -->
-    <link
-      rel="icon"
-      type="image/png"
-      href="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
-    />
-    <link
-      rel="shortcut icon"
-      type="image/png"
-      href="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      href="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
-    />
+      model-viewer {
+        width: 100%;
+        height: 100%;
+      }
 
-    <!-- Open Graph / Social Media Meta Tags -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="GlamAR Eye Recommendation" />
-    <meta property="og:description" content="Tital Eye+ Style Studio." />
-    <meta
-      property="og:image"
-      content="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
-    />
+      /* AR Tracking Prompt */
+      .ar-tracking-prompt {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 15px;
+        font-size: 18px;
+        font-weight: 600;
+        animation: pulse 2s infinite;
+        display: none;
+        z-index: 1000;
+      }
 
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="GlamAR Eye Recommendation" />
-    <meta name="twitter:description" content="Tital Eye+ Style Studio." />
-    <meta
-      name="twitter:image"
-      content="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/_titan/titanplus.png"
-    />
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.8;
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1.05);
+        }
+      }
+
+      /* AR Mode Specific Styles */
+      model-viewer[ar-status="presenting"] .ar-tracking-prompt {
+        display: block;
+      }
+
+      .centeredLoader {
+        position: fixed;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        background: var(--layout-background-color);
+        justify-content: center;
+        align-items: center;
+        z-index: 5000;
+        background: white;
+      }
+      .lottieContainer {
+        display: flex;
+        padding: 7.5rem;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1.25rem;
+        flex-shrink: 0;
+      }
+      .lottie {
+        width: 20rem;
+        height: 20rem;
+        flex-shrink: 0;
+        aspect-ratio: 1/1;
+      }
+      .lottieText {
+        margin: 0px;
+        text-align: center;
+        font-size: 3.75rem;
+        font-style: normal;
+        font-weight: 400;
+      }
+
+      @media (min-width: 648px) {
+        .lottieContainer {
+          padding: 3.7rem;
+          gap: 0.62rem;
+        }
+        .lottie {
+          width: 12.35rem;
+          height: 12.35rem;
+        }
+        .lottieText {
+          font-size: 2.16rem;
+        }
+      }
+
+      /* Tablet Landscape */
+      @media (min-width: 720px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 3.33rem;
+          gap: 0.56rem;
+        }
+        .lottie {
+          width: 11.11rem;
+          height: 11.11rem;
+        }
+        .lottieText {
+          font-size: 1.94rem;
+        }
+      }
+
+      /* Web portrait */
+      @media (min-width: 846px) and (orientation: portrait) {
+        .lottieContainer {
+          padding: 2.84rem;
+          gap: 0.47rem;
+        }
+        .lottie {
+          width: 14.18rem;
+          height: 14.18rem;
+        }
+        .lottieText {
+          font-size: 2.36rem;
+        }
+      }
+
+      /* web Landscape */
+      @media (min-width: 1440px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 1.67rem;
+          gap: 0.28rem;
+        }
+        .lottie {
+          width: 8.33rem;
+          height: 8.33rem;
+        }
+        .lottieContainer h4 {
+          font-size: 1.39rem;
+        }
+      }
+
+      /* TV portrait */
+      @media (min-width: 1080px) and (orientation: portrait) {
+        .lottieContainer {
+          padding: 2.22rem;
+          gap: 0.37rem;
+        }
+        .lottie {
+          width: 14.81rem;
+          height: 14.81rem;
+        }
+        .lottieContainer h4 {
+          font-size: 2.22rem;
+        }
+      }
+
+      /* TV Landscape */
+      @media (min-width: 1920px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 1.25rem;
+          gap: 0.21rem;
+        }
+        .lottie {
+          width: 8.33rem;
+          height: 8.33rem;
+        }
+        .lottieContainer h4 {
+          font-size: 1.25rem;
+        }
+      }
+    </style>
   </head>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root {
-      background-color: black;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, sans-serif;
-      min-height: 100%;
-      overflow: hidden;
-      margin: 0;
-      padding: 0;
-      background: white;
-    }
-
-    /* Default container styles for desktop/web */
-    #GlamAR-Container {
-      width: 100%;
-      height: 100%;
-      position: fixed;
-      z-index: 1;
-      background: #ffffff;
-      border-radius: 0;
-      overflow: hidden;
-    }
-  </style>
-  <script src="https://cdn.glamar.io/sdk/wrapper?"></script>
   <body>
-    <div id="GlamAR-Container"></div>
-  </body>
-  <script>
-    function InitGlamAr() {
-      console.log("Glamar AR ", GlamAR);
-      const config = {
-        platform: "web",
-        category: "eyewearrecommendation",
-        meta: {
-          sdkVersion: "2.0.0",
-          debugText: true,
-        },
-      };
+    <div class="centeredLoader" id="lottieLoader">
+      <div class="lottieContainer">
+        <div class="lottie" id="lottie"></div>
+        <h4 class="lottieText">Loading your experience</h4>
+      </div>
+    </div>
+    <model-viewer
+      id="modelViewer"
+      src=""
+      alt="3D Model"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      ar-scale="auto"
+      ar-placement="floor"
+      ar-prompt="auto"
+      xr-environment
+      camera-controls
+      auto-rotate
+      auto-rotate-delay="1000"
+      rotation-per-second="30deg"
+      interaction-prompt="auto"
+      interaction-prompt-threshold="2000"
+      shadow-intensity="1"
+      shadow-softness="0.5"
+      environment-image="neutral"
+      exposure="1"
+      tone-mapping="neutral"
+      loading="eager"
+      reveal="auto"
+      disable-zoom
+      bounds="tight"
+      min-camera-orbit="auto auto auto"
+      max-camera-orbit="auto auto auto"
+      min-field-of-view="10deg"
+      max-field-of-view="45deg"
+    >
+      <!-- Custom AR Button -->
+      <button slot="ar-button" class="custom-ar-button">👋 View in AR</button>
 
-      GlamAR.init(
-        "GlamAR-Container",
-        // "0cd10539-e91f-41f1-87d8-71330a1e175a",
-        "a9b90ac7-218e-4ee9-b0ba-acb6487f803b",
-        config
-      );
+      <!-- AR Tracking Prompt -->
+      <div class="ar-tracking-prompt">
+        📱 Move your phone around to help AR find the floor
+      </div>
+    </model-viewer>
 
-      window.GlamAR.addEventListener("*", function (event, payload) {
-        console.log(`GlamAR Event:`, event, payload);
+    <script>
+      const lottieContainer = document.getElementById("lottie");
+      const lottieLoader = document.getElementById("lottieLoader");
+      var animation = lottie.loadAnimation({
+        container: lottieContainer,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        path: "https://cdn.pixelbin.io/v2/dummy-cloudname/original/__glam_ar/__sdk/loader_light.json",
       });
-    }
 
-    InitGlamAr();
-  </script>
+      // Get GLB URL from URL parameters
+      function getGLBUrlFromParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const glbUrl =
+          urlParams.get("url") ||
+          urlParams.get("glb") ||
+          urlParams.get("model");
+
+        if (glbUrl) {
+          return decodeURIComponent(glbUrl);
+        }
+      }
+
+      // Initialize model viewer
+      document.addEventListener("DOMContentLoaded", () => {
+        const modelViewer = document.getElementById("modelViewer");
+        const glbUrl = getGLBUrlFromParams();
+
+        console.log("Loading model from URL:", glbUrl);
+        modelViewer.src = glbUrl;
+
+        // Handle model events
+        modelViewer.addEventListener("load", () => {
+          console.log("Model loaded successfully");
+          console.log("AR capabilities:", modelViewer.canActivateAR);
+
+          // Auto-click AR button after 1 second if AR is supported
+          if (modelViewer.canActivateAR) {
+            setTimeout(async () => {
+              try {
+                console.log("Auto-activating AR...");
+                await modelViewer.activateAR();
+                //lottieLoader.style.display = "none";
+              } catch (error) {
+                console.log("Auto AR activation failed:", error);
+                // Try clicking the AR button if activateAR() fails
+                const arButton =
+                  modelViewer.querySelector('[slot="ar-button"]');
+                if (arButton) {
+                  console.log("Trying to click AR button...");
+                  arButton.click();
+                }
+              }
+            }, 1000);
+          } else {
+            //lottieLoader.style.display = "none";
+          }
+        });
+
+        modelViewer.addEventListener("error", (e) => {
+          console.error("Error loading model:", e.detail);
+        });
+
+        modelViewer.addEventListener("ar-status", (e) => {
+          console.log("AR Status:", e.detail);
+        });
+
+        // Check AR support after model loads
+        modelViewer.addEventListener("model-visibility", () => {
+          console.log("AR Support:", modelViewer.canActivateAR);
+          console.log("AR Modes:", modelViewer.arModes);
+        });
+      });
+
+      // Handle page visibility changes for better performance
+      document.addEventListener("visibilitychange", () => {
+        const modelViewer = document.getElementById("modelViewer");
+        if (document.hidden) {
+          modelViewer.pause();
+        } else {
+          modelViewer.play();
+        }
+      });
+    </script>
+  </body>
 </html>
