@@ -196,34 +196,19 @@
       id="modelViewer"
       src=""
       alt="3D Model"
-      ar
       ar-modes="webxr scene-viewer quick-look"
-      ar-scale="auto"
-      ar-placement="floor"
+      ar-scale="fixed"
       ar-prompt="auto"
-      xr-environment
       camera-controls
-      auto-rotate
-      auto-rotate-delay="1000"
-      rotation-per-second="30deg"
-      interaction-prompt="auto"
-      interaction-prompt-threshold="2000"
-      shadow-intensity="1"
-      shadow-softness="0.5"
-      environment-image="neutral"
-      exposure="1"
-      tone-mapping="neutral"
-      loading="eager"
-      reveal="auto"
+      camera-orbit="-30deg auto auto"
+      max-field-of-view="180deg"
       disable-zoom
-      bounds="tight"
-      min-camera-orbit="auto auto auto"
-      max-camera-orbit="auto auto auto"
-      min-field-of-view="10deg"
-      max-field-of-view="45deg"
+      disable-tap
+      shadow-softness="0.6"
+      shadow-intensity="1"
     >
       <!-- Custom AR Button -->
-      <button slot="ar-button" class="custom-ar-button">👋 View in AR</button>
+      <!-- <button slot="ar-button" class="custom-ar-button">View in AR</button> -->
 
       <!-- AR Tracking Prompt -->
       <div class="ar-tracking-prompt">
