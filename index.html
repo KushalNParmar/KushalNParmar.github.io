@@ -39,8 +39,8 @@
 
       #glamarModal {
         position: relative;
-        width: min(100%, 1200px);
-        height: min(100%, 800px);
+        width: 100%;
+        height: 100%;
         background: #fff;
         border-radius: 12px;
         overflow: hidden;
@@ -160,8 +160,8 @@
         overlay.id = "glamarOverlay";
         overlay.innerHTML = `
           <div id="glamarModal">
-            <button id="closeSdkBtn" aria-label="Close">×</button>
             <div id="GlamAR-Container"></div>
+            <button id="closeSdkBtn" aria-label="Close">×</button>
           </div>
         `;
         document.body.appendChild(overlay);
