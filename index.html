@@ -1472,8 +1472,15 @@
         // Add delay before reinitializing
 
         try {
+          const onlyARCategories = ["home", "luggage", "automotive", "apparel"];
+
+          let shouldAddCategory = onlyARCategories.includes(
+            pendingData.category,
+          );
+
           // Use absolute minimal configuration
           let config = {
+            category: shouldAddCategory ? pendingData.category : "",
             platform: currentSize || web,
             meta: {
               debugText: isDebugTextOn,
@@ -1481,6 +1488,11 @@
               sdkVersion: "2.0.0",
             },
           };
+
+          if (shouldAddCategory) {
+            currentData.l1Category = pendingData.category;
+            pendingData.category = null;
+          }
 
           console.log("Reinitializing GlamAR SDK with minimal config...");
           console.log("isSDKInitialized before init:", isSDKInitialized);
