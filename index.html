@@ -102,7 +102,8 @@
         "copilot",
         "https://script.copilot.live/v1/copilot.min.js?tkn=cat-pnxlzhq8",
       );
-      let GlamARContainer;
+      let glamAROverlay;
+      let glamARContainer;
 
       /* -------------------------
        * Helpers: Blob -> URL
@@ -167,32 +168,38 @@
 
         overlay
           .querySelector("#closeSdkBtn")
-          .addEventListener("click", hideOverlay);
+          .addEventListener("click", closeGlamARSdk);
         overlay.addEventListener("click", (e) => {
-          if (e.target === overlay) hideOverlay();
+          if (e.target === overlay) closeGlamARSdk();
         });
         window.addEventListener("keydown", (e) => {
-          if (e.key === "Escape") hideOverlay();
+          if (e.key === "Escape") closeGlamARSdk();
         });
-        GlamARContainer = document.getElementById("glamarOverlay");
+        glamAROverlay = document.getElementById("glamarOverlay");
+        glamARContainer = document.getElementById("GlamAR-Container");
       }
 
-      function showOverlay() {
+      function showGlamARSdk() {
         ensureOverlay();
         document.getElementById("glamarOverlay").style.display = "flex";
         initGlamAr();
       }
 
-      function hideOverlay() {
-        const overlay = document.getElementById("glamarOverlay");
-        if (overlay) overlay.style.display = "none";
+      function closeGlamARSdk() {
+        window.GlamAR.close();
+        glamAROverlay.style.display = "none";
+        while (glamARContainer.firstChild) {
+          glamARContainer.removeChild(glamARContainer.firstChild);
+        }
+        window.__GLAMAR_INITIALIZED__ = false;
       }
 
       /* -------------------------
        * GlamAR init
        * ------------------------- */
       function initGlamAr() {
-        GlamARContainer.style.display = "block";
+        glamAROverlay.style.display = "block";
+
         if (window.__GLAMAR_INITIALIZED__) return;
 
         if (!window.GlamAR || typeof window.GlamAR.init !== "function") {
@@ -242,7 +249,11 @@
 
               window.GlamAR.close();
 
-              GlamARContainer.style.display = "none";
+              glamAROverlay.style.display = "none";
+              while (glamARContainer.firstChild) {
+                glamARContainer.removeChild(glamARContainer.firstChild);
+              }
+              window.__GLAMAR_INITIALIZED__ = false;
               const blob = payload?.image;
               if (!(blob instanceof Blob)) {
                 console.warn("skin-gpt payload.image is not a Blob:", blob);
@@ -258,12 +269,113 @@
 
                 // ✅ Guaranteed: render via tool:components
                 queueSkinGptImageForComponents(dataUrl);
+
+                let base64tkn = btoa(
+                  unescape(encodeURIComponent(payload?.accessToken)),
+                );
+                console.log(payload?.accessToken, base64tkn);
+
+                const finalRes = await pollSkinAnalysis(
+                  payload?.scanId,
+                  payload?.predictionId,
+                  payload?.appId,
+                  base64tkn,
+                  {
+                    intervalMs: 2500,
+                    maxAttempts: 200,
+                  },
+                );
+                console.log("✅ FINAL:", finalRes);
+                copilot("event", "sendUserMessage", {
+                  value: buildSkinSummary(finalRes),
+                });
               } catch (err) {
                 console.error("❌ Failed to convert blob to dataUrl", err);
               }
               break;
           }
         });
+      }
+
+      const SA_BASE = "https://api.pixelbinz0.de/service/platform/misc/v1.0";
+
+      async function getSkinAnalysisResult(
+        scanId,
+        pollId,
+        SA_APP_ID,
+        SA_BEARER,
+      ) {
+        // Your example:
+        // /plugins/skinAnalysis/scans/<scanId>/<pollId>
+        const url = `${SA_BASE}/sa-predictions/apps/${SA_APP_ID}/plugins/skinAnalysis/scans/${scanId}/${pollId}`;
+
+        const res = await fetch(url, {
+          method: "GET",
+          headers: {
+            accept: "application/json, text/plain, */*",
+            authorization: `Bearer ${SA_BEARER}`,
+          },
+        });
+
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          throw new Error(`GET failed ${res.status}: ${text}`);
+        }
+
+        return res.json();
+      }
+
+      async function pollSkinAnalysis(
+        scanId,
+        pollId,
+        appId,
+        SA_BEARER,
+        { intervalMs = 2500, maxAttempts = 120 } = {},
+      ) {
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          const data = await getSkinAnalysisResult(
+            scanId,
+            pollId,
+            appId,
+            SA_BEARER,
+          );
+
+          const status = data?.status || data?.data?.status; // depending on API shape
+          console.log(`⏳ poll #${attempt}`, status, data);
+
+          if (status === "SUCCESS") return data;
+          if (status === "FAILURE")
+            throw new Error(`Polling FAILURE: ${JSON.stringify(data)}`);
+
+          await new Promise((r) => setTimeout(r, intervalMs));
+        }
+
+        throw new Error(`Polling timeout after ${maxAttempts} attempts`);
+      }
+
+      function buildSkinSummary(finalRes) {
+        const out = finalRes?.output || finalRes?.data?.output || finalRes;
+
+        // tweak these paths to match your real response
+        const skinType = out?.skinData?.skin_type ?? out?.skin_type;
+        const concerns = out?.skinData?.concerns ?? out?.concerns;
+
+        const concernsText = Array.isArray(concerns)
+          ? concerns
+              .slice(0, 3)
+              .map((c) => `• ${c?.name ?? c}`)
+              .join("\n")
+          : concerns
+            ? String(concerns)
+            : "N/A";
+
+        return [
+          "✅ Skin analysis completed",
+          skinType ? `Skin type: ${skinType}` : null,
+          `Top concerns:\n${concernsText}`,
+        ]
+          .filter(Boolean)
+          .join("\n\n");
       }
 
       /* -------------------------
@@ -281,7 +393,7 @@
               name: "open_glamar",
               handler: (args) => {
                 console.log("➕ open_glamar clicked:", args);
-                showOverlay();
+                showGlamARSdk();
                 return { success: true };
               },
             });
