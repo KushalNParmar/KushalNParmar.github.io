@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script src="https://unpkg.com/lottie-web@5.12.2/build/player/lottie.min.js"></script>
     <script>
       !(function () {
         var e = (window.stelios = window.stelios || []);
@@ -70,6 +71,7 @@
         }
       })();
     </script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Ensure proper base URL resolution for cloud deployment -->
@@ -683,6 +685,18 @@
         background: #00000052;
         position: fixed;
         z-index: 1000000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        /* backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px); */
+      }
+      .loader.active {
+        display: flex;
+      }
+      .loader svg {
+        max-width: 200px;
+        max-height: 200px;
       }
 
       @media (max-width: 991px) {
@@ -970,6 +984,31 @@
       });
 
       const loader = document.getElementById("loader");
+      let loaderAnimation = null;
+
+      function initLoader() {
+        if (!loader || loaderAnimation) return;
+
+        loaderAnimation = lottie.loadAnimation({
+          container: loader,
+          renderer: "svg",
+          loop: true,
+          autoplay: true,
+          width: "200px",
+          height: "200px",
+          path: "https://cdn.pixelbin.io/v2/dummy-cloudname/original/__glam_ar/__sdk/saloader_light.json",
+        });
+      }
+
+      function showLoader() {
+        initLoader();
+        document.getElementById("loader")?.classList.add("active");
+      }
+
+      function hideLoader() {
+        document.getElementById("loader")?.classList.remove("active");
+      }
+
       const urlParams = new URLSearchParams(window.location.search);
 
       const apiKey = urlParams.get("accessKey");
@@ -1079,6 +1118,7 @@
       });
 
       function initializeSDK() {
+        showLoader();
         if (!accessToken) {
           console.error("Cannot initialize SDK without access token");
           return;
@@ -1113,6 +1153,9 @@
               console.log("Pending data:", pendingData);
 
               switch (event) {
+                case "loading":
+                  hideLoader();
+                  break;
                 case "loaded":
                   console.log("SDK Loaded - setting isSDKInitialized to true");
                   isSDKInitialized = true; // Set flag when SDK is actually loaded
@@ -1214,7 +1257,7 @@
                       );
                     }
                   }, 1000); // Increased delay to 1000ms to ensure SDK is fully ready
-                  loader.style.display = "none";
+
                   break;
                 case "opened":
                   console.log("SDK Opened");
@@ -1436,7 +1479,7 @@
       }
 
       function reinitializeSDK() {
-        loader.style.display = "block";
+        showLoader();
         console.log("Reinitializing SDK for mode:", currentMode);
 
         // Immediately reset SDK initialization flag
@@ -1511,6 +1554,9 @@
             console.log("Pending data:", pendingData);
 
             switch (event) {
+              case "loading":
+                hideLoader();
+                break;
               case "loaded":
                 console.log(
                   "SDK Loaded (reinit) - setting isSDKInitialized to true",
@@ -1625,7 +1671,7 @@
                     );
                   }
                 }, 1000); // Same delay as initial setup
-                loader.style.display = "none";
+
                 break;
               case "opened":
                 console.log("SDK Opened (reinit)");
@@ -1809,6 +1855,7 @@
       }
 
       function showModal(modalId) {
+        hideLoader();
         document.getElementById(modalId).style.display = "flex";
       }
 
@@ -2158,6 +2205,9 @@
         // 4. Business logic for Skin Analysis
         if (category === "skinanalysis") {
           switch (event) {
+            case "loading":
+              hideLoader();
+              break;
             case "skin-analysis":
               if (payload?.options === "result" && payload.value) {
                 // Store and log skin analysis result
@@ -2171,7 +2221,6 @@
               }
               break;
             case "loaded":
-              loader.style.display = "none";
               console.log("[SkinAnalysis] SDK Loaded");
               break;
             case "error":
@@ -2186,6 +2235,9 @@
         } else {
           // VTO business logic
           switch (event) {
+            case "loading":
+              hideLoader();
+              break;
             case "sku-applied":
               // Store and log last applied SKU (if available)
               if (payload?.sku) {
@@ -2215,7 +2267,6 @@
               console.log("[VTO] Photo Loaded:", window.glamarLastPhoto);
               break;
             case "loaded":
-              loader.style.display = "none";
               console.log("[VTO] SDK Loaded");
               break;
             case "error":
