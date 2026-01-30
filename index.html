@@ -1,10 +1,9 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Kaily + GlamAR Overlay (Plus button inside chat)</title>
-
     <style>
       html,
       body {
@@ -12,8 +11,6 @@
         height: 100%;
         margin: 0;
       }
-
-      /* Kaily container */
       #copilotContainer {
         position: fixed;
         inset: 0;
@@ -25,8 +22,6 @@
         width: 100%;
         height: 100%;
       }
-
-      /* GlamAR overlay */
       #glamarOverlay {
         position: fixed;
         inset: 0;
@@ -36,7 +31,6 @@
         align-items: center;
         justify-content: center;
       }
-
       #glamarModal {
         position: relative;
         width: 100%;
@@ -45,15 +39,6 @@
         border-radius: 12px;
         overflow: hidden;
       }
-
-      @media (max-width: 768px) {
-        #glamarModal {
-          width: 100%;
-          height: 100%;
-          border-radius: 0;
-        }
-      }
-
       #closeSdkBtn {
         position: absolute;
         top: 12px;
@@ -68,11 +53,10 @@
         box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
         background: #fff;
       }
-
       #GlamAR-Container {
         width: 100%;
         height: 100%;
-        background: #ffffff;
+        background: #fff;
         overflow: hidden;
       }
     </style>
@@ -102,21 +86,20 @@
         "copilot",
         "https://script.copilot.live/v1/copilot.min.js?tkn=cat-pnxlzhq8",
       );
-      let glamAROverlay;
-      let glamARContainer;
 
-      /* -------------------------
-       * Helpers: Blob -> URL
-       * ------------------------- */
+      /************************************************************************
+       * Utilities
+       ************************************************************************/
       function blobToDataUrl(blob) {
         return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result); // data:image/...;base64,...
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = reject;
+          r.readAsDataURL(blob);
         });
       }
 
+      // tries several common payload shapes for chat SDKs (best-effort)
       function trySendImageToKaily(imgUrl) {
         const attempts = [
           { type: "image", url: imgUrl },
@@ -125,36 +108,35 @@
           { type: "message", attachments: [{ type: "image", url: imgUrl }] },
           { type: "message", media: [{ type: "image", url: imgUrl }] },
         ];
-
-        for (const payload of attempts) {
+        for (const p of attempts) {
           try {
-            console.log("🧪 Trying sendUserMessage payload:", payload);
-            copilot("event", "sendUserMessage", payload);
+            console.log("🧪 Trying sendUserMessage payload:", p);
+            copilot("event", "sendUserMessage", p);
           } catch (e) {
-            console.warn("❌ sendUserMessage attempt failed:", payload, e);
+            console.warn("sendUserMessage attempt failed", e, p);
           }
         }
       }
 
-      /* ------------------------------------------------
-       * Guaranteed fallback: render image via components
-       * ------------------------------------------------ */
+      // fallback: force bot to render the image via tool:components
       function queueSkinGptImageForComponents(imgSrc) {
-        window.__PENDING_SKIN_GPT_IMAGE__ = {
-          src: imgSrc,
-          ts: Date.now(),
-        };
-
-        // Trigger bot to call tool:components.
-        // Your bot prompt should map this phrase to tool:components.
+        window.__PENDING_SKIN_GPT_IMAGE__ = { src: imgSrc, ts: Date.now() };
+        // ensure your bot/system prompt maps "show skin gpt image" -> tool:components
         copilot("event", "sendUserMessage", { value: "show skin gpt image" });
       }
 
-      /* -------------------------
-       * Overlay helpers
-       * ------------------------- */
+      /************************************************************************
+       * Overlay and GlamAR init / lifecycle
+       ************************************************************************/
+      let glamAROverlay = null;
+      let glamARContainer = null;
+
       function ensureOverlay() {
-        if (document.getElementById("glamarOverlay")) return;
+        if (document.getElementById("glamarOverlay")) {
+          glamAROverlay = document.getElementById("glamarOverlay");
+          glamARContainer = document.getElementById("GlamAR-Container");
+          return;
+        }
 
         const overlay = document.createElement("div");
         overlay.id = "glamarOverlay";
@@ -165,7 +147,6 @@
           </div>
         `;
         document.body.appendChild(overlay);
-
         overlay
           .querySelector("#closeSdkBtn")
           .addEventListener("click", closeGlamARSdk);
@@ -175,140 +156,36 @@
         window.addEventListener("keydown", (e) => {
           if (e.key === "Escape") closeGlamARSdk();
         });
-        glamAROverlay = document.getElementById("glamarOverlay");
+
+        glamAROverlay = overlay;
         glamARContainer = document.getElementById("GlamAR-Container");
       }
 
       function showGlamARSdk() {
         ensureOverlay();
-        document.getElementById("glamarOverlay").style.display = "flex";
+        glamAROverlay.style.display = "flex";
         initGlamAr();
       }
 
       function closeGlamARSdk() {
-        window.GlamAR.close();
-        glamAROverlay.style.display = "none";
-        while (glamARContainer.firstChild) {
-          glamARContainer.removeChild(glamARContainer.firstChild);
-        }
+        try {
+          if (window.GlamAR && typeof window.GlamAR.close === "function")
+            window.GlamAR.close();
+        } catch (e) {}
+        if (glamAROverlay) glamAROverlay.style.display = "none";
+        if (glamARContainer)
+          while (glamARContainer.firstChild)
+            glamARContainer.removeChild(glamARContainer.firstChild);
         window.__GLAMAR_INITIALIZED__ = false;
       }
 
-      /* -------------------------
-       * GlamAR init
-       * ------------------------- */
-      function initGlamAr() {
-        glamAROverlay.style.display = "block";
-
-        if (window.__GLAMAR_INITIALIZED__) return;
-
-        if (!window.GlamAR || typeof window.GlamAR.init !== "function") {
-          console.error("❌ GlamAR wrapper not loaded / GlamAR.init missing");
-          return;
-        }
-
-        window.__GLAMAR_INITIALIZED__ = true;
-
-        const config = {
-          platform: "web",
-          category: "skingpt",
-          meta: { sdkVersion: "2.0.0" },
-          configuration: {
-            skinAnalysis: {
-              appId: "fecf3bc7-c9ec-4c47-8555-98a74df58288",
-            },
-          },
-        };
-
-        window.GlamAR.init(
-          "GlamAR-Container",
-          "ba843e66-4b93-48f6-a02e-ea48d920e52e",
-          config,
-        );
-
-        window.GlamAR.addEventListener?.("*", async (event, payload) => {
-          console.log(`GlamAR Event:`, event, payload);
-          switch (event) {
-            case "loaded":
-              console.log("SDK Loaded");
-              break;
-            case "opened":
-              console.log("SDK Opened");
-              break;
-            case "closed":
-              console.log("SDK Closed");
-              break;
-            case "camera-failed":
-              console.log("SDK Camera Failed");
-              break;
-            case "error":
-              console.log("SDK Error", event);
-              break;
-            case "skin-gpt":
-              if (event !== "skin-gpt") return;
-
-              window.GlamAR.close();
-
-              glamAROverlay.style.display = "none";
-              while (glamARContainer.firstChild) {
-                glamARContainer.removeChild(glamARContainer.firstChild);
-              }
-              window.__GLAMAR_INITIALIZED__ = false;
-              const blob = payload?.image;
-              if (!(blob instanceof Blob)) {
-                console.warn("skin-gpt payload.image is not a Blob:", blob);
-                return;
-              }
-
-              // Convert to data URL (safe to embed)
-              try {
-                const dataUrl = await blobToDataUrl(blob);
-
-                // ✅ Experiment: try sending as image message (may not work)
-                trySendImageToKaily(dataUrl);
-
-                // ✅ Guaranteed: render via tool:components
-                queueSkinGptImageForComponents(dataUrl);
-
-                let base64tkn = btoa(
-                  unescape(encodeURIComponent(payload?.accessToken)),
-                );
-                console.log(payload?.accessToken, base64tkn);
-
-                const finalRes = await pollSkinAnalysis(
-                  payload?.scanId,
-                  payload?.predictionId,
-                  payload?.appId,
-                  base64tkn,
-                  {
-                    intervalMs: 2500,
-                    maxAttempts: 200,
-                  },
-                );
-                console.log("✅ FINAL:", finalRes);
-                copilot("event", "sendUserMessage", {
-                  value: buildSkinSummary(finalRes),
-                });
-              } catch (err) {
-                console.error("❌ Failed to convert blob to dataUrl", err);
-              }
-              break;
-          }
-        });
-      }
-
+      /************************************************************************
+       * API base + helpers (replace SA_BASE if you have a different base)
+       ************************************************************************/
       const SA_BASE = "https://api.pixelbinz0.de/service/platform/misc/v1.0";
 
-      async function getSkinAnalysisResult(
-        scanId,
-        pollId,
-        SA_APP_ID,
-        SA_BEARER,
-      ) {
-        // Your example:
-        // /plugins/skinAnalysis/scans/<scanId>/<pollId>
-        const url = `${SA_BASE}/sa-predictions/apps/${SA_APP_ID}/plugins/skinAnalysis/scans/${scanId}/${pollId}`;
-
+      async function getSkinAnalysisResult(scanId, pollId, appId, SA_BEARER) {
+        const url = `${SA_BASE}/sa-predictions/apps/${appId}/plugins/skinAnalysis/scans/${scanId}/${pollId}`;
         const res = await fetch(url, {
           method: "GET",
           headers: {
@@ -316,15 +193,58 @@
             authorization: `Bearer ${SA_BEARER}`,
           },
         });
-
         if (!res.ok) {
-          const text = await res.text().catch(() => "");
-          throw new Error(`GET failed ${res.status}: ${text}`);
+          const t = await res.text().catch(() => "");
+          throw new Error(`GET skinAnalysis failed ${res.status}: ${t}`);
         }
-
         return res.json();
       }
 
+      async function getRetouchResult(scanId, pollId, appId, SA_BEARER) {
+        // Retouch plugin path (based on your example)
+        const url = `${SA_BASE}/sa-predictions/apps/${appId}/plugins/retouchInt/scans/${scanId}/${pollId}`;
+        const res = await fetch(url, {
+          method: "GET",
+          headers: {
+            accept: "application/json, text/plain, */*",
+            authorization: `Bearer ${SA_BEARER}`,
+          },
+        });
+        if (!res.ok) {
+          const t = await res.text().catch(() => "");
+          throw new Error(`GET retouch failed ${res.status}: ${t}`);
+        }
+        return res.json();
+      }
+
+      async function callRecommendationAPI(
+        appId,
+        SA_BEARER,
+        skinType,
+        concernsArr,
+      ) {
+        const url = `${SA_BASE}/sa-predictions/apps/${appId}/recommendation`;
+        const body = JSON.stringify({
+          skinType: skinType,
+          concerns: concernsArr,
+        });
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            accept: "application/json, text/plain, */*",
+            "content-type": "application/json",
+            authorization: `Bearer ${SA_BEARER}`,
+          },
+          body,
+        });
+        if (!res.ok) {
+          const t = await res.text().catch(() => "");
+          throw new Error(`POST recommendation failed ${res.status}: ${t}`);
+        }
+        return res.json();
+      }
+
+      // Poller helpers (generic)
       async function pollSkinAnalysis(
         scanId,
         pollId,
@@ -339,27 +259,39 @@
             appId,
             SA_BEARER,
           );
-
-          const status = data?.status || data?.data?.status; // depending on API shape
-          console.log(`⏳ poll #${attempt}`, status, data);
-
+          const status = data?.status || data?.data?.status;
+          console.log(`⏳ skin poll #${attempt}`, status, data);
           if (status === "SUCCESS") return data;
           if (status === "FAILURE")
-            throw new Error(`Polling FAILURE: ${JSON.stringify(data)}`);
-
+            throw new Error(`skin poll FAILURE: ${JSON.stringify(data)}`);
           await new Promise((r) => setTimeout(r, intervalMs));
         }
+        throw new Error(`skin poll timeout after ${maxAttempts} attempts`);
+      }
 
-        throw new Error(`Polling timeout after ${maxAttempts} attempts`);
+      async function pollRetouch(
+        scanId,
+        pollId,
+        appId,
+        SA_BEARER,
+        { intervalMs = 2500, maxAttempts = 120 } = {},
+      ) {
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          const data = await getRetouchResult(scanId, pollId, appId, SA_BEARER);
+          const status = data?.status || data?.data?.status;
+          console.log(`⏳ retouch poll #${attempt}`, status, data);
+          if (status === "SUCCESS") return data;
+          if (status === "FAILURE")
+            throw new Error(`retouch poll FAILURE: ${JSON.stringify(data)}`);
+          await new Promise((r) => setTimeout(r, intervalMs));
+        }
+        throw new Error(`retouch poll timeout after ${maxAttempts} attempts`);
       }
 
       function buildSkinSummary(finalRes) {
         const out = finalRes?.output || finalRes?.data?.output || finalRes;
-
-        // tweak these paths to match your real response
         const skinType = out?.skinData?.skin_type ?? out?.skin_type;
         const concerns = out?.skinData?.concerns ?? out?.concerns;
-
         const concernsText = Array.isArray(concerns)
           ? concerns
               .slice(0, 3)
@@ -368,7 +300,6 @@
           : concerns
             ? String(concerns)
             : "N/A";
-
         return [
           "✅ Skin analysis completed",
           skinType ? `Skin type: ${skinType}` : null,
@@ -378,9 +309,224 @@
           .join("\n\n");
       }
 
-      /* -------------------------
-       * Boot
-       * ------------------------- */
+      /************************************************************************
+       * GlamAR initialization and event handling
+       ************************************************************************/
+      function initGlamAr() {
+        ensureOverlay();
+        glamAROverlay.style.display = "flex";
+
+        if (window.__GLAMAR_INITIALIZED__) return;
+
+        if (!window.GlamAR || typeof window.GlamAR.init !== "function") {
+          console.error("GlamAR wrapper missing");
+          return;
+        }
+
+        window.__GLAMAR_INITIALIZED__ = true;
+
+        const config = {
+          platform: "web",
+          category: "skingpt",
+          meta: { sdkVersion: "2.0.0" },
+          configuration: {
+            skinAnalysis: { appId: "fecf3bc7-c9ec-4c47-8555-98a74df58288" },
+          },
+        };
+
+        window.GlamAR.init(
+          "GlamAR-Container",
+          "ba843e66-4b93-48f6-a02e-ea48d920e52e",
+          config,
+        );
+
+        // Unified event listener
+        window.GlamAR.addEventListener?.("*", async (event, payload) => {
+          console.log("GlamAR Event:", event, payload);
+
+          if (event === "skin-gpt") {
+            // sdk returned a blob + identifiers
+            try {
+              // close overlay immediately (as in your flow)
+              try {
+                window.GlamAR.close();
+              } catch (e) {}
+              glamAROverlay.style.display = "none";
+              while (glamARContainer.firstChild)
+                glamARContainer.removeChild(glamARContainer.firstChild);
+              window.__GLAMAR_INITIALIZED__ = false;
+
+              // payload.image should be a Blob
+              const blob = payload?.image;
+              if (!(blob instanceof Blob)) {
+                console.warn("skin-gpt payload.image is not a Blob:", blob);
+                return;
+              }
+
+              // convert to dataURL and present in chat (best-effort)
+              const dataUrl = await blobToDataUrl(blob);
+              trySendImageToKaily(dataUrl);
+              queueSkinGptImageForComponents(dataUrl);
+
+              // Take token and scan/prediction ids from payload
+              // NOTE: SDK must supply these fields in payload for this to work
+              const {
+                accessToken, // string token
+                scanId, // string
+                predictionId, // string (skin prediction id)
+                appId, // sdk app id (should match your app)
+                retouchPredictionId, // optional - retouch poll id
+              } = payload || {};
+
+              // encode token to base64 as your API expects it (you did earlier)
+              // keep the same encoding pattern to be safe with unicode tokens
+              const SA_BEARER = accessToken
+                ? btoa(unescape(encodeURIComponent(accessToken)))
+                : null;
+              if (!SA_BEARER || !scanId || !predictionId || !appId) {
+                console.warn(
+                  "Missing fields for polling (accessToken/scanId/predictionId/appId). Skipping remote polls.",
+                );
+                copilot("event", "sendUserMessage", {
+                  value:
+                    "Captured image but missing server identifiers — cannot run analysis server-side.",
+                });
+                return;
+              }
+
+              // Poll skin + retouch in parallel (retouch optional)
+              let skinResult = null;
+              let retouchResult = null;
+
+              try {
+                copilot("event", "sendUserMessage", {
+                  value:
+                    "Processing analysis — this may take a little while...",
+                });
+
+                const tasks = [
+                  pollSkinAnalysis(scanId, predictionId, appId, SA_BEARER, {
+                    intervalMs: 2500,
+                    maxAttempts: 200,
+                  }),
+                  retouchPredictionId
+                    ? pollRetouch(
+                        scanId,
+                        retouchPredictionId,
+                        appId,
+                        SA_BEARER,
+                        {
+                          intervalMs: 2500,
+                          maxAttempts: 200,
+                        },
+                      )
+                    : Promise.resolve(null),
+                ];
+
+                const [skinSettled, retouchSettled] =
+                  await Promise.allSettled(tasks);
+
+                // --- Skin result (required for summary + recommendations) ---
+                if (skinSettled.status === "fulfilled") {
+                  skinResult = skinSettled.value;
+
+                  console.log("Skin result:", skinResult);
+                  copilot("event", "sendUserMessage", {
+                    value: buildSkinSummary(skinResult),
+                  });
+                } else {
+                  console.error("Skin polling error:", skinSettled.reason);
+                  copilot("event", "sendUserMessage", {
+                    value: `Skin analysis failed: ${skinSettled.reason?.message || skinSettled.reason}`,
+                  });
+                  // keep going: retouch might still succeed, but recommendation will likely be skipped
+                }
+
+                // --- Retouch result (optional) ---
+                if (retouchSettled.status === "fulfilled") {
+                  retouchResult = retouchSettled.value;
+
+                  if (retouchResult) {
+                    console.log("Retouch result:", retouchResult);
+                    copilot("event", "sendUserMessage", {
+                      value: `✅ Retouch completed. Results ready. ${JSON.stringify(retouchResult)}`,
+                    });
+                  }
+                } else {
+                  console.warn("Retouch polling error:", retouchSettled.reason);
+                  copilot("event", "sendUserMessage", {
+                    value: `Retouch analysis failed: ${retouchSettled.reason?.message || retouchSettled.reason}`,
+                  });
+                }
+              } catch (e) {
+                console.error("Parallel polling wrapper error:", e);
+                copilot("event", "sendUserMessage", {
+                  value: `Internal error while polling: ${e.message}`,
+                });
+              }
+
+              // After skinResult is present, call recommendation API (no poll)
+              try {
+                const out =
+                  skinResult?.data?.output || skinResult?.output || skinResult;
+                const skinType = out?.skinData?.skin_type ?? out?.skin_type;
+                const concernsArr =
+                  out?.skinData?.concerns ?? out?.concerns ?? [];
+                // Normalize concerns to array of strings (take top 3)
+                const concerns = Array.isArray(concernsArr)
+                  ? concernsArr
+                      .slice(0, 3)
+                      .map((c) =>
+                        typeof c === "string"
+                          ? c
+                          : c?.tech_name || c?.label || JSON.stringify(c),
+                      )
+                  : concernsArr
+                    ? [String(concernsArr)]
+                    : [];
+
+                if (skinType && concerns.length) {
+                  const recoRes = await callRecommendationAPI(
+                    appId,
+                    SA_BEARER,
+                    skinType,
+                    concerns,
+                  );
+                  console.log("Recommendation response:", recoRes);
+                  // send a compact message back to chat: you can format as you like
+                  const recoText = `✅ Product recommendations ready.\n\nTop products:\n${
+                    (recoRes?.products || recoRes?.data?.products || [])
+                      .slice(0, 5)
+                      .map((p, i) => `${i + 1}. ${p.name || p.title || p.id}`)
+                      .join("\n") || "No products found"
+                  }`;
+                  copilot("event", "sendUserMessage", { value: recoText });
+                } else {
+                  console.warn(
+                    "Cannot call recommendation: missing skinType/concerns",
+                    skinType,
+                    concerns,
+                  );
+                }
+              } catch (err) {
+                console.error("Recommendation API error:", err);
+                copilot("event", "sendUserMessage", {
+                  value: `Recommendation fetch failed: ${err.message}`,
+                });
+              }
+            } catch (e) {
+              console.error("Error handling skin-gpt:", e);
+              copilot("event", "sendUserMessage", {
+                value: `Internal error processing SDK result: ${e.message}`,
+              });
+            }
+          } // end if skin-gpt
+        }); // end addEventListener
+      } // end initGlamAr
+
+      /************************************************************************
+       * Boot: wire copilot callbacks + initial trigger
+       ************************************************************************/
       window.addEventListener("DOMContentLoaded", function () {
         copilot(
           "init",
@@ -388,95 +534,71 @@
           function () {
             console.log("✅ Copilot ready");
 
-            // Button click inside chat -> open overlay
+            // open overlay when + button clicked
             copilot.callbacks.add({
               name: "open_glamar",
               handler: (args) => {
-                console.log("➕ open_glamar clicked:", args);
+                console.log("open_glamar clicked", args);
                 showGlamARSdk();
                 return { success: true };
               },
             });
 
-            // Components renderer: launcher + (optional) image card
+            // render launcher + image card when bot asks for it
             copilot.callbacks.add({
               name: "tool:components",
               handler: () => {
                 const root = document.createElement("div");
 
-                // --- Launcher card ---
+                // launcher card
                 const launcher = document.createElement("div");
                 launcher.innerHTML = `
-                  <div style="
-                    max-width: 560px;
-                    margin: 12px 0;
-                    border: 1px solid #ddd;
-                    border-radius: 10px;
-                    padding: 14px;
-                    background: #f8f9fa;
-                    display:flex;
-                    align-items:center;
-                    justify-content:space-between;
-                    gap:12px;
-                  ">
-                    <div>
-                      <div style="font-weight:600;">Open GlamAR</div>
-                      <div style="font-size:12px;opacity:0.75;margin-top:4px;">
-                        Tap + to launch the experience
-                      </div>
-                    </div>
-
-                    <button
-                      data-callback-name="open_glamar"
-                      data-callback-args='{"source":"kaily_plus_button"}'
-                      style="
-                        width:44px;
-                        height:44px;
-                        border-radius:999px;
-                        border:none;
-                        font-size:26px;
-                        cursor:pointer;
-                        box-shadow:0 8px 18px rgba(0,0,0,0.18);
-                      "
-                      aria-label="Open GlamAR"
-                      title="Open GlamAR"
-                    >+</button>
+                <div style="
+                  max-width:560px;
+                  margin:12px 0;
+                  border:1px solid #ddd;
+                  border-radius:10px;
+                  padding:14px;
+                  background:#f8f9fa;
+                  display:flex;
+                  align-items:center;
+                  justify-content:space-between;
+                  gap:12px;
+                ">
+                  <div>
+                    <div style="font-weight:600;">Open GlamAR</div>
+                    <div style="font-size:12px;opacity:.75;margin-top:4px;">Tap + to launch the experience</div>
                   </div>
-                `;
+                  <button
+                    data-callback-name="open_glamar"
+                    data-callback-args='{"source":"kaily_plus_button"}'
+                    style="width:44px;height:44px;border-radius:999px;border:none;font-size:26px;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.18)"
+                    aria-label="Open GlamAR"
+                    title="Open GlamAR"
+                  >+</button>
+                </div>
+              `;
                 root.appendChild(launcher);
 
-                // --- SkinGPT image card if pending ---
+                // optional: show pending captured image
                 const pending = window.__PENDING_SKIN_GPT_IMAGE__;
                 if (pending?.src) {
-                  const imgCard = document.createElement("div");
-                  imgCard.innerHTML = `
-                    <div style="
-                      max-width:560px;
-                      margin:12px 0;
-                      border:1px solid #ddd;
-                      border-radius:10px;
-                      padding:14px;
-                      background:#fff;
-                    ">
-                      <div style="font-weight:600;margin-bottom:10px;">Captured image</div>
-                      <img
-                        src="${pending.src}"
-                        style="width:100%;border-radius:10px;display:block;"
-                      />
-                    </div>
-                  `;
-                  root.appendChild(imgCard);
-
-                  // Clear so it renders once
+                  const card = document.createElement("div");
+                  card.innerHTML = `
+                  <div style="max-width:560px;margin:12px 0;border:1px solid #ddd;border-radius:10px;padding:14px;background:#fff;">
+                    <div style="font-weight:600;margin-bottom:10px;">Captured image</div>
+                    <img src="${pending.src}" style="width:100%;border-radius:10px;display:block" />
+                  </div>
+                `;
+                  root.appendChild(card);
                   window.__PENDING_SKIN_GPT_IMAGE__ = null;
                 }
 
-                // Stable id: updates the same component thread
                 return { id: "glamar-components-root", content: root };
               },
             });
 
-            // Trigger launcher render
+            // trigger initial launcher display (remove if your bot already does this)
             if (!window.__LAUNCHER_REQUESTED__) {
               window.__LAUNCHER_REQUESTED__ = true;
               copilot("event", "sendUserMessage", {
@@ -488,10 +610,7 @@
       });
     </script>
   </head>
-
   <body>
-    <div id="copilotContainer">
-      <div id="copilotSA"></div>
-    </div>
+    <div id="copilotContainer"><div id="copilotSA"></div></div>
   </body>
 </html>
