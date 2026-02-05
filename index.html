@@ -831,65 +831,57 @@
         document.getElementById("loader")?.classList.remove("active");
       }
 
-      showLoader();
+      async function showCopilot(
+        userSettings = {
+          hostId: "1234", // MUST be stable per user
+          email: "example@gmail.com", // Mandatory (either email or phone)
+          additionalFields: {},
+        },
+      ) {
+        let copilotReady = false;
+        showLoader();
+        copilotContainer.style.display = "flex";
+        (function (w, d, s, o, f, js, fjs) {
+          w[o] =
+            w[o] ||
+            function () {
+              (w[o].q = w[o].q || []).push(arguments);
+            };
+          js = d.createElement(s);
+          fjs = d.getElementsByTagName(s)[0];
+          js.id = o;
+          js.src = f;
+          js.async = 1;
+          js.referrerPolicy = "origin";
+          fjs.parentNode.insertBefore(js, fjs);
+        })(
+          window,
+          document,
+          "script",
+          "copilot",
+          "https://script.copilot.live/v1/copilot.min.js?tkn=cat-pnxlzhq8",
+        );
 
-      (function (w, d, s, o, f, js, fjs) {
-        w[o] =
-          w[o] ||
+        copilot(
+          "init",
+          { element: "copilotSA", position: "initial" },
           function () {
-            (w[o].q = w[o].q || []).push(arguments);
-          };
-        js = d.createElement(s);
-        fjs = d.getElementsByTagName(s)[0];
-        js.id = o;
-        js.src = f;
-        js.async = 1;
-        js.referrerPolicy = "origin";
-        fjs.parentNode.insertBefore(js, fjs);
-      })(
-        window,
-        document,
-        "script",
-        "copilot",
-        "https://script.copilot.live/v1/copilot.min.js?tkn=cat-pnxlzhq8",
-      );
+            try {
+              console.log("users.set succeeded:", userSettings);
+              window?.copilot?.users?.set?.(userSettings);
+            } catch (e) {
+              console.warn("users.set failed:", e);
+            }
+            copilotReady = true;
+            console.log("✅ Copilot ready");
+            hideLoader();
+          },
+        );
 
-      /************************************************************************
-       * Utilities
-       ************************************************************************/
-      function blobToDataUrl(blob) {
-        return new Promise((resolve, reject) => {
-          const r = new FileReader();
-          r.onload = () => resolve(r.result);
-          r.onerror = reject;
-          r.readAsDataURL(blob);
-        });
-      }
-
-      // tries several common payload shapes for chat SDKs (best-effort)
-      function trySendImageToKaily(imgUrl) {
-        const attempts = [
-          { type: "image", url: imgUrl },
-          { type: "attachment", url: imgUrl, mime: "image/jpeg" },
-          { type: "image", content: { url: imgUrl } },
-          { type: "message", attachments: [{ type: "image", url: imgUrl }] },
-          { type: "message", media: [{ type: "image", url: imgUrl }] },
-        ];
-        for (const p of attempts) {
-          try {
-            console.log("🧪 Trying sendUserMessage payload:", p);
-            copilot("event", "sendUserMessage", p);
-          } catch (e) {
-            console.warn("sendUserMessage attempt failed", e, p);
-          }
+        while (!copilotReady) {
+          await new Promise((resolve) => setTimeout(resolve, 50));
         }
-      }
-
-      // fallback: force bot to render the image via tool:components
-      function queueSkinGptImageForComponents(imgSrc) {
-        window.__PENDING_SKIN_GPT_IMAGE__ = { src: imgSrc, ts: Date.now() };
-        // ensure your bot/system prompt maps "show skin gpt image" -> tool:components
-        copilot("event", "sendUserMessage", { value: "show skin gpt image" });
+        return copilotReady;
       }
 
       /************************************************************************
@@ -923,19 +915,19 @@
         });
       });
 
-      personaliseBtn.addEventListener("click", () => {
-        copilotContainer.style.display = "flex";
+      personaliseBtn.addEventListener("click", async () => {
+        await showCopilot();
         copilot("event", "sendUserMessage", {
           value: "Build my personalized skincare routine",
         });
       });
 
-      sendBtn.addEventListener("click", () => {
+      sendBtn.addEventListener("click", async () => {
         const message = textarea.value.trim();
 
         if (!message) return; // prevent empty sends
 
-        copilotContainer.style.display = "flex";
+        await showCopilot();
         copilot("event", "sendUserMessage", {
           value: message,
         });
@@ -965,15 +957,6 @@
           </div>
         `;
         document.body.appendChild(overlay);
-        overlay
-          .querySelector("#closeSdkBtn")
-          .addEventListener("click", closeGlamARSdk);
-        overlay.addEventListener("click", (e) => {
-          if (e.target === overlay) closeGlamARSdk();
-        });
-        window.addEventListener("keydown", (e) => {
-          if (e.key === "Escape") closeGlamARSdk();
-        });
 
         glamAROverlay = overlay;
         glamARContainer = document.getElementById("GlamAR-Container");
@@ -998,136 +981,6 @@
       }
 
       /************************************************************************
-       * API base + helpers (replace SA_BASE if you have a different base)
-       ************************************************************************/
-      const SA_BASE = "https://api.pixelbinz0.de/service/platform/misc/v1.0";
-
-      async function getSkinAnalysisResult(scanId, pollId, appId, SA_BEARER) {
-        const url = `${SA_BASE}/sa-predictions/apps/${appId}/plugins/skinAnalysis/scans/${scanId}/${pollId}`;
-        const res = await fetch(url, {
-          method: "GET",
-          headers: {
-            accept: "application/json, text/plain, */*",
-            authorization: `Bearer ${SA_BEARER}`,
-          },
-        });
-        if (!res.ok) {
-          const t = await res.text().catch(() => "");
-          throw new Error(`GET skinAnalysis failed ${res.status}: ${t}`);
-        }
-        return res.json();
-      }
-
-      async function getRetouchResult(scanId, pollId, appId, SA_BEARER) {
-        // Retouch plugin path (based on your example)
-        const url = `${SA_BASE}/sa-predictions/apps/${appId}/plugins/retouchInt/scans/${scanId}/${pollId}`;
-        const res = await fetch(url, {
-          method: "GET",
-          headers: {
-            accept: "application/json, text/plain, */*",
-            authorization: `Bearer ${SA_BEARER}`,
-          },
-        });
-        if (!res.ok) {
-          const t = await res.text().catch(() => "");
-          throw new Error(`GET retouch failed ${res.status}: ${t}`);
-        }
-        return res.json();
-      }
-
-      async function callRecommendationAPI(
-        appId,
-        SA_BEARER,
-        skinType,
-        concernsArr,
-      ) {
-        const url = `${SA_BASE}/sa-predictions/apps/${appId}/recommendation`;
-        const body = JSON.stringify({
-          skinType: skinType,
-          concerns: concernsArr,
-        });
-        const res = await fetch(url, {
-          method: "POST",
-          headers: {
-            accept: "application/json, text/plain, */*",
-            "content-type": "application/json",
-            authorization: `Bearer ${SA_BEARER}`,
-          },
-          body,
-        });
-        if (!res.ok) {
-          const t = await res.text().catch(() => "");
-          throw new Error(`POST recommendation failed ${res.status}: ${t}`);
-        }
-        return res.json();
-      }
-
-      // Poller helpers (generic)
-      async function pollSkinAnalysis(
-        scanId,
-        pollId,
-        appId,
-        SA_BEARER,
-        { intervalMs = 2500, maxAttempts = 120 } = {},
-      ) {
-        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-          const data = await getSkinAnalysisResult(
-            scanId,
-            pollId,
-            appId,
-            SA_BEARER,
-          );
-          const status = data?.status || data?.data?.status;
-          console.log(`⏳ skin poll #${attempt}`, status, data);
-          if (status === "SUCCESS") return data;
-          if (status === "FAILURE")
-            throw new Error(`skin poll FAILURE: ${JSON.stringify(data)}`);
-          await new Promise((r) => setTimeout(r, intervalMs));
-        }
-        throw new Error(`skin poll timeout after ${maxAttempts} attempts`);
-      }
-
-      async function pollRetouch(
-        scanId,
-        pollId,
-        appId,
-        SA_BEARER,
-        { intervalMs = 2500, maxAttempts = 120 } = {},
-      ) {
-        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-          const data = await getRetouchResult(scanId, pollId, appId, SA_BEARER);
-          const status = data?.status || data?.data?.status;
-          console.log(`⏳ retouch poll #${attempt}`, status, data);
-          if (status === "SUCCESS") return data;
-          if (status === "FAILURE")
-            throw new Error(`retouch poll FAILURE: ${JSON.stringify(data)}`);
-          await new Promise((r) => setTimeout(r, intervalMs));
-        }
-        throw new Error(`retouch poll timeout after ${maxAttempts} attempts`);
-      }
-
-      function buildSkinSummary(finalRes) {
-        const out = finalRes?.output || finalRes?.data?.output || finalRes;
-        const skinType = out?.skinData?.skin_type ?? out?.skin_type;
-        const concerns = out?.skinData?.concerns ?? out?.concerns;
-        const concernsText = Array.isArray(concerns)
-          ? concerns
-              .slice(0, 3)
-              .map((c) => `• ${c?.name ?? c}`)
-              .join("\n")
-          : concerns
-            ? String(concerns)
-            : "N/A";
-        return [
-          "✅ Skin analysis completed",
-          skinType ? `Skin type: ${skinType}` : null,
-          `Top concerns:\n${concernsText}`,
-        ]
-          .filter(Boolean)
-          .join("\n\n");
-      }
-
-      /************************************************************************
        * GlamAR initialization and event handling
        ************************************************************************/
       function initGlamAr() {
@@ -1140,6 +993,7 @@
           console.error("GlamAR wrapper missing");
           return;
         }
+        showLoader();
 
         window.__GLAMAR_INITIALIZED__ = true;
 
@@ -1161,201 +1015,47 @@
         // Unified event listener
         window.GlamAR.addEventListener?.("*", async (event, payload) => {
           console.log("GlamAR Event:", event, payload);
+          if (event === "loading") {
+            hideLoader();
+          }
+
+          if (event === "closed") {
+            closeGlamARSdk();
+          }
 
           if (event === "skin-gpt") {
             // sdk returned a blob + identifiers
             try {
-              // close overlay immediately (as in your flow)
-              try {
-                window.GlamAR.close();
-              } catch (e) {}
-              copilotContainer.style.display = "flex";
-              glamAROverlay.style.display = "none";
-              while (glamARContainer.firstChild)
-                glamARContainer.removeChild(glamARContainer.firstChild);
-              window.__GLAMAR_INITIALIZED__ = false;
-
-              // payload.image should be a Blob
-              const blob = payload?.image;
-              if (!(blob instanceof Blob)) {
-                console.warn("skin-gpt payload.image is not a Blob:", blob);
-                return;
-              }
-
-              // convert to dataURL and present in chat (best-effort)
-              const dataUrl = await blobToDataUrl(blob);
-              trySendImageToKaily(dataUrl);
-              queueSkinGptImageForComponents(dataUrl);
-
-              // Take token and scan/prediction ids from payload
-              // NOTE: SDK must supply these fields in payload for this to work
               const {
                 accessToken, // string token
                 scanId, // string
                 predictionId, // string (skin prediction id)
                 appId, // sdk app id (should match your app)
+                subjectId,
                 retouchPredictionId, // optional - retouch poll id
               } = payload || {};
 
-              // encode token to base64 as your API expects it (you did earlier)
-              // keep the same encoding pattern to be safe with unicode tokens
-              const SA_BEARER = accessToken
-                ? btoa(unescape(encodeURIComponent(accessToken)))
-                : null;
-              if (!SA_BEARER || !scanId || !predictionId || !appId) {
-                console.warn(
-                  "Missing fields for polling (accessToken/scanId/predictionId/appId). Skipping remote polls.",
-                );
-                copilot("event", "sendUserMessage", {
-                  value:
-                    "Captured image but missing server identifiers — cannot run analysis server-side.",
-                });
-                return;
-              }
+              const userSettings = {
+                hostId: subjectId, // MUST be stable per user
+                email: "example@gmail.com", // Mandatory (either email or phone)
+                additionalFields: {
+                  predictionId: predictionId,
+                  scanId: scanId,
+                  retouchPredictionId: retouchPredictionId,
+                  accessToken: accessToken,
+                  appId: appId,
+                },
+              };
 
-              // Poll skin + retouch in parallel (retouch optional)
-              let skinResult = null;
-              let retouchResult = null;
+              await showCopilot(userSettings);
 
-              try {
-                copilot("event", "sendUserMessage", {
-                  value:
-                    "Processing analysis — this may take a little while...",
-                });
-
-                const tasks = [
-                  pollSkinAnalysis(scanId, predictionId, appId, SA_BEARER, {
-                    intervalMs: 2500,
-                    maxAttempts: 200,
-                  }),
-                  retouchPredictionId
-                    ? pollRetouch(
-                        scanId,
-                        retouchPredictionId,
-                        appId,
-                        SA_BEARER,
-                        {
-                          intervalMs: 2500,
-                          maxAttempts: 200,
-                        },
-                      )
-                    : Promise.resolve(null),
-                ];
-
-                const [skinSettled, retouchSettled] =
-                  await Promise.allSettled(tasks);
-
-                // --- Skin result (required for summary + recommendations) ---
-                if (skinSettled.status === "fulfilled") {
-                  skinResult = skinSettled.value;
-
-                  console.log("Skin result:", skinResult);
-                  copilot("event", "sendUserMessage", {
-                    value: buildSkinSummary(skinResult),
-                  });
-                } else {
-                  console.error("Skin polling error:", skinSettled.reason);
-                  copilot("event", "sendUserMessage", {
-                    value: `Skin analysis failed: ${skinSettled.reason?.message || skinSettled.reason}`,
-                  });
-                  // keep going: retouch might still succeed, but recommendation will likely be skipped
-                }
-
-                // --- Retouch result (optional) ---
-                if (retouchSettled.status === "fulfilled") {
-                  retouchResult = retouchSettled.value;
-
-                  if (retouchResult) {
-                    console.log("Retouch result:", retouchResult);
-                    copilot("event", "sendUserMessage", {
-                      value: `✅ Retouch completed. Results ready. ${JSON.stringify(retouchResult)}`,
-                    });
-                  }
-                } else {
-                  console.warn("Retouch polling error:", retouchSettled.reason);
-                  copilot("event", "sendUserMessage", {
-                    value: `Retouch analysis failed: ${retouchSettled.reason?.message || retouchSettled.reason}`,
-                  });
-                }
-              } catch (e) {
-                console.error("Parallel polling wrapper error:", e);
-                copilot("event", "sendUserMessage", {
-                  value: `Internal error while polling: ${e.message}`,
-                });
-              }
-
-              // After skinResult is present, call recommendation API (no poll)
-              try {
-                const out =
-                  skinResult?.data?.output || skinResult?.output || skinResult;
-                const skinType = out?.skinData?.skin_type ?? out?.skin_type;
-                const concernsArr =
-                  out?.skinData?.concerns ?? out?.concerns ?? [];
-                // Normalize concerns to array of strings (take top 3)
-                const concerns = Array.isArray(concernsArr)
-                  ? concernsArr
-                      .slice(0, 3)
-                      .map((c) =>
-                        typeof c === "string"
-                          ? c
-                          : c?.tech_name || c?.label || JSON.stringify(c),
-                      )
-                  : concernsArr
-                    ? [String(concernsArr)]
-                    : [];
-
-                if (skinType && concerns.length) {
-                  const recoRes = await callRecommendationAPI(
-                    appId,
-                    SA_BEARER,
-                    skinType,
-                    concerns,
-                  );
-                  console.log("Recommendation response:", recoRes);
-                  // send a compact message back to chat: you can format as you like
-                  const recoText = `✅ Product recommendations ready.\n\nTop products:\n${
-                    (recoRes?.products || recoRes?.data?.products || [])
-                      .slice(0, 5)
-                      .map((p, i) => `${i + 1}. ${p.name || p.title || p.id}`)
-                      .join("\n") || "No products found"
-                  }`;
-                  copilot("event", "sendUserMessage", { value: recoText });
-                } else {
-                  console.warn(
-                    "Cannot call recommendation: missing skinType/concerns",
-                    skinType,
-                    concerns,
-                  );
-                }
-              } catch (err) {
-                console.error("Recommendation API error:", err);
-                copilot("event", "sendUserMessage", {
-                  value: `Recommendation fetch failed: ${err.message}`,
-                });
-              }
+              closeGlamARSdk();
             } catch (e) {
               console.error("Error handling skin-gpt:", e);
-              copilot("event", "sendUserMessage", {
-                value: `Internal error processing SDK result: ${e.message}`,
-              });
             }
-          } // end if skin-gpt
+          }
         }); // end addEventListener
       } // end initGlamAr
-
-      /************************************************************************
-       * Boot: wire copilot callbacks + initial trigger
-       ************************************************************************/
-      window.addEventListener("DOMContentLoaded", function () {
-        copilot(
-          "init",
-          { element: "copilotSA", position: "initial" },
-          function () {
-            hideLoader();
-            console.log("✅ Copilot ready");
-          },
-        );
-      });
     </script>
   </body>
 </html>
