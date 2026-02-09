@@ -762,16 +762,19 @@
             );
             console.log("getScans result:", res);
 
-            if (res?.items?.[0]?.report_data?.input?.image) {
-              const portraitPlus = document.getElementById("portrait-plus");
-              const portaitImage = document.getElementById("portrait-image");
-              portaitImage.src = res?.items?.[0]?.report_data?.input?.image;
-              portaitImage.style.display = "block";
-              portraitPlus.style.display = "none";
-              portaitImage.onload = () => {
-                portaitImage.style.display = "block";
+            const items = res?.items || [];
+            const portraitPlus = document.getElementById("portrait-plus");
+            const portraitImage = document.getElementById("portrait-image");
+            for (let i = 0; i < Math.min(items.length, 10); i++) {
+              const imageUrl = items[i]?.report_data?.input?.image;
+
+              if (typeof imageUrl === "string" && imageUrl.trim()) {
+                portraitImage.style.display = "block";
                 portraitPlus.style.display = "none";
-              };
+
+                portraitImage.src = imageUrl;
+                break;
+              }
             }
           } catch (e) {
             console.error("getScans failed:", e);
