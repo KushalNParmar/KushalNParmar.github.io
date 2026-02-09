@@ -726,8 +726,8 @@
         class="skin-portrait-pill"
         aria-label="Skin Portrait"
       >
-        <span class="skin-portrait-plus" id="portrait-plus" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
+        <span class="skin-portrait-plus" aria-hidden="true">
+          <svg id="portrait-plus" viewBox="0 0 24 24" fill="none">
             <path
               d="M12 5v14M5 12h14"
               stroke="currentColor"
@@ -735,12 +735,7 @@
               stroke-linecap="round"
             />
           </svg>
-          <img
-            class="portrait-image"
-            id="portrait-image"
-            src="https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/models/model5.png"
-            alt=""
-          />
+          <img class="portrait-image" id="portrait-image" src="" alt="" />
         </span>
         <span class="skin-portrait-text">Skin Portrait</span>
       </a>
@@ -770,8 +765,10 @@
             if (res?.items?.[0]?.report_data?.input?.image) {
               const portraitPlus = document.getElementById("portrait-plus");
               const portaitImage = document.getElementById("portrait-image");
-              portraitImg.src = url;
-              portraitImg.onload = () => {
+              portaitImage.src = res?.items?.[0]?.report_data?.input?.image;
+              portaitImage.style.display = "block";
+              portraitPlus.style.display = "none";
+              portaitImage.onload = () => {
                 portaitImage.style.display = "block";
                 portraitPlus.style.display = "none";
               };
@@ -1038,7 +1035,7 @@
           method: "GET",
           headers: {
             accept: "application/json, text/plain, */*",
-            authorization: `Bearer ${SA_BEARER}`,
+            authorization: `Bearer ${btoa(unescape(encodeURIComponent(SA_BEARER)))}`,
           },
         });
         if (!res.ok) {
