@@ -977,6 +977,9 @@
 
               await showCopilot(userSettings);
               closeGlamARSdk();
+              copilot("event", "sendUserMessage", {
+                value: "analyze my skin",
+              });
             } catch (e) {
               console.error("Error handling skin-gpt:", e);
             }
