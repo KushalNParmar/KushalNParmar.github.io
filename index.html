@@ -368,6 +368,14 @@
         align-items: center;
         justify-content: center;
         flex: 0 0 auto;
+        overflow: hidden;
+      }
+
+      .portrait-image {
+        display: none;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
 
       .skin-portrait-pill:hover {
@@ -418,7 +426,7 @@
         width: 100%;
         height: 100%;
         background: #fff;
-        border-radius: 12px;
+
         overflow: hidden;
       }
       #GlamAR-Container {
@@ -718,7 +726,7 @@
         class="skin-portrait-pill"
         aria-label="Skin Portrait"
       >
-        <span class="skin-portrait-plus" aria-hidden="true">
+        <span class="skin-portrait-plus" id="portrait-plus" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
             <path
               d="M12 5v14M5 12h14"
@@ -727,6 +735,12 @@
               stroke-linecap="round"
             />
           </svg>
+          <img
+            class="portrait-image"
+            id="portrait-image"
+            src="https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/models/model5.png"
+            alt=""
+          />
         </span>
         <span class="skin-portrait-text">Skin Portrait</span>
       </a>
@@ -738,6 +752,36 @@
     <script src="https://unpkg.com/lottie-web@5.12.2/build/player/lottie.min.js"></script>
 
     <script type="application/javascript">
+      const SA_BASE = "https://api.pixelbinz0.de/service/platform/misc/v1.0";
+      const LS_KEY = "GLAMAR_SA:data";
+      (async () => {
+        const localData = getLocalData();
+        console.log("localData:", localData);
+
+        if (localData?.hostId) {
+          try {
+            const res = await getScans(
+              localData?.additionalFields?.appId,
+              localData?.hostId,
+              localData?.additionalFields?.accessToken,
+            );
+            console.log("getScans result:", res);
+
+            if (res?.items?.[0]?.report_data?.input?.image) {
+              const portraitPlus = document.getElementById("portrait-plus");
+              const portaitImage = document.getElementById("portrait-image");
+              portraitImg.src = url;
+              portraitImg.onload = () => {
+                portaitImage.style.display = "block";
+                portraitPlus.style.display = "none";
+              };
+            }
+          } catch (e) {
+            console.error("getScans failed:", e);
+          }
+        }
+      })();
+
       const loader = document.getElementById("loader");
       let loaderAnimation = null;
 
@@ -980,11 +1024,49 @@
               copilot("event", "sendUserMessage", {
                 value: "analyze my skin",
               });
+              setLocalData(userSettings);
             } catch (e) {
               console.error("Error handling skin-gpt:", e);
             }
           }
         });
+      }
+
+      async function getScans(appId, subjectId, SA_BEARER) {
+        const url = `${SA_BASE}/apps/${appId}/subjects/${subjectId}/scans?pageNo=1&pageSize=10`;
+        const res = await fetch(url, {
+          method: "GET",
+          headers: {
+            accept: "application/json, text/plain, */*",
+            authorization: `Bearer ${SA_BEARER}`,
+          },
+        });
+        if (!res.ok) {
+          const t = await res.text().catch(() => "");
+          throw new Error(`GET skinAnalysis failed ${res.status}: ${t}`);
+        }
+        return res.json();
+      }
+
+      function setLocalData(data) {
+        try {
+          localStorage.setItem(LS_KEY, JSON.stringify(data));
+          return true;
+        } catch (e) {
+          console.warn("setLocalData failed:", e);
+          return false;
+        }
+      }
+
+      function getLocalData() {
+        try {
+          const raw = localStorage.getItem(LS_KEY);
+          if (!raw) return null;
+          return JSON.parse(raw);
+        } catch (e) {
+          console.warn("getLocalData parse failed:", e);
+          return null;
+        }
       }
     </script>
   </body>
