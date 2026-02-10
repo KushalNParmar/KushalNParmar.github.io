@@ -1005,7 +1005,9 @@
                 appId,
                 subjectId,
                 retouchPredictionId,
+                currencySymbols,
               } = payload || {};
+              console.log("result", payload);
 
               const userSettings = {
                 hostId: subjectId,
@@ -1016,6 +1018,7 @@
                   retouchPredictionId,
                   accessToken,
                   appId,
+                  currencySymbols,
                 },
               };
 
