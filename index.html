@@ -857,6 +857,19 @@
             }
             copilotReady = true;
             hideLoader();
+
+            try {
+              window?.copilot.callbacks.add({
+                name: "open_glamar",
+                handler: (args) => {
+                  console.log("open_glamar clicked", args);
+                  showGlamARSdk();
+                  return { success: true };
+                },
+              });
+            } catch (e) {
+              console.warn("open_glamar callback attachment failed", e);
+            }
           },
         );
 
