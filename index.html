@@ -755,6 +755,37 @@
     <script type="application/javascript">
       const SA_BASE = "https://api.pixelbinz0.de/service/platform/misc/v1.0";
       const LS_KEY = "GLAMAR_SA:data";
+      const onBoardingQuestions = [
+        "What skincare routine should I start with?",
+        "What are today's best deals?",
+        "What should I use for dark circles?",
+        "How do I improve my skin texture?",
+        "How can I help you today?",
+        "Which products are best for glowing skin?",
+        "Help me choose products for oily skin",
+        "How can I reduce dryness?",
+        "Recommend a good moisturizer",
+        "How can I prevent premature aging?",
+        "How can I reduce dark spots and pigmentation?",
+        "How can I treat active acne and prevent new breakouts?",
+      ];
+
+      function getRandomTwo(arr) {
+        const shuffled = [...arr].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 2);
+      }
+
+      function setRandomSuggestions() {
+        const buttons = document.querySelectorAll(".suggestion-btn");
+        const randomQuestions = getRandomTwo(onBoardingQuestions);
+
+        buttons.forEach((btn, index) => {
+          if (randomQuestions[index]) {
+            btn.textContent = randomQuestions[index];
+          }
+        });
+      }
+      setRandomSuggestions();
       (async () => {
         const localData = getLocalData();
         console.log("localData:", localData);
@@ -818,7 +849,7 @@
         userSettings = {
           hostId: "1234",
           email: "example@gmail.com",
-          additionalFields: {},
+          additionalFields: { onBoardingQuestions },
         },
       ) {
         let copilotReady = false;
@@ -1038,6 +1069,7 @@
                   accessToken,
                   appId,
                   currencySymbols,
+                  onBoardingQuestions,
                 },
               };
 
