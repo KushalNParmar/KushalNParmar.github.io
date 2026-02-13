@@ -1076,18 +1076,18 @@
                 },
               };
 
-              if (!isCopilotInitialized) await showCopilot(userSettings);
-              else {
-                window.copilot.context.set({
-                  predictionId: predictionId,
-                  scanId: scanId,
-                  retouchPredictionId: retouchPredictionId,
-                  accessToken: accessToken,
-                  appId: appId,
-                  currencySymbols: currencySymbols,
-                  onBoardingQuestions: onBoardingQuestions,
-                });
-              }
+              if (!isCopilotInitialized) await showCopilot();
+
+              window.copilot.context.set({
+                predictionId: predictionId,
+                scanId: scanId,
+                retouchPredictionId: retouchPredictionId,
+                accessToken: accessToken,
+                appId: appId,
+                currencySymbols: currencySymbols,
+                onBoardingQuestions: onBoardingQuestions,
+              });
+
               closeGlamARSdk();
               copilot("event", "sendUserMessage", {
                 value: "analyze my skin",
