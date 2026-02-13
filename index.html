@@ -753,6 +753,7 @@
     <script src="https://unpkg.com/lottie-web@5.12.2/build/player/lottie.min.js"></script>
 
     <script type="application/javascript">
+      let isCopilotInitialized = false;
       const SA_BASE = "https://api.pixelbinz0.de/service/platform/misc/v1.0";
       const LS_KEY = "GLAMAR_SA:data";
       const onBoardingQuestions = [
@@ -852,6 +853,7 @@
           additionalFields: { onBoardingQuestions },
         },
       ) {
+        if (isCopilotInitialized) return true;
         let copilotReady = false;
         showLoader();
         copilotContainer.style.display = "flex";
@@ -907,6 +909,7 @@
         while (!copilotReady) {
           await new Promise((resolve) => setTimeout(resolve, 50));
         }
+        isCopilotInitialized = true;
         return copilotReady;
       }
 
@@ -1073,7 +1076,18 @@
                 },
               };
 
-              await showCopilot(userSettings);
+              if (!isCopilotInitialized) await showCopilot(userSettings);
+              else {
+                window.copilot.context.set({
+                  predictionId: predictionId,
+                  scanId: scanId,
+                  retouchPredictionId: retouchPredictionId,
+                  accessToken: accessToken,
+                  appId: appId,
+                  currencySymbols: currencySymbols,
+                  onBoardingQuestions: onBoardingQuestions,
+                });
+              }
               closeGlamARSdk();
               copilot("event", "sendUserMessage", {
                 value: "analyze my skin",
