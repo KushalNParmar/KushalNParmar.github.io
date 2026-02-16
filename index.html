@@ -749,13 +749,23 @@
 
     <div id="copilotContainer"><div id="copilotSA"></div></div>
 
-    <script src="https://cdn.glamarz0.de/sdk/wrapper"></script>
+    <script src="https://cdn.glamarz0.de/sdk/wrapper?=@1.2.8.js"></script>
     <script src="https://unpkg.com/lottie-web@5.12.2/build/player/lottie.min.js"></script>
 
     <script type="application/javascript">
       let isCopilotInitialized = false;
       const SA_BASE = "https://api.pixelbinz0.de/service/platform/misc/v1.0";
-      const LS_KEY = "GLAMAR_SA:data";
+      const LS_KEY_DATA = "GLAMAR_SA:data";
+      const appId = "fecf3bc7-c9ec-4c47-8555-98a74df58288";
+      const accessKey = "ba843e66-4b93-48f6-a02e-ea48d920e52e";
+      const accessToken = "f235570c-1fab-466f-95e7-597315095e3e";
+      const LS_KEY_ID = "GLAMAR_SA:user_id";
+      const ALPHABET =
+        "useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict"; // nanoid default-ish
+      const SIZE = 21;
+      let subjectId = null;
+      const userId = getOrCreateAnonymousUserId();
+
       const onBoardingQuestions = [
         "What skincare routine should I start with?",
         "What are today's best deals?",
@@ -787,17 +797,22 @@
         });
       }
       setRandomSuggestions();
-      (async () => {
-        const localData = getLocalData();
-        console.log("localData:", localData);
 
-        if (localData?.hostId) {
+      (async () => {
+        try {
+          const res = await getSubjectId(appId, userId, accessToken);
+          console.log(res.subjectId);
+          subjectId = res.subjectId;
+          getPastScans();
+        } catch (e) {
+          console.error("getSubjectId failed:", e);
+        }
+      })();
+
+      async function getPastScans() {
+        if (subjectId) {
           try {
-            const res = await getScans(
-              localData?.additionalFields?.appId,
-              localData?.hostId,
-              localData?.additionalFields?.accessToken,
-            );
+            const res = await getScans(appId, subjectId, accessToken);
             console.log("getScans result:", res);
 
             const items = res?.items || [];
@@ -818,7 +833,7 @@
             console.error("getScans failed:", e);
           }
         }
-      })();
+      }
 
       const loader = document.getElementById("loader");
       let loaderAnimation = null;
@@ -848,7 +863,7 @@
 
       async function showCopilot(
         userSettings = {
-          hostId: "1234",
+          hostId: subjectId ?? "1234",
           email: "example@gmail.com",
           additionalFields: { onBoardingQuestions },
         },
@@ -988,11 +1003,11 @@
         const overlay = document.createElement("div");
         overlay.id = "glamarOverlay";
         overlay.innerHTML = `
-          <div id="glamarModal">
-            <div id="GlamAR-Container"></div>
-            <button id="closeSdkBtn" aria-label="Close">×</button>
-          </div>
-        `;
+           <div id="glamarModal">
+             <div id="GlamAR-Container"></div>
+             <button id="closeSdkBtn" aria-label="Close">×</button>
+           </div>
+         `;
         document.body.appendChild(overlay);
 
         glamAROverlay = overlay;
@@ -1035,15 +1050,14 @@
           category: "skingpt",
           meta: { sdkVersion: "2.0.0" },
           configuration: {
-            skinAnalysis: { appId: "fecf3bc7-c9ec-4c47-8555-98a74df58288" },
+            skinAnalysis: {
+              appId: appId,
+              userId: userId,
+            },
           },
         };
 
-        window.GlamAR.init(
-          "GlamAR-Container",
-          "ba843e66-4b93-48f6-a02e-ea48d920e52e",
-          config,
-        );
+        window.GlamAR.init("GlamAR-Container", accessKey, config);
 
         window.GlamAR.addEventListener?.("*", async (event, payload) => {
           if (event === "loading") hideLoader();
@@ -1092,7 +1106,6 @@
               copilot("event", "sendUserMessage", {
                 value: "analyze my skin",
               });
-              setLocalData(userSettings);
             } catch (e) {
               console.error("Error handling skin-gpt:", e);
             }
@@ -1116,25 +1129,51 @@
         return res.json();
       }
 
-      function setLocalData(data) {
+      async function getSubjectId(appId, userId, SA_BEARER) {
+        const url = `${SA_BASE}/apps/${appId}/subjects/createSubjectId/${userId}`;
+        const res = await fetch(url, {
+          method: "GET",
+          headers: {
+            accept: "application/json, text/plain, */*",
+            authorization: `Bearer ${btoa(unescape(encodeURIComponent(SA_BEARER)))}`,
+          },
+        });
+        if (!res.ok) {
+          const t = await res.text().catch(() => "");
+          throw new Error(`GET subject id failed ${res.status}: ${t}`);
+        }
+        return res.json();
+      }
+
+      function nanoId(size = SIZE) {
+        const bytes = new Uint8Array(size);
+        crypto.getRandomValues(bytes);
+
+        let id = "";
+        for (let i = 0; i < size; i++) {
+          id += ALPHABET[bytes[i] & 63]; // 0..63
+        }
+        return id;
+      }
+
+      function getOrCreateAnonymousUserId() {
         try {
-          localStorage.setItem(LS_KEY, JSON.stringify(data));
-          return true;
+          let id = localStorage.getItem(LS_KEY_ID);
+          if (id) return id;
+
+          id = nanoId();
+          localStorage.setItem(LS_KEY_ID, id);
+          return id;
         } catch (e) {
-          console.warn("setLocalData failed:", e);
-          return false;
+          // If localStorage is blocked (incognito / strict privacy), fall back to per-session id
+          return nanoId();
         }
       }
 
-      function getLocalData() {
+      function clearAnonymousUserId() {
         try {
-          const raw = localStorage.getItem(LS_KEY);
-          if (!raw) return null;
-          return JSON.parse(raw);
-        } catch (e) {
-          console.warn("getLocalData parse failed:", e);
-          return null;
-        }
+          localStorage.removeItem(LS_KEY_ID);
+        } catch {}
       }
     </script>
   </body>
