@@ -792,6 +792,575 @@
           center / contain no-repeat;
       }
 
+      /* ===================== NEW: Skin Portrait Result Screen (REM based) ===================== */
+      .sr-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 60; /* above sp-screen(50), below glam overlay(999999) */
+        display: none;
+        background: white;
+        width: 100%;
+        height: 100%;
+        max-width: 42rem;
+        justify-self: anchor-center;
+      }
+
+      .sr-screen.is-open {
+        display: block;
+      }
+
+      .sr-top {
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3.5rem; /* 56px */
+        align-items: center;
+        background: white;
+        z-index: 500;
+        display: flex;
+        padding: 1rem;
+      }
+
+      .sr-back {
+        position: absolute;
+        left: 1rem;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 999rem;
+        border: 0;
+        background: rgba(11, 11, 16, 0.06);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .sr-back svg {
+        width: 1.125rem;
+        height: 1.125rem;
+        color: rgba(11, 11, 16, 0.75);
+      }
+
+      .sr-time {
+        position: absolute;
+        font-size: 1.25rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        color: rgba(11, 11, 16, 0.88);
+        position: absolute;
+        justify-self: anchor-center;
+      }
+
+      .sr-content {
+        height: 100%;
+        overflow: auto;
+        padding: 1.125rem;
+        padding-top: 2rem;
+        padding-bottom: 5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .sr-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 0.0625rem solid rgba(11, 11, 16, 0.08);
+        border-radius: 1.25rem;
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .sr-row {
+        padding: 1.5rem;
+      }
+
+      .sr-kv {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .sr-k {
+        font-size: 1.125rem;
+        color: rgba(11, 11, 16, 0.82);
+        letter-spacing: -0.02em;
+      }
+
+      .sr-v {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: rgba(11, 11, 16, 0.9);
+        letter-spacing: -0.02em;
+      }
+
+      .sr-v-lg {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      .sr-grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+
+      .sr-tone-top {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      .sr-tone-label {
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: rgba(11, 11, 16, 0.9);
+      }
+
+      .sr-tone-track {
+        height: 0.5rem;
+        border-radius: 999rem;
+
+        background-image: linear-gradient(
+          90deg,
+          #faf3f7,
+          #f1e2eb 26.27%,
+          #f2c7ac 49.62%,
+          #7b645a 73.89%,
+          #31141d
+        );
+        position: relative;
+      }
+
+      .sr-tone-thumb {
+        position: absolute;
+        top: 50%;
+        left: 25%;
+        transform: translate(-50%, -50%);
+        width: 0.35rem;
+        height: 1.1rem;
+        border-radius: 0.35rem;
+        background: #0b0b10;
+        box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.8);
+      }
+
+      .sr-tone-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      .sr-tone-k {
+        font-size: 1.25rem;
+        letter-spacing: -0.02em;
+        color: rgba(11, 11, 16, 0.88);
+      }
+
+      .sr-h2 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: rgba(11, 11, 16, 0.9);
+      }
+
+      .sr-sub {
+        margin-top: 0.25rem;
+        font-size: 1.25rem;
+        line-height: 1.35;
+        letter-spacing: -0.02em;
+        color: rgba(11, 11, 16, 0.75);
+      }
+
+      .sr-tags {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .sr-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.85rem 1.1rem;
+        border-radius: 999rem;
+        background: rgba(226, 244, 228, 0.8);
+        color: rgba(11, 11, 16, 0.85);
+        font-size: 1rem;
+        letter-spacing: -0.02em;
+      }
+
+      .sr-tag svg {
+        width: 1.2rem;
+        height: 1.2rem;
+        opacity: 0.55;
+      }
+
+      /* --- Carousel --- */
+      .sr-carousel-wrap {
+        position: relative;
+        margin-top: 1.25rem;
+      }
+
+      .sr-carousel {
+        display: flex;
+        gap: 0.75rem;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+        scroll-snap-type: x mandatory;
+      }
+
+      .sr-next {
+        position: absolute;
+        right: 0.6rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 999rem;
+        border: 0;
+        background: rgba(11, 11, 16, 0.55);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .sr-next svg {
+        width: 1.1rem;
+        height: 1.1rem;
+      }
+
+      .sr-concern-card {
+        flex: 0 0 auto;
+        width: 16.25rem;
+        border-radius: 1.5rem;
+        border: 0.0625rem solid rgba(11, 11, 16, 0.08);
+        background: #fff;
+        overflow: hidden;
+        scroll-snap-align: start;
+      }
+
+      .sr-concern-img {
+        width: 100%;
+        height: 15.5rem;
+        object-fit: cover;
+        display: block;
+      }
+
+      .sr-concern-bottom {
+        background: rgba(255, 255, 255, 0.96);
+        padding: 1rem;
+        border-top: 0.0625rem solid rgba(11, 11, 16, 0.06);
+      }
+
+      .sr-concern-title-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .sr-concern-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: rgba(11, 11, 16, 0.92);
+        line-height: 1.1;
+      }
+
+      .sr-concern-sev {
+        margin-top: 0.35rem;
+        font-size: 1.125rem;
+        color: rgba(255, 120, 45, 0.95); /* orange like ref */
+        letter-spacing: -0.02em;
+      }
+
+      .sr-score {
+        width: 3.3rem;
+        height: 3.3rem;
+        border-radius: 999rem;
+        background: conic-gradient(
+          #f5b62a calc(var(--p) * 1%),
+          rgba(11, 11, 16, 0.08) 0
+        );
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+      }
+
+      .sr-score-inner {
+        width: 2.7rem;
+        height: 2.7rem;
+        border-radius: 999rem;
+        background: #fff;
+        display: grid;
+        place-items: center;
+        border: 0.0625rem solid rgba(11, 11, 16, 0.06);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+      }
+
+      .sr-score-inner .sr-score-top {
+        font-weight: 800;
+        font-size: 1rem;
+        color: rgba(11, 11, 16, 0.9);
+      }
+
+      .sr-score-inner .sr-score-bot {
+        font-size: 0.85rem;
+        color: rgba(11, 11, 16, 0.65);
+      }
+
+      .sr-show-more {
+        margin-top: 0.9rem;
+        width: 100%;
+        border: 0;
+        border-radius: 999rem;
+        padding: 0.85rem 1rem;
+        font-size: 1.1rem;
+        letter-spacing: -0.02em;
+        background: #2856d4;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      /* Summary paragraph */
+      .sr-summary {
+        margin-top: 1.25rem;
+        font-size: 1.25rem;
+        line-height: 1.5;
+        letter-spacing: -0.02em;
+        color: rgba(11, 11, 16, 0.82);
+        white-space: pre-wrap;
+      }
+
+      /* ===================== Concern Screen ===================== */
+      .cs-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 70; /* above sr-screen (60) */
+        display: none;
+        width: 100%;
+        height: 100%;
+        background: #c9c3f975;
+      }
+
+      .cs-root {
+        max-width: 42rem;
+        justify-self: center;
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .cs-screen.is-open {
+        display: block;
+      }
+
+      /* Desktop header (shown on >=648px) */
+      .cs-top {
+        display: none;
+        position: relative;
+        height: 3.5rem;
+        padding: 1rem;
+        align-items: center;
+        background: #fff;
+      }
+
+      .cs-back {
+        position: absolute;
+        left: 1rem;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 999rem;
+        border: 0;
+        background: rgba(11, 11, 16, 0.06);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .cs-back svg {
+        width: 1.125rem;
+        height: 1.125rem;
+        color: rgba(11, 11, 16, 0.75);
+      }
+
+      .cs-title {
+        width: 100%;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        color: rgba(11, 11, 16, 0.9);
+      }
+
+      /* Hero image */
+      .cs-hero {
+        position: relative;
+        width: 100%;
+        height: 44vh;
+        min-height: 18rem;
+        background: #f2f2f4;
+        overflow: hidden;
+      }
+
+      .cs-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      /* Mobile close button on image */
+      .cs-close {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 999rem;
+        border: 0;
+        background: rgba(11, 11, 16, 0.25);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .cs-close svg {
+        width: 1.25rem;
+        height: 1.25rem;
+        color: #fff;
+      }
+
+      /* Sheet */
+      .cs-sheet {
+        height: calc(100% - 44vh);
+        overflow: auto;
+        background: #fff;
+        padding: 1.25rem;
+      }
+
+      /* Tabs row */
+      .cs-tabs {
+        display: flex;
+        gap: 0.75rem;
+        overflow-x: auto;
+        padding-bottom: 0.75rem;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .cs-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        border: 0;
+        cursor: pointer;
+        padding: 0.9rem 1.15rem;
+        border-radius: 1rem;
+        background: rgba(11, 11, 16, 0.06);
+        color: rgba(11, 11, 16, 0.85);
+        font-size: 1.05rem;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+
+      .cs-tab svg {
+        width: 1.25rem;
+        height: 1.25rem;
+        opacity: 0.7;
+      }
+
+      .cs-tab.is-active {
+        background: #1f56ff;
+        color: #fff;
+      }
+
+      .cs-tab.is-active svg {
+        opacity: 1;
+      }
+
+      /* Heading */
+      .cs-heading {
+        padding-top: 0.25rem;
+      }
+
+      .cs-heading-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.6rem;
+      }
+
+      .cs-name {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: rgba(11, 11, 16, 0.92);
+      }
+
+      .cs-sev {
+        font-size: 1.35rem;
+        font-weight: 600;
+        color: rgba(11, 11, 16, 0.35);
+        letter-spacing: -0.02em;
+      }
+
+      .cs-score-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        margin-top: 0.35rem;
+      }
+
+      .cs-score {
+        font-size: 2.5rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: rgba(11, 11, 16, 0.92);
+      }
+
+      .cs-score-den {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: rgba(11, 11, 16, 0.35);
+      }
+
+      .cs-bar {
+        margin-top: 1rem;
+        height: 0.75rem;
+        border-radius: 999rem;
+        background: rgba(11, 11, 16, 0.06);
+        overflow: hidden;
+      }
+
+      .cs-bar-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 999rem;
+        background: #f5b62a;
+        transition: width 220ms ease;
+      }
+
+      .cs-desc {
+        margin-top: 1.25rem;
+        font-size: 1.25rem;
+        line-height: 1.6;
+        letter-spacing: -0.02em;
+        color: rgba(11, 11, 16, 0.82);
+        padding-bottom: 2rem;
+        white-space: pre-wrap;
+      }
+
       /* ---------- Required media queries ---------- */
 
       @media (min-width: 648px) {
@@ -970,6 +1539,49 @@
         .cta svg {
           width: 1.15rem;
           height: 1.15rem;
+        }
+
+        .sr-content {
+          padding-left: 1.5rem;
+          padding-right: 1.5rem;
+        }
+
+        .sr-concern-card {
+          width: 18.75rem;
+        }
+
+        .sr-concern-img {
+          height: 17.5rem;
+        }
+
+        .cs-top {
+          display: flex;
+        }
+
+        .cs-close {
+          display: none; /* use back in header */
+        }
+
+        .cs-hero {
+          height: auto;
+          min-height: 0;
+          padding: 1rem 1.5rem 0;
+          background: #fff;
+        }
+
+        .cs-image {
+          height: 22rem;
+          border-radius: 1.25rem;
+          object-fit: cover;
+        }
+
+        .cs-sheet {
+          height: calc(100% - 3.5rem - 22rem - 1rem);
+          padding: 1.25rem 1.5rem 2rem;
+        }
+
+        .cs-tabs {
+          padding-top: 0.5rem;
         }
       }
     </style>
@@ -1166,6 +1778,168 @@
       </div>
     </section>
 
+    <!-- ===================== NEW: Skin Portrait Result Screen ===================== -->
+    <section id="skinPortraitResultScreen" class="sr-screen" aria-hidden="true">
+      <!-- Top bar -->
+      <div class="sr-top">
+        <button class="sr-back" id="srBackBtn" type="button" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M15 18l-6-6 6-6"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <div class="sr-time" id="srTime">—</div>
+      </div>
+
+      <div class="sr-content">
+        <!-- Summary cards -->
+        <div class="sr-card sr-row">
+          <div class="sr-kv">
+            <div class="sr-k">Skin type</div>
+            <div class="sr-v" id="srSkinType">—</div>
+          </div>
+        </div>
+
+        <div class="sr-grid2">
+          <div class="sr-card">
+            <div class="sr-k">Perceived age</div>
+            <div class="sr-v sr-v-lg" id="srSkinAge">—</div>
+          </div>
+
+          <div class="sr-card">
+            <div class="sr-k">Eye age</div>
+            <div class="sr-v sr-v-lg" id="srEyeAge">—</div>
+          </div>
+        </div>
+
+        <div class="sr-card">
+          <div class="sr-tone-top">
+            <div class="sr-tone-label" id="srToneLabel">Light</div>
+          </div>
+
+          <div class="sr-tone-track" aria-hidden="true">
+            <div class="sr-tone-thumb" id="srToneThumb"></div>
+          </div>
+
+          <div class="sr-tone-bottom">
+            <div class="sr-tone-k">Skin tone</div>
+          </div>
+        </div>
+
+        <!-- “Your skin looks great!” block -->
+        <div class="sr-block">
+          <div class="sr-h2">Your skin looks great!</div>
+          <div class="sr-sub">These parameters are in excellent condition:</div>
+
+          <div class="sr-tags" id="srTags"></div>
+        </div>
+
+        <!-- Concern cards (image + footer + score + show more) -->
+        <div class="sr-carousel-wrap">
+          <div class="sr-carousel" id="srCarousel"></div>
+
+          <button
+            class="sr-next"
+            id="srNextBtn"
+            type="button"
+            aria-label="Next"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M9 6l6 6-6 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Summary paragraph -->
+        <div class="sr-summary" id="srSummary"></div>
+      </div>
+    </section>
+
+    <!-- ===================== NEW: Concern Screen ===================== -->
+    <section id="concernScreen" class="cs-screen" aria-hidden="true">
+      <div class="cs-root">
+        <!-- Desktop header -->
+        <div class="cs-top">
+          <button
+            class="cs-back"
+            id="csBackBtn"
+            type="button"
+            aria-label="Back"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M15 18l-6-6 6-6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <div class="cs-title" id="csHeaderTitle">Concern</div>
+        </div>
+
+        <!-- Image area -->
+        <div class="cs-hero">
+          <img id="csImage" class="cs-image" alt="Concern image" />
+          <!-- Mobile close -->
+          <button
+            class="cs-close"
+            id="csCloseBtn"
+            type="button"
+            aria-label="Close"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Sheet/content -->
+        <div class="cs-sheet">
+          <!-- Tabs -->
+          <div class="cs-tabs" id="csTabs"></div>
+
+          <!-- Title + severity -->
+          <div class="cs-heading">
+            <div class="cs-heading-row">
+              <div class="cs-name" id="csName">—</div>
+              <div class="cs-sev" id="csSeverity">—</div>
+            </div>
+
+            <div class="cs-score-row">
+              <div class="cs-score" id="csScore">—</div>
+              <div class="cs-score-den">/ 100</div>
+            </div>
+
+            <div class="cs-bar">
+              <div class="cs-bar-fill" id="csBarFill"></div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="cs-desc" id="csDesc"></div>
+        </div>
+      </div>
+    </section>
+
     <script src="https://cdn.glamarz0.de/sdk/wrapper?=@1.2.8.js"></script>
     <script src="https://unpkg.com/lottie-web@5.12.2/build/player/lottie.min.js"></script>
 
@@ -1180,7 +1954,10 @@
         "useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict"; // nanoid default-ish
       const SIZE = 21;
       let subjectId = null;
+      let currentScanId = null;
       const userId = getOrCreateAnonymousUserId();
+      // For SP chips -> Concern screen
+      let __SP_SELECTED_CONCERNS__ = [];
 
       const onBoardingQuestions = [
         "What skincare routine should I start with?",
@@ -1299,6 +2076,216 @@
         return then.toLocaleDateString();
       }
 
+      function openSkinPortraitResultScreen() {
+        const sr = document.getElementById("skinPortraitResultScreen");
+        if (!sr) return;
+        sr.classList.add("is-open");
+        sr.setAttribute("aria-hidden", "false");
+      }
+
+      function closeSkinPortraitResultScreen() {
+        const sr = document.getElementById("skinPortraitResultScreen");
+        if (!sr) return;
+        sr.classList.remove("is-open");
+        sr.setAttribute("aria-hidden", "true");
+      }
+
+      function setToneUI(skinTone) {
+        const label = document.getElementById("srToneLabel");
+        const thumb = document.getElementById("srToneThumb");
+        if (!label || !thumb) return;
+
+        const tone = (skinTone || "").toString().trim();
+        label.textContent = tone || "Light";
+
+        // map tone -> thumb position (approx, stable)
+        const map = {
+          "Very Light": 10,
+          Light: 25,
+          Medium: 50,
+          Tan: 70,
+          Deep: 85,
+          Dark: 88,
+        };
+
+        let pct = map[tone];
+        if (typeof pct !== "number") {
+          // fallback: if unknown, keep mid
+          pct = 50;
+        }
+        thumb.style.left = pct + "%";
+      }
+
+      function iconForTag(name) {
+        // generic icons (simple + lightweight)
+        const n = (name || "").toLowerCase();
+        if (n.includes("hydr")) {
+          return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3s6 6.4 6 11.1A6 6 0 1 1 6 14.1C6 9.4 12 3 12 3z" stroke="currentColor" stroke-width="1.8"/>
+        </svg>`;
+        }
+        if (n.includes("acne") || n.includes("spot")) {
+          return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="9" cy="10" r="2.2" stroke="currentColor" stroke-width="1.8"/>
+          <circle cx="16" cy="14" r="1.8" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M7 17c2.5 2 7.5 2 10 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>`;
+        }
+        if (n.includes("eye")) {
+          return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z" stroke="currentColor" stroke-width="1.8"/>
+          <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+        </svg>`;
+        }
+        return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M7 14c2-3 8-3 10 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M6 10c1.5-2 10.5-2 12 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>`;
+      }
+
+      function renderResultScreenFromItem(item) {
+        const skinData = item?.report_data?.output?.skinData || {};
+        const concerns = Array.isArray(skinData?.concerns)
+          ? skinData.concerns
+          : [];
+
+        const createdAt =
+          item?.report_data?.createdAt || item?.created_at || item?.updated_at;
+
+        const srTime = document.getElementById("srTime");
+        const srSkinType = document.getElementById("srSkinType");
+        const srSkinAge = document.getElementById("srSkinAge");
+        const srEyeAge = document.getElementById("srEyeAge");
+        const srTags = document.getElementById("srTags");
+        const srCarousel = document.getElementById("srCarousel");
+        const srSummary = document.getElementById("srSummary");
+
+        if (srTime) srTime.textContent = timeAgo(createdAt);
+        if (srSkinType) srSkinType.textContent = skinData?.skin_type || "—";
+        if (srSkinAge)
+          srSkinAge.textContent = Number.isFinite(skinData?.skin_age)
+            ? skinData.skin_age
+            : "—";
+        if (srEyeAge)
+          srEyeAge.textContent = Number.isFinite(skinData?.eye_age)
+            ? skinData.eye_age
+            : "—";
+
+        setToneUI(skinData?.skin_tone);
+        setToneThumbFromToneLabel(skinData?.skin_tone);
+
+        // tags (use first 6 concerns as “excellent condition” pills like reference)
+        if (srTags) {
+          srTags.innerHTML = "";
+          const topTags = concerns
+            .slice(0, 6)
+            .map((c) => c?.name)
+            .filter(Boolean);
+          topTags.forEach((name) => {
+            const el = document.createElement("div");
+            el.className = "sr-tag";
+            el.innerHTML = `${iconForTag(name)}<span>${name}</span>`;
+            srTags.appendChild(el);
+          });
+        }
+
+        // carousel (use first 2 concerns like reference)
+        if (srCarousel) {
+          srCarousel.innerHTML = "";
+          // const top2 = concerns.slice(0, 2);
+
+          concerns.forEach((c) => {
+            const value = Math.max(0, Math.min(100, Number(c?.value ?? 0)));
+            const sev = (c?.severity || "").toString().trim() || "—";
+
+            const card = document.createElement("div");
+            card.className = "sr-concern-card";
+
+            const img = document.createElement("img");
+            img.className = "sr-concern-img";
+            img.src = c?.image || "";
+            img.alt = c?.name || "Concern";
+            img.loading = "lazy";
+            img.referrerPolicy = "no-referrer";
+
+            const bottom = document.createElement("div");
+            bottom.className = "sr-concern-bottom";
+
+            bottom.innerHTML = `
+            <div class="sr-concern-title-row">
+              <div>
+                <div class="sr-concern-name">${c?.name || "—"}</div>
+                <div class="sr-concern-sev">${sev}</div>
+              </div>
+
+              <div class="sr-score" style="--p:${value}">
+                <div class="sr-score-inner">
+                  <div class="sr-score-top">${value}</div>
+                  <div class="sr-score-bot">100</div>
+                </div>
+              </div>
+            </div>
+
+            <button class="sr-show-more" type="button">Show more</button>
+          `;
+
+            bottom
+              .querySelector(".sr-show-more")
+              ?.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                openConcernScreenFor(concerns, c?.name);
+              });
+
+            card.appendChild(img);
+            card.appendChild(bottom);
+            srCarousel.appendChild(card);
+          });
+        }
+
+        // summary paragraph
+        if (srSummary) {
+          srSummary.textContent = skinData?.summary || "";
+        }
+      }
+
+      function normalizeToneLabel(s) {
+        return String(s || "")
+          .trim()
+          .toLowerCase();
+      }
+
+      function tonePosFor(label) {
+        const l = normalizeToneLabel(label);
+
+        const map = {
+          "very fair": 12,
+          fair: 22,
+          light: 28,
+          intermediate: 35,
+          medium: 45,
+          tan: 60,
+          deep: 78,
+          dark: 82,
+          "very deep": 88,
+        };
+
+        if (map[l] != null) return map[l];
+
+        // allow numeric tones too (0..100)
+        const n = Number(label);
+        if (Number.isFinite(n)) return Math.max(0, Math.min(100, n));
+
+        return 35; // default fallback
+      }
+
+      function setToneThumbFromToneLabel(toneLabel) {
+        const thumb = document.getElementById("srToneThumb");
+        if (!thumb) return;
+
+        const pct = tonePosFor(toneLabel);
+        thumb.style.left = pct + "%";
+      }
+
       // render cards into .sp-grid from items (keeps up to limit)
       function renderScansCards(items = [], limit = 10) {
         const cardScroller = document.getElementById("cardScroller");
@@ -1353,27 +2340,29 @@
           moreBtn.type = "button";
           moreBtn.title = "More";
           moreBtn.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="5" cy="12" r="1.5" fill="rgba(11,11,16,0.7)"></circle>
-        <circle cx="12" cy="12" r="1.5" fill="rgba(11,11,16,0.7)"></circle>
-        <circle cx="19" cy="12" r="1.5" fill="rgba(11,11,16,0.7)"></circle>
-      </svg>
-    `;
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="5" cy="12" r="1.5" fill="rgba(11,11,16,0.7)"></circle>
+            <circle cx="12" cy="12" r="1.5" fill="rgba(11,11,16,0.7)"></circle>
+            <circle cx="19" cy="12" r="1.5" fill="rgba(11,11,16,0.7)"></circle>
+          </svg>
+        `;
 
           const footer = document.createElement("div");
           footer.className = "sp-card-footer";
           footer.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 7v6l4 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.2" fill="none"/>
-      </svg>
-      <span>${timeAgo(createdAt)}</span>
-    `;
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 7v6l4 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.2" fill="none"/>
+          </svg>
+          <span>${timeAgo(createdAt)}</span>
+        `;
 
-          // Click card => select => update chips
           card.addEventListener("click", (e) => {
             if (e.target.closest(".sp-card-more")) return;
-            setSelected(idx);
+
+            setSelected(idx); // keeps your chips update behavior
+            renderResultScreenFromItem(it); // fill result UI from this scan
+            openSkinPortraitResultScreen(); // open result overlay
           });
 
           moreBtn.addEventListener("click", (ev) => {
@@ -1395,6 +2384,172 @@
         }
       }
 
+      // ===================== Concern Screen state =====================
+      let __CURRENT_CONCERNS__ = [];
+      let __CURRENT_CONCERN_INDEX__ = 0;
+
+      function openConcernScreen() {
+        const cs = document.getElementById("concernScreen");
+        if (!cs) return;
+        cs.classList.add("is-open");
+        cs.setAttribute("aria-hidden", "false");
+      }
+
+      function closeConcernScreen() {
+        const cs = document.getElementById("concernScreen");
+        if (!cs) return;
+        cs.classList.remove("is-open");
+        cs.setAttribute("aria-hidden", "true");
+      }
+
+      function normalizeConcernName(s) {
+        return String(s || "")
+          .trim()
+          .toLowerCase();
+      }
+
+      // If your API already provides severity, we use it.
+      // Otherwise we derive a reasonable label.
+      function severityFromValue(v) {
+        const n = Number(v);
+        if (!Number.isFinite(n)) return "—";
+        if (n >= 80) return "Excellent";
+        if (n >= 65) return "Good";
+        if (n >= 45) return "Average";
+        if (n >= 25) return "Needs care";
+        return "Poor";
+      }
+
+      // Optional: tiny inline icon (you can customize per concern name)
+      function iconForConcernTab(name) {
+        const n = normalizeConcernName(name);
+
+        if (n.includes("red")) {
+          return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3s6 6.4 6 11.1A6 6 0 1 1 6 14.1C6 9.4 12 3 12 3z"
+            stroke="currentColor" stroke-width="1.8"/>
+        </svg>`;
+        }
+
+        if (n.includes("pore")) {
+          return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="8" cy="9" r="1.6" fill="currentColor" opacity="0.75"/>
+          <circle cx="14" cy="12" r="1.6" fill="currentColor" opacity="0.75"/>
+          <circle cx="10" cy="15" r="1.6" fill="currentColor" opacity="0.75"/>
+        </svg>`;
+        }
+
+        if (n.includes("line") || n.includes("wrinkle")) {
+          return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 9c4-3 12-3 16 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M5 14c3-2 11-2 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>
+        </svg>`;
+        }
+
+        return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/>
+      </svg>`;
+      }
+
+      function renderConcernScreen(index) {
+        const concerns = Array.isArray(__CURRENT_CONCERNS__)
+          ? __CURRENT_CONCERNS__
+          : [];
+        if (!concerns.length) return;
+
+        const safeIndex = Math.max(0, Math.min(concerns.length - 1, index));
+        __CURRENT_CONCERN_INDEX__ = safeIndex;
+
+        const c = concerns[safeIndex] || {};
+        const name = c?.name || "Concern";
+        const value = Math.max(0, Math.min(100, Number(c?.value ?? 0)));
+        const severity =
+          String(c?.severity || "").trim() || severityFromValue(value);
+
+        const img = document.getElementById("csImage");
+        const headerTitle = document.getElementById("csHeaderTitle");
+        const csName = document.getElementById("csName");
+        const csSeverity = document.getElementById("csSeverity");
+        const csScore = document.getElementById("csScore");
+        const csBarFill = document.getElementById("csBarFill");
+        const csDesc = document.getElementById("csDesc");
+        const csTabs = document.getElementById("csTabs");
+
+        if (headerTitle) headerTitle.textContent = name;
+
+        // image: prefer concern image; fallback to empty
+        if (img) {
+          img.src = c?.image || "";
+          img.alt = name;
+          img.referrerPolicy = "no-referrer";
+          img.loading = "lazy";
+          img.onerror = () => {
+            img.removeAttribute("src");
+            img.style.background = "linear-gradient(180deg, #f2f2f4, #e9e9ee)";
+          };
+        }
+
+        if (csName) csName.textContent = name + ":";
+        if (csSeverity) csSeverity.textContent = severity;
+        if (csScore) csScore.textContent = String(Math.round(value));
+        if (csBarFill) csBarFill.style.width = value + "%";
+
+        // description: adapt to your schema if you have a specific key
+        const desc =
+          c?.description ||
+          c?.info ||
+          c?.details ||
+          c?.summary ||
+          "No additional information available for this concern.";
+        if (csDesc) csDesc.textContent = desc;
+
+        // tabs
+        if (csTabs) {
+          csTabs.innerHTML = "";
+          concerns.forEach((it, i) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "cs-tab" + (i === safeIndex ? " is-active" : "");
+            btn.innerHTML = `${iconForConcernTab(it?.name)}<span>${it?.name || "—"}</span>`;
+            btn.addEventListener("click", () => renderConcernScreen(i));
+            csTabs.appendChild(btn);
+          });
+        }
+      }
+
+      function openConcernScreenFor(concerns, selectedConcernName) {
+        __CURRENT_CONCERNS__ = Array.isArray(concerns) ? concerns : [];
+
+        const target = normalizeConcernName(selectedConcernName);
+        let idx = 0;
+
+        if (target && __CURRENT_CONCERNS__.length) {
+          const found = __CURRENT_CONCERNS__.findIndex(
+            (c) => normalizeConcernName(c?.name) === target,
+          );
+          idx = found >= 0 ? found : 0;
+        }
+
+        renderConcernScreen(idx);
+        openConcernScreen();
+      }
+
+      // Wire close/back buttons once
+      (function initConcernScreenControls() {
+        const csBackBtn = document.getElementById("csBackBtn");
+        const csCloseBtn = document.getElementById("csCloseBtn");
+        if (csBackBtn) csBackBtn.addEventListener("click", closeConcernScreen);
+        if (csCloseBtn)
+          csCloseBtn.addEventListener("click", closeConcernScreen);
+
+        window.addEventListener("keydown", (e) => {
+          const cs = document.getElementById("concernScreen");
+          if (e.key === "Escape" && cs?.classList.contains("is-open")) {
+            closeConcernScreen();
+          }
+        });
+      })();
+
       function getTop3ConcernNames(item) {
         const concerns = item?.report_data?.output?.skinData?.concerns || [];
         return concerns
@@ -1412,12 +2567,49 @@
 
         if (!chips.length) return;
 
+        // ✅ store current scan concerns so chips can open concern screen
+        const concerns = Array.isArray(
+          item?.report_data?.output?.skinData?.concerns,
+        )
+          ? item.report_data.output.skinData.concerns
+          : [];
+        __SP_SELECTED_CONCERNS__ = concerns;
+
         const top3 = getTop3ConcernNames(item);
 
         // keep 3 chips static; fallback to existing labels if missing
-        chips[0].textContent = top3[0] || chips[0].textContent || "Pores";
-        chips[1].textContent = top3[1] || chips[1].textContent || "Hydration";
-        chips[2].textContent = top3[2] || chips[2].textContent || "Uniformness";
+        const labels = [
+          top3[0] || chips[0].textContent || "Pores",
+          top3[1] || chips[1].textContent || "Hydration",
+          top3[2] || chips[2].textContent || "Uniformness",
+        ];
+
+        chips.forEach((chip, idx) => {
+          chip.textContent = labels[idx];
+
+          // ✅ make it look/behave like a button (once)
+          chip.setAttribute("role", "button");
+          chip.setAttribute("tabindex", "0");
+          chip.style.cursor = "pointer";
+
+          // avoid duplicate listeners
+          if (chip.__boundConcernClick) return;
+          chip.__boundConcernClick = true;
+
+          const openFromChip = () => {
+            const name = chip.textContent.trim();
+            if (!name) return;
+            openConcernScreenFor(__SP_SELECTED_CONCERNS__, name);
+          };
+
+          chip.addEventListener("click", openFromChip);
+          chip.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              openFromChip();
+            }
+          });
+        });
       }
 
       async function getPastScans() {
@@ -1445,6 +2637,33 @@
             renderScansCards(items, 10);
           } catch (e) {
             console.error("getScans failed:", e);
+          }
+        }
+      }
+
+      async function kailyShowMore(tech) {
+        if (subjectId && currentScanId) {
+          try {
+            const res = await getSingleScan(
+              appId,
+              subjectId,
+              currentScanId,
+              accessToken,
+            );
+            console.log("getsingleScans result:", res);
+            let concerns = res?.report_data?.output?.skinData?.concerns;
+            if (concerns) {
+              const selected =
+                concerns.find(
+                  (c) =>
+                    String(c.tech_name).toLowerCase() === tech.toLowerCase(),
+                ) ||
+                console.log("parse concerns JSON", concerns, tech, selected);
+              // your existing concern screen opener
+              openConcernScreenFor(concerns, selected?.name || name);
+            }
+          } catch (e) {
+            console.error("getsingleScans failed:", e);
           }
         }
       }
@@ -1532,6 +2751,22 @@
             } catch (e) {
               console.warn("open_glamar callback attachment failed", e);
             }
+
+            try {
+              window?.copilot?.callbacks?.add({
+                name: "open_concern",
+                handler: (args) => {
+                  console.log("open_concern called", args);
+                  const tech = String(args?.value || "");
+
+                  kailyShowMore(tech);
+
+                  return { success: true };
+                },
+              });
+            } catch (e) {
+              console.warn("open_concern callback attachment failed", e);
+            }
           },
         );
 
@@ -1612,6 +2847,24 @@
         spScreen.setAttribute("aria-hidden", "true");
       }
 
+      (function () {
+        const srBackBtn = document.getElementById("srBackBtn");
+        const srNextBtn = document.getElementById("srNextBtn");
+        const srCarousel = document.getElementById("srCarousel");
+        if (srBackBtn)
+          srBackBtn.addEventListener("click", closeSkinPortraitResultScreen);
+
+        // next button just scrolls the carousel
+        if (srNextBtn && srCarousel) {
+          srNextBtn.addEventListener("click", () => {
+            srCarousel.scrollBy({
+              left: srCarousel.clientWidth * 0.85,
+              behavior: "smooth",
+            });
+          });
+        }
+      })();
+
       autosize();
       setSendState();
 
@@ -1670,11 +2923,11 @@
         const overlay = document.createElement("div");
         overlay.id = "glamarOverlay";
         overlay.innerHTML = `
-           <div id="glamarModal">
-             <div id="GlamAR-Container"></div>
-             <button id="closeSdkBtn" aria-label="Close">×</button>
-           </div>
-         `;
+               <div id="glamarModal">
+                 <div id="GlamAR-Container"></div>
+                 <button id="closeSdkBtn" aria-label="Close">×</button>
+               </div>
+             `;
         document.body.appendChild(overlay);
 
         glamAROverlay = overlay;
@@ -1775,6 +3028,7 @@
               copilot("event", "sendUserMessage", {
                 value: "analyze my skin",
               });
+              currentScanId = scanId;
             } catch (e) {
               console.error("Error handling skin-gpt:", e);
             }
@@ -1784,6 +3038,22 @@
 
       async function getScans(appId, subjectId, SA_BEARER) {
         const url = `${SA_BASE}/apps/${appId}/subjects/${subjectId}/scans?pageNo=1&pageSize=10`;
+        const res = await fetch(url, {
+          method: "GET",
+          headers: {
+            accept: "application/json, text/plain, */*",
+            authorization: `Bearer ${btoa(unescape(encodeURIComponent(SA_BEARER)))}`,
+          },
+        });
+        if (!res.ok) {
+          const t = await res.text().catch(() => "");
+          throw new Error(`GET skinAnalysis failed ${res.status}: ${t}`);
+        }
+        return res.json();
+      }
+
+      async function getSingleScan(appId, subjectId, scanId, SA_BEARER) {
+        const url = `${SA_BASE}/apps/${appId}/subjects/${subjectId}/scans/${scanId}`;
         const res = await fetch(url, {
           method: "GET",
           headers: {
