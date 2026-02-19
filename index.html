@@ -1958,6 +1958,13 @@
       const userId = getOrCreateAnonymousUserId();
       // For SP chips -> Concern screen
       let __SP_SELECTED_CONCERNS__ = [];
+      const scansPaging = {
+        pageNo: 1,
+        pageSize: 10,
+        isLoading: false,
+        hasNext: true,
+        allItems: [], // optional: keep everything if you need it later
+      };
 
       const onBoardingQuestions = [
         "What skincare routine should I start with?",
@@ -2048,7 +2055,8 @@
           const res = await getSubjectId(appId, userId, accessToken);
           console.log(res.subjectId);
           subjectId = res.subjectId;
-          getPastScans();
+          setupScanInfiniteScroll();
+          getPastScansPaginated({ reset: true });
         } catch (e) {
           console.error("getSubjectId failed:", e);
         }
@@ -2286,41 +2294,29 @@
         thumb.style.left = pct + "%";
       }
 
-      // render cards into .sp-grid from items (keeps up to limit)
-      function renderScansCards(items = [], limit = 10) {
+      function appendScanCards(items = []) {
         const cardScroller = document.getElementById("cardScroller");
         const grid = document.getElementById("spGrid");
         const analysisBanner = document.querySelector(".analysis-banner");
         if (!cardScroller) return;
-        cardScroller.innerHTML = "";
 
         const valid = items.filter((it) => {
           const url = it?.report_data?.input?.image;
           return typeof url === "string" && url.trim();
         });
 
-        const toRender = valid.slice(0, limit);
-
-        let selectedIndex = 0; // default: first card selected
-
-        function setSelected(index) {
-          selectedIndex = index;
-
-          // optional: if you later want a visual selected state, add/remove a class here
-          // [...grid.children].forEach((el, i) => el.classList.toggle("is-selected", i === index));
-
-          const selectedItem = toRender[index];
-          if (selectedItem) setConcernChipsFromItem(selectedItem);
+        // First time: show grid + hide banner
+        if (valid.length && grid && analysisBanner) {
+          grid.style.display = "block";
+          analysisBanner.style.display = "none";
         }
 
-        toRender.forEach((it, idx) => {
+        valid.forEach((it) => {
           const imageUrl = it.report_data.input.image;
           const createdAt = it.report_data.createdAt || it.created_at;
 
           const card = document.createElement("div");
           card.className = "sp-card";
-
-          // Store item reference on DOM node for later use if needed
           card.__scanItem = it;
 
           const img = document.createElement("img");
@@ -2335,53 +2331,112 @@
             card.style.background = "linear-gradient(180deg, #f2f2f4, #e9e9ee)";
           };
 
-          const moreBtn = document.createElement("button");
-          moreBtn.className = "sp-card-more";
-          moreBtn.type = "button";
-          moreBtn.title = "More";
-          moreBtn.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="5" cy="12" r="1.5" fill="rgba(11,11,16,0.7)"></circle>
-            <circle cx="12" cy="12" r="1.5" fill="rgba(11,11,16,0.7)"></circle>
-            <circle cx="19" cy="12" r="1.5" fill="rgba(11,11,16,0.7)"></circle>
-          </svg>
-        `;
-
           const footer = document.createElement("div");
           footer.className = "sp-card-footer";
           footer.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 7v6l4 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.2" fill="none"/>
-          </svg>
-          <span>${timeAgo(createdAt)}</span>
-        `;
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 7v6l4 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.2" fill="none"/>
+      </svg>
+      <span>${timeAgo(createdAt)}</span>
+    `;
 
           card.addEventListener("click", (e) => {
-            if (e.target.closest(".sp-card-more")) return;
+            // update chips from this card
+            setConcernChipsFromItem(it);
 
-            setSelected(idx); // keeps your chips update behavior
-            renderResultScreenFromItem(it); // fill result UI from this scan
-            openSkinPortraitResultScreen(); // open result overlay
-          });
-
-          moreBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            console.log("more clicked for", it);
+            // open result
+            renderResultScreenFromItem(it);
+            openSkinPortraitResultScreen();
           });
 
           card.appendChild(img);
-          // card.appendChild(moreBtn);
           card.appendChild(footer);
           cardScroller.appendChild(card);
         });
+      }
 
-        // Default selection when user lands
-        if (toRender.length) {
-          setSelected(0);
-          grid.style.display = "block";
-          analysisBanner.style.display = "none";
+      async function getPastScansPaginated({ reset = false } = {}) {
+        if (!subjectId) return;
+
+        if (scansPaging.isLoading) return;
+        if (!scansPaging.hasNext && !reset) return;
+
+        if (reset) {
+          scansPaging.pageNo = 1;
+          scansPaging.hasNext = true;
+          scansPaging.allItems = [];
+          const cardScroller = document.getElementById("cardScroller");
+          if (cardScroller) cardScroller.innerHTML = "";
         }
+
+        scansPaging.isLoading = true;
+
+        try {
+          const res = await getScans(
+            appId,
+            subjectId,
+            accessToken,
+            scansPaging.pageNo,
+            scansPaging.pageSize,
+          );
+          const items = res?.items || [];
+
+          // Append new items
+          scansPaging.allItems.push(...items);
+          appendScanCards(items);
+
+          // portrait pill: only set once (first time you find an image)
+          const portraitPlus = document.getElementById("portrait-plus");
+          const portraitImage = document.getElementById("portrait-image");
+          if (
+            portraitImage &&
+            portraitPlus &&
+            portraitImage.style.display !== "block"
+          ) {
+            for (let i = 0; i < Math.min(items.length, 10); i++) {
+              const imageUrl = items[i]?.report_data?.input?.image;
+              if (typeof imageUrl === "string" && imageUrl.trim()) {
+                portraitImage.style.display = "block";
+                portraitPlus.style.display = "none";
+                portraitImage.src = imageUrl;
+                break;
+              }
+            }
+          }
+
+          scansPaging.hasNext = res?.page?.hasNext;
+
+          // Default selection only on first page load
+          if (reset && scansPaging.allItems.length) {
+            const first = scansPaging.allItems[0];
+            if (first) setConcernChipsFromItem(first);
+          }
+
+          // Increment page for next time
+          scansPaging.pageNo += 1;
+        } catch (e) {
+          console.error("getScans failed:", e);
+        } finally {
+          scansPaging.isLoading = false;
+        }
+      }
+
+      function setupScanInfiniteScroll() {
+        const scroller = document.getElementById("cardScroller");
+        if (!scroller) return;
+
+        const THRESHOLD_PX = 240; // load when 240px from end
+
+        scroller.addEventListener("scroll", () => {
+          if (scansPaging.isLoading || !scansPaging.hasNext) return;
+
+          const remaining =
+            scroller.scrollWidth - (scroller.scrollLeft + scroller.clientWidth);
+          if (remaining < THRESHOLD_PX && scansPaging.hasNext) {
+            getPastScansPaginated();
+          }
+        });
       }
 
       // ===================== Concern Screen state =====================
@@ -2612,35 +2667,6 @@
         });
       }
 
-      async function getPastScans() {
-        if (subjectId) {
-          try {
-            const res = await getScans(appId, subjectId, accessToken);
-            console.log("getScans result:", res);
-
-            const items = res?.items || [];
-            const portraitPlus = document.getElementById("portrait-plus");
-            const portraitImage = document.getElementById("portrait-image");
-
-            // find first valid image for portrait pill (existing behavior)
-            for (let i = 0; i < Math.min(items.length, 10); i++) {
-              const imageUrl = items[i]?.report_data?.input?.image;
-              if (typeof imageUrl === "string" && imageUrl.trim()) {
-                portraitImage.style.display = "block";
-                portraitPlus.style.display = "none";
-                portraitImage.src = imageUrl;
-                break;
-              }
-            }
-
-            // now render all valid items as cards in the SP grid
-            renderScansCards(items, 10);
-          } catch (e) {
-            console.error("getScans failed:", e);
-          }
-        }
-      }
-
       async function kailyShowMore(tech) {
         if (subjectId && currentScanId) {
           try {
@@ -2729,7 +2755,7 @@
 
         copilot(
           "init",
-          { element: "copilotSA", position: "initial" },
+          { element: "copilotSA", position: "initial", hideConversation: true },
           function () {
             try {
               window?.copilot?.users?.set?.(userSettings);
@@ -3036,8 +3062,14 @@
         });
       }
 
-      async function getScans(appId, subjectId, SA_BEARER) {
-        const url = `${SA_BASE}/apps/${appId}/subjects/${subjectId}/scans?pageNo=1&pageSize=10`;
+      async function getScans(
+        appId,
+        subjectId,
+        SA_BEARER,
+        pageNo = 1,
+        pageSize = 10,
+      ) {
+        const url = `${SA_BASE}/apps/${appId}/subjects/${subjectId}/scans?pageNo=${pageNo}&pageSize=${pageSize}`;
         const res = await fetch(url, {
           method: "GET",
           headers: {
