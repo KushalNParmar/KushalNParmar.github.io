@@ -1137,13 +1137,26 @@
         setTimeout(() => {
           try {
             // Use absolute minimal configuration
+            const onlyARCategories = [
+              "home",
+              "luggage",
+              "automotive",
+              "apparel",
+            ];
+
+            let shouldAddCategory = onlyARCategories.includes(
+              pendingData.category,
+            );
+
+            // Use absolute minimal configuration
+
             let config = {
               platform: currentSize || "web",
               meta: {
                 cameraResolution: currentCameraResolution,
                 sdkVersion: "2.0.0",
               },
-             
+              category: shouldAddCategory ? pendingData.category : "",
             };
 
             console.log("Initializing GlamAR SDK with user token...");
