@@ -3,64 +3,395 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AR Model Viewer</title>
-    <script
-      type="module"
-      src="https://unpkg.com/@google/model-viewer@4.1.0/dist/model-viewer.min.js"
-    ></script>
+    <title>GlamAR</title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://cdn.pixelbin.io/v2/dummy-cloudname/t.resize(h:90,w:90)/__glam_ar/__sdk/favicon.png"
+    />
     <style>
-      html,
+      html {
+        font-size: 1vw;
+        height: 100%;
+      }
       body {
-        width: 100%;
-        height: 100%;
         margin: 0;
+        overflow: hidden;
+        font-family: Inter, sans-serif;
       }
 
-      model-viewer {
-        position: relative;
+      .container {
+        position: fixed;
         width: 100%;
         height: 100%;
-        background: #f5f5f5;
       }
 
-      #arButton {
-        position: fixed;
-        left: 50%;
-        bottom: 24px;
-        transform: translateX(-50%);
-        z-index: 1;
+      #GlamAR-module {
+        position: absolute;
+        width: 100%;
+        height: 100%;
         border: 0;
-        border-radius: 999px;
-        padding: 14px 22px;
-        background: #111;
-        color: #fff;
-        font: 600 16px system-ui, sans-serif;
-        cursor: pointer;
+      }
+
+      #error {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .centeredLoader {
+        position: fixed;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        background: var(--layout-background-color);
+        justify-content: center;
+        align-items: center;
+        z-index: 5000;
+        background: white;
+      }
+      .lottieContainer {
+        display: flex;
+        padding: 7.5rem;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1.25rem;
+        flex-shrink: 0;
+      }
+      .waveGrid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        width: 20rem;
+        height: 20rem;
+        flex-shrink: 0;
+        aspect-ratio: 1 / 1;
+      }
+      .waveGrid .cell {
+        width: 100%;
+        height: 100%;
+        background: #000;
+        transform: scale(0.4);
+        transform-origin: center;
+        will-change: transform;
+        animation: waveScale 1.57s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+        box-shadow: 0 0 0 0.5px #000;
+      }
+      @keyframes waveScale {
+        0% {
+          transform: scale(0.4);
+        }
+        21% {
+          transform: scale(1);
+        }
+        53% {
+          transform: scale(1);
+        }
+        75% {
+          transform: scale(0.4);
+        }
+        100% {
+          transform: scale(0.4);
+        }
+      }
+      .waveGrid .cell:nth-child(1) {
+        animation-delay: 200ms;
+      }
+      .waveGrid .cell:nth-child(2) {
+        animation-delay: 267ms;
+      }
+      .waveGrid .cell:nth-child(3) {
+        animation-delay: 334ms;
+      }
+      .waveGrid .cell:nth-child(4) {
+        animation-delay: 400ms;
+      }
+      .waveGrid .cell:nth-child(5) {
+        animation-delay: 133ms;
+      }
+      .waveGrid .cell:nth-child(6) {
+        animation-delay: 200ms;
+      }
+      .waveGrid .cell:nth-child(7) {
+        animation-delay: 267ms;
+      }
+      .waveGrid .cell:nth-child(8) {
+        animation-delay: 334ms;
+      }
+      .waveGrid .cell:nth-child(9) {
+        animation-delay: 67ms;
+      }
+      .waveGrid .cell:nth-child(10) {
+        animation-delay: 133ms;
+      }
+      .waveGrid .cell:nth-child(11) {
+        animation-delay: 200ms;
+      }
+      .waveGrid .cell:nth-child(12) {
+        animation-delay: 267ms;
+      }
+      .waveGrid .cell:nth-child(13) {
+        animation-delay: 0ms;
+      }
+      .waveGrid .cell:nth-child(14) {
+        animation-delay: 67ms;
+      }
+      .waveGrid .cell:nth-child(15) {
+        animation-delay: 133ms;
+      }
+      .waveGrid .cell:nth-child(16) {
+        animation-delay: 200ms;
+      }
+      .lottieText {
+        margin: 0px;
+        text-align: center;
+        font-size: 3.75rem;
+        font-style: normal;
+        font-weight: 400;
+      }
+
+      @media (min-width: 648px) {
+        .lottieContainer {
+          padding: 3.7rem;
+          gap: 0.62rem;
+        }
+        .waveGrid {
+          width: 12.35rem;
+          height: 12.35rem;
+        }
+        .lottieText {
+          font-size: 2.16rem;
+        }
+      }
+
+      /* Tablet Landscape */
+      @media (min-width: 720px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 3.33rem;
+          gap: 0.56rem;
+        }
+        .waveGrid {
+          width: 11.11rem;
+          height: 11.11rem;
+        }
+        .lottieText {
+          font-size: 1.94rem;
+        }
+      }
+
+      /* Web portrait */
+      @media (min-width: 846px) and (orientation: portrait) {
+        .lottieContainer {
+          padding: 2.84rem;
+          gap: 0.47rem;
+        }
+        .waveGrid {
+          width: 14.18rem;
+          height: 14.18rem;
+        }
+        .lottieText {
+          font-size: 2.36rem;
+        }
+      }
+
+      /* web Landscape */
+      @media (min-width: 1440px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 1.67rem;
+          gap: 0.28rem;
+        }
+        .waveGrid {
+          width: 8.33rem;
+          height: 8.33rem;
+        }
+        .lottieContainer h4 {
+          font-size: 1.39rem;
+        }
+      }
+
+      /* TV portrait */
+      @media (min-width: 1080px) and (orientation: portrait) {
+        .lottieContainer {
+          padding: 2.22rem;
+          gap: 0.37rem;
+        }
+        .waveGrid {
+          width: 14.81rem;
+          height: 14.81rem;
+        }
+        .lottieContainer h4 {
+          font-size: 2.22rem;
+        }
+      }
+
+      /* TV Landscape */
+      @media (min-width: 1920px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 1.25rem;
+          gap: 0.21rem;
+        }
+        .waveGrid {
+          width: 8.33rem;
+          height: 8.33rem;
+        }
+        .lottieContainer h4 {
+          font-size: 1.25rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .waveGrid .cell {
+          animation: none;
+          transform: scale(1);
+        }
       }
     </style>
+    <script src="https://cdn.glamarz0.de/sdk/wrapper?=@2.0.291.js"></script>
   </head>
+
   <body>
-    <model-viewer
-      id="modelViewer"
-      alt="3D model"
-      ar
-      ar-modes="webxr scene-viewer quick-look"
-      camera-controls
-      shadow-intensity="1"
-      loading="eager"
-    ></model-viewer>
-
-    <button id="arButton" type="button">View in Room</button>
-
+    <div class="container">
+      <div id="GlamAR-module"></div>
+      <div id="error"><span class="error-text"></span></div>
+    </div>
+    <div class="centeredLoader" id="lottieLoader">
+      <div class="lottieContainer">
+        <div class="waveGrid" aria-hidden="true">
+          <span class="cell"></span><span class="cell"></span
+          ><span class="cell"></span><span class="cell"></span>
+          <span class="cell"></span><span class="cell"></span
+          ><span class="cell"></span><span class="cell"></span>
+          <span class="cell"></span><span class="cell"></span
+          ><span class="cell"></span><span class="cell"></span>
+          <span class="cell"></span><span class="cell"></span
+          ><span class="cell"></span><span class="cell"></span>
+        </div>
+        <h4 class="lottieText">Loading your experience</h4>
+      </div>
+    </div>
     <script>
-      const modelViewer = document.getElementById("modelViewer");
-      const params = new URLSearchParams(window.location.search);
-      modelViewer.src =
-        params.get("url") || params.get("glb") || params.get("model") || "";
+      const lottieLoader = document.getElementById("lottieLoader");
 
-      document.getElementById("arButton").addEventListener("click", () => {
-        modelViewer.activateAR();
-      });
+      const errorText = document.querySelector(".error-text");
+      const urlParams = new URLSearchParams(window.location.search);
+      const skuId = urlParams.get("skuId");
+      const apiKey = "ba843e66-4b93-48f6-a02e-ea48d920e52e"; //urlParams.get("accessKey");
+      const appId = urlParams.get("appId");
+      const version = urlParams.get("version");
+      const viewInRoom = urlParams.get("viewInRoom");
+      const category = urlParams.get("category");
+      const sessionId = urlParams.get("sessionId");
+      const debugTextValue = urlParams.get("debug");
+      const dummyClothData = [
+        {
+          _id: "2dd7fe07-0c34-4618-890a-a5b745dedeas04sf",
+          category: "apparel",
+          subCategory: "topwear",
+          productName: "Test apparel",
+          productImage: "",
+          actionUrl: "",
+          brand: "vogue",
+          version: "1.0.0",
+          isActive: true,
+          barcode: "vogue-1709637495061",
+          collectionIds: [],
+          additionalProductDetails: {},
+          arEffect: {
+            effectAssets2D: [
+              {
+                id: "topwear",
+                url: "https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/demo-assets/top_1.png",
+              },
+            ],
+          },
+        },
+        {
+          _id: "2dd7fe07-0c34-4618-890a-a5b745dedeas0asf",
+          category: "apparel",
+          subCategory: "bottomwear",
+          productName: "Test apparel",
+          productImage: "",
+          actionUrl: "",
+          brand: "vogue",
+          version: "1.0.0",
+          isActive: true,
+          barcode: "vogue-1709637495061",
+          collectionIds: [],
+          additionalProductDetails: {},
+          arEffect: {
+            effectAssets2D: [
+              {
+                id: "bottomwear",
+                url: "https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/demo-assets/bottom_1.png",
+              },
+            ],
+          },
+        },
+        {
+          _id: "2dd7fe07-0c34-4618-890a-a5b745dedeas04asg",
+          category: "apparel",
+          subCategory: "full-outfit",
+          productName: "Test apparel",
+          productImage: "",
+          actionUrl: "",
+          brand: "vogue",
+          version: "1.0.0",
+          isActive: true,
+          barcode: "vogue-1709637495061",
+          collectionIds: [],
+          additionalProductDetails: {},
+          arEffect: {
+            effectAssets2D: [
+              {
+                id: "topwear",
+                url: "https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/demo-assets/top_2.png",
+              },
+              {
+                id: "bottomwear",
+                url: "https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/demo-assets/bottom_2.png",
+              },
+            ],
+          },
+        },
+      ];
+
+      // const apiKey = '32f427e7-7be1-4919-93d8-8fdd8412158d';
+      // const appId = '32f427e7-7be1-4919-93d8-8fdd8412158d';
+
+      if (apiKey) {
+        const config = {
+          platform: "web",
+          mode: "private",
+          category: appId ? (category ?? "skinanalysis") : "",
+          configuration: {},
+          meta: {
+            sdkVersion: version || "2.0.0",
+            sessionId: sessionId,
+            debugText: debugTextValue ?? false,
+          },
+        };
+        if (appId) {
+          config.configuration.skinAnalysis = {
+            appId,
+          };
+        }
+        if (viewInRoom) {
+          config.meta.viewInRoom = viewInRoom;
+        }
+        console.log("wrapper index init ", apiKey, config);
+        GlamAR.init("GlamAR-module", apiKey, config);
+        GlamAR.addEventListener("loading", () => {
+          lottieLoader.style.display = "none";
+        });
+        GlamAR.addEventListener("loaded", () => {
+          GlamAR.applyByMultipleConfigData(dummyClothData);
+        });
+      } else {
+        errorText.textContent = "Invalid access key";
+      }
     </script>
   </body>
 </html>
