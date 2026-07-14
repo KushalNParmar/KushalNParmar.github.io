@@ -41,6 +41,37 @@
         font-size: 16px;
       }
 
+      .controls {
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+        display: flex;
+        gap: 12px;
+        z-index: 10;
+      }
+
+      .controls button {
+        border: 0;
+        border-radius: 6px;
+        background: #111;
+        color: #fff;
+        cursor: pointer;
+        font:
+          600 14px/1 Inter,
+          sans-serif;
+        min-height: 40px;
+        padding: 0 16px;
+      }
+
+      .controls button:hover {
+        background: #333;
+      }
+
+      .controls button:focus-visible {
+        outline: 3px solid #fff;
+        outline-offset: 2px;
+      }
+
       .centeredLoader {
         position: fixed;
         display: flex;
@@ -256,6 +287,11 @@
     <div class="container">
       <div id="GlamAR-module"></div>
       <div id="error"><span class="error-text"></span></div>
+      <div class="controls">
+        <button type="button" id="applySkusButton">Apply SKUs</button>
+        <button type="button" id="resetButton">Reset</button>
+        <button type="button" id="mirrorButton">Mirror Off</button>
+      </div>
     </div>
     <div class="centeredLoader" id="lottieLoader">
       <div class="lottieContainer">
@@ -274,92 +310,49 @@
     </div>
     <script>
       const lottieLoader = document.getElementById("lottieLoader");
+      const applySkusButton = document.getElementById("applySkusButton");
+      const resetButton = document.getElementById("resetButton");
+      const mirrorButton = document.getElementById("mirrorButton");
 
       const errorText = document.querySelector(".error-text");
       const urlParams = new URLSearchParams(window.location.search);
-      const skuId = urlParams.get("skuId");
-      const apiKey = "ba843e66-4b93-48f6-a02e-ea48d920e52e"; //urlParams.get("accessKey");
+      const skuParam = urlParams.get("skuId");
+      const skuIds = skuParam
+        ? skuParam
+            .split(",")
+            .map((sku) => sku.trim())
+            .filter(Boolean)
+        : ["12753294", "17366547"];
+      const apiKey = urlParams.get("accessKey");
       const appId = urlParams.get("appId");
       const version = urlParams.get("version");
       const viewInRoom = urlParams.get("viewInRoom");
       const category = urlParams.get("category");
       const sessionId = urlParams.get("sessionId");
       const debugTextValue = urlParams.get("debug");
-      const dummyClothData = [
-        {
-          _id: "2dd7fe07-0c34-4618-890a-a5b745dedeas04sf",
-          category: "apparel",
-          subCategory: "topwear",
-          productName: "Test apparel",
-          productImage: "",
-          actionUrl: "",
-          brand: "vogue",
-          version: "1.0.0",
-          isActive: true,
-          barcode: "vogue-1709637495061",
-          collectionIds: [],
-          additionalProductDetails: {},
-          arEffect: {
-            effectAssets2D: [
-              {
-                id: "topwear",
-                url: "https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/demo-assets/top_1.png",
-              },
-            ],
-          },
-        },
-        {
-          _id: "2dd7fe07-0c34-4618-890a-a5b745dedeas0asf",
-          category: "apparel",
-          subCategory: "bottomwear",
-          productName: "Test apparel",
-          productImage: "",
-          actionUrl: "",
-          brand: "vogue",
-          version: "1.0.0",
-          isActive: true,
-          barcode: "vogue-1709637495061",
-          collectionIds: [],
-          additionalProductDetails: {},
-          arEffect: {
-            effectAssets2D: [
-              {
-                id: "bottomwear",
-                url: "https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/demo-assets/bottom_1.png",
-              },
-            ],
-          },
-        },
-        {
-          _id: "2dd7fe07-0c34-4618-890a-a5b745dedeas04asg",
-          category: "apparel",
-          subCategory: "full-outfit",
-          productName: "Test apparel",
-          productImage: "",
-          actionUrl: "",
-          brand: "vogue",
-          version: "1.0.0",
-          isActive: true,
-          barcode: "vogue-1709637495061",
-          collectionIds: [],
-          additionalProductDetails: {},
-          arEffect: {
-            effectAssets2D: [
-              {
-                id: "topwear",
-                url: "https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/demo-assets/top_2.png",
-              },
-              {
-                id: "bottomwear",
-                url: "https://cdn.pixelbin.io/v2/glamar-fynd-835885/original/demo-assets/bottom_2.png",
-              },
-            ],
-          },
-        },
-      ];
 
-      // const apiKey = '32f427e7-7be1-4919-93d8-8fdd8412158d';
-      // const appId = '32f427e7-7be1-4919-93d8-8fdd8412158d';
+      const glamar = GlamAR;
+      let cameraMirrored = false;
+
+      const applySkus = () => {
+        if (skuIds.length === 0) {
+          errorText.textContent = "No SKU IDs provided";
+          return;
+        }
+        skuIds.forEach((id) => {
+          glamar.applyBySku(id);
+        });
+      };
+
+      applySkusButton.addEventListener("click", applySkus);
+      resetButton.addEventListener("click", () => {
+        glamar.reset();
+      });
+      mirrorButton.addEventListener("click", () => {
+        cameraMirrored = !cameraMirrored;
+        glamar.setViewportMirrored(cameraMirrored);
+        mirrorButton.textContent = cameraMirrored ? "Mirror off" : "Mirror on";
+      });
 
       if (apiKey) {
         const config = {
@@ -371,6 +364,9 @@
             sdkVersion: version || "2.0.0",
             sessionId: sessionId,
             debugText: debugTextValue ?? false,
+            vto: {
+              multiTryon: true,
+            },
           },
         };
         if (appId) {
@@ -382,12 +378,12 @@
           config.meta.viewInRoom = viewInRoom;
         }
         console.log("wrapper index init ", apiKey, config);
-        GlamAR.init("GlamAR-module", apiKey, config);
-        GlamAR.addEventListener("loading", () => {
+        glamar.init("GlamAR-module", apiKey, config);
+        glamar.addEventListener("loading", () => {
           lottieLoader.style.display = "none";
         });
-        GlamAR.addEventListener("loaded", () => {
-          GlamAR.applyByMultipleConfigData(dummyClothData);
+        glamar.addEventListener("loaded", () => {
+          applySkus();
         });
       } else {
         errorText.textContent = "Invalid access key";
