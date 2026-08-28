@@ -255,6 +255,7 @@
         const params = new URLSearchParams(window.location.search);
         const accessKey = params.get("accessKey") || DEFAULT_API_KEY;
         const version = params.get("version");
+        const debugText = params.get("debug") === "true";
         const loading = document.getElementById("loading");
         const error = document.getElementById("error");
         const status = document.getElementById("experience-status");
@@ -376,6 +377,7 @@
           // },
           meta: {
             sdkVersion: version || "1.0.0",
+            debugText,
           },
         };
 
