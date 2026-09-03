@@ -28,9 +28,17 @@
         font-size: 1vw;
       }
 
+      /*
+       * Body is the stage. It stays in normal flow, so its top edge is always
+       * painted just below the browser chrome no matter how iOS defines the
+       * layout viewport, and its height is the measured visible height rather
+       * than 100%/100vh, which can resolve against the bars-collapsed
+       * viewport. Every screen is absolutely positioned inside it.
+       */
       body {
+        position: relative;
         width: 100%;
-        height: 100%;
+        height: var(--app-height, 100%);
         margin: 0;
         overflow: hidden;
         overscroll-behavior: none;
@@ -44,10 +52,8 @@
       }
 
       .captureScreen {
-        position: fixed;
+        position: absolute;
         inset: 0;
-        width: 100%;
-        height: 100%;
         visibility: hidden;
         opacity: 0;
         transition: opacity 220ms ease;
@@ -60,12 +66,10 @@
 
       /* Exact loader copied from packages/wrapper/src/index.html. */
       .centeredLoader {
-        position: fixed;
+        position: absolute;
         inset: 0;
         z-index: 5000;
         display: flex;
-        width: 100%;
-        height: 100%;
         align-items: center;
         justify-content: center;
         background: white;
@@ -431,11 +435,9 @@
       }
 
       .captureIqScreen {
-        position: fixed;
+        position: absolute;
         inset: 0;
         z-index: 4500;
-        width: 100%;
-        height: 100%;
         overflow: hidden;
         color: #fff;
         background: #000;
@@ -687,12 +689,10 @@
 
       /* Session handoff states mirror SkinGPT's ContinueOnDesktop treatment. */
       .sessionStatusScreen {
-        position: fixed;
+        position: absolute;
         inset: 0;
         z-index: 6000;
         display: flex;
-        width: 100%;
-        height: 100%;
         padding: 32px 24px;
         flex-direction: column;
         justify-content: center;
@@ -1429,6 +1429,41 @@
 
     <script>
       (() => {
+        /*
+         * innerHeight is the height iOS is actually showing; 100vh and a
+         * percentage of the root can both resolve against the taller
+         * bars-collapsed viewport. Publishing it as --app-height sizes the
+         * body stage, and every screen fills that.
+         */
+        const setAppHeight = () => {
+          const height = window.visualViewport?.height || window.innerHeight;
+          if (!height) return;
+          document.documentElement.style.setProperty(
+            "--app-height",
+            `${Math.floor(height)}px`,
+          );
+        };
+
+        setAppHeight();
+
+        /*
+         * On the first load from another app Safari is still animating its
+         * chrome while this runs, and it does not reliably fire resize when the
+         * bars settle, so one measurement can lock in the wrong height. On a
+         * refresh the chrome is already settled and one measurement is right,
+         * which is the whole first-load-vs-refresh asymmetry. Re-measure across
+         * the loader's lifetime so the height is correct by the time the intro
+         * screen is revealed.
+         */
+        [50, 200, 500, 1000, 1600].forEach((delay) => {
+          window.setTimeout(setAppHeight, delay);
+        });
+
+        window.addEventListener("resize", setAppHeight);
+        window.addEventListener("orientationchange", setAppHeight);
+        window.addEventListener("pageshow", setAppHeight);
+        window.visualViewport?.addEventListener("resize", setAppHeight);
+
         const CAPTURE_IQ_TAG_NAME = "glamar-captureiq";
         const DEFAULT_CAPTURE_IQ_SCRIPT_URL =
           "https://core.glamar.io/capture-iq/glamar-captureiq.js";
