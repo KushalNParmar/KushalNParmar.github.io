@@ -57,8 +57,8 @@
        */
       .captureScreen {
         position: absolute;
-        top: 0;
-        left: 0;
+        top: var(--qr-scan-viewport-top, 0px);
+        left: var(--qr-scan-viewport-left, 0px);
         width: 100%;
         width: var(--qr-scan-viewport-width, 100vw);
         height: 100%;
@@ -76,8 +76,8 @@
       /* Exact loader copied from packages/wrapper/src/index.html. */
       .centeredLoader {
         position: absolute;
-        top: 0;
-        left: 0;
+        top: var(--qr-scan-viewport-top, 0px);
+        left: var(--qr-scan-viewport-left, 0px);
         z-index: 5000;
         display: flex;
         width: 100%;
@@ -450,8 +450,8 @@
 
       .captureIqScreen {
         position: absolute;
-        top: 0;
-        left: 0;
+        top: var(--qr-scan-viewport-top, 0px);
+        left: var(--qr-scan-viewport-left, 0px);
         z-index: 4500;
         width: 100%;
         width: var(--qr-scan-viewport-width, 100vw);
@@ -710,8 +710,8 @@
       /* Session handoff states mirror SkinGPT's ContinueOnDesktop treatment. */
       .sessionStatusScreen {
         position: absolute;
-        top: 0;
-        left: 0;
+        top: var(--qr-scan-viewport-top, 0px);
+        left: var(--qr-scan-viewport-left, 0px);
         z-index: 6000;
         display: flex;
         width: 100%;
@@ -1576,26 +1576,29 @@
 
         window.setTimeout(revealExperience, minimumLoaderDuration);
 
+        /*
+         * The full-screen layers are absolutely positioned, so they resolve
+         * against the initial containing block. `pageTop`/`pageLeft` report the
+         * visible viewport's origin in exactly those coordinates, so writing
+         * them back as `top`/`left` pins every layer to what the user can
+         * actually see, whatever Safari is doing with the address bar, the
+         * document scroll offset, or pinch zoom. Measuring the visual viewport
+         * is also the only way to get the address-bar-expanded height: the old
+         * Math.max() of innerHeight/clientHeight could only ever grow, so a
+         * layer could never shrink to the area Safari was really showing.
+         */
         const syncCaptureIqViewport = () => {
           captureIqViewportFrame = 0;
           const viewport = window.visualViewport;
           const documentElement = document.documentElement;
-          const visualRight = viewport
-            ? viewport.offsetLeft + viewport.width
-            : 0;
-          const visualBottom = viewport
-            ? viewport.offsetTop + viewport.height
-            : 0;
-          const width = Math.max(
-            window.innerWidth,
-            documentElement.clientWidth,
-            visualRight,
-          );
-          const height = Math.max(
-            window.innerHeight,
-            documentElement.clientHeight,
-            visualBottom,
-          );
+          const width = viewport?.width || window.innerWidth;
+          const height = viewport?.height || window.innerHeight;
+          const top = viewport
+            ? (viewport.pageTop ?? viewport.offsetTop + window.scrollY)
+            : window.scrollY;
+          const left = viewport
+            ? (viewport.pageLeft ?? viewport.offsetLeft + window.scrollX)
+            : window.scrollX;
 
           documentElement.style.setProperty(
             "--qr-scan-viewport-width",
@@ -1605,6 +1608,65 @@
             "--qr-scan-viewport-height",
             `${height}px`,
           );
+          documentElement.style.setProperty(
+            "--qr-scan-viewport-top",
+            `${top || 0}px`,
+          );
+          documentElement.style.setProperty(
+            "--qr-scan-viewport-left",
+            `${left || 0}px`,
+          );
+
+          renderViewportDebug();
+        };
+
+        /*
+         * Opt-in diagnostics for devices that cannot be attached to a
+         * debugger: append ?viewportDebug=1 to read the live measurements.
+         * Inert unless the flag is present.
+         */
+        const viewportDebugEnabled = window.location.search.includes(
+          "viewportDebug=1",
+        );
+        let viewportDebugBox = null;
+
+        const renderViewportDebug = () => {
+          if (!viewportDebugEnabled) return;
+
+          if (!viewportDebugBox) {
+            viewportDebugBox = document.createElement("pre");
+            viewportDebugBox.style.cssText = [
+              "position:absolute",
+              "top:var(--qr-scan-viewport-top,0px)",
+              "left:var(--qr-scan-viewport-left,0px)",
+              "z-index:9999",
+              "margin:0",
+              "padding:6px 8px",
+              "font:11px/1.35 ui-monospace,monospace",
+              "color:#fff",
+              "background:rgba(0,0,0,.82)",
+              "pointer-events:none",
+            ].join(";");
+            document.body.appendChild(viewportDebugBox);
+          }
+
+          const viewport = window.visualViewport;
+          const round = (value) => Math.round(value * 10) / 10;
+          viewportDebugBox.textContent = [
+            `inner  ${window.innerWidth}x${window.innerHeight}`,
+            `client ${document.documentElement.clientWidth}x${document.documentElement.clientHeight}`,
+            viewport
+              ? `visual ${round(viewport.width)}x${round(viewport.height)}`
+              : "visual n/a",
+            viewport
+              ? `offset ${round(viewport.offsetLeft)},${round(viewport.offsetTop)}`
+              : "offset n/a",
+            viewport
+              ? `page   ${round(viewport.pageLeft)},${round(viewport.pageTop)}`
+              : "page   n/a",
+            viewport ? `scale  ${viewport.scale}` : "scale  n/a",
+            `scroll ${window.scrollX},${window.scrollY}`,
+          ].join("\n");
         };
 
         const scheduleCaptureIqViewportSync = () => {
@@ -1638,6 +1700,9 @@
           scheduleCaptureIqViewportSync,
         );
         window.addEventListener("resize", scheduleCaptureIqViewportSync);
+        window.addEventListener("scroll", scheduleCaptureIqViewportSync, {
+          passive: true,
+        });
         window.addEventListener("orientationchange", () => {
           settleCaptureIqViewport();
         });
