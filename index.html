@@ -28,6 +28,7 @@
 
       html {
         height: 100%;
+        overflow: hidden;
         font-size: 1vw;
       }
 
@@ -45,8 +46,17 @@
         font: inherit;
       }
 
+      /*
+       * Every full-screen layer is absolute, never fixed. iOS Safari anchors
+       * fixed boxes to the layout viewport, which stays at the bars-collapsed
+       * height, so `top: 0` sits behind the address bar on the first load from
+       * an external app and the whole shell renders shifted up by the bar's
+       * height. Absolute boxes anchor to the document origin, which is always
+       * painted just under the bar. Neither html nor body can scroll, so
+       * absolute and fixed are otherwise equivalent here.
+       */
       .captureScreen {
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
         width: 100%;
@@ -65,7 +75,7 @@
 
       /* Exact loader copied from packages/wrapper/src/index.html. */
       .centeredLoader {
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
         z-index: 5000;
@@ -439,7 +449,7 @@
       }
 
       .captureIqScreen {
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
         z-index: 4500;
@@ -699,7 +709,7 @@
 
       /* Session handoff states mirror SkinGPT's ContinueOnDesktop treatment. */
       .sessionStatusScreen {
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
         z-index: 6000;
