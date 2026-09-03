@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <meta name="theme-color" content="#f3f3f3" />
     <title>QR Scan</title>
     <style>
@@ -28,17 +31,8 @@
         font-size: 1vw;
       }
 
-      /*
-       * Body is the stage. It stays in normal flow, so its top edge is always
-       * painted just below the browser chrome no matter how iOS defines the
-       * layout viewport, and its height is the measured visible height rather
-       * than 100%/100vh, which can resolve against the bars-collapsed
-       * viewport. Every screen is absolutely positioned inside it.
-       */
       body {
-        position: relative;
-        width: 100%;
-        height: var(--app-height, 100%);
+        height: 100%;
         margin: 0;
         overflow: hidden;
         overscroll-behavior: none;
@@ -52,8 +46,13 @@
       }
 
       .captureScreen {
-        position: absolute;
-        inset: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        width: var(--qr-scan-viewport-width, 100vw);
+        height: 100%;
+        height: var(--qr-scan-viewport-height, 100dvh);
         visibility: hidden;
         opacity: 0;
         transition: opacity 220ms ease;
@@ -66,10 +65,15 @@
 
       /* Exact loader copied from packages/wrapper/src/index.html. */
       .centeredLoader {
-        position: absolute;
-        inset: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
         z-index: 5000;
         display: flex;
+        width: 100%;
+        width: var(--qr-scan-viewport-width, 100vw);
+        height: 100%;
+        height: var(--qr-scan-viewport-height, 100dvh);
         align-items: center;
         justify-content: center;
         background: white;
@@ -435,9 +439,14 @@
       }
 
       .captureIqScreen {
-        position: absolute;
-        inset: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
         z-index: 4500;
+        width: 100%;
+        width: var(--qr-scan-viewport-width, 100vw);
+        height: 100%;
+        height: var(--qr-scan-viewport-height, 100dvh);
         overflow: hidden;
         color: #fff;
         background: #000;
@@ -569,8 +578,8 @@
 
       .captureIqClose {
         position: absolute;
-        top: 16px;
-        right: 16px;
+        top: max(16px, env(safe-area-inset-top));
+        right: max(16px, env(safe-area-inset-right));
         z-index: 40;
         display: grid;
         width: 44px;
@@ -602,7 +611,8 @@
         inset: 0;
         z-index: 30;
         display: flex;
-        padding: 32px 24px;
+        padding: max(32px, env(safe-area-inset-top)) 24px
+          max(32px, env(safe-area-inset-bottom));
         flex-direction: column;
         justify-content: center;
         align-items: center;
@@ -689,11 +699,17 @@
 
       /* Session handoff states mirror SkinGPT's ContinueOnDesktop treatment. */
       .sessionStatusScreen {
-        position: absolute;
-        inset: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
         z-index: 6000;
         display: flex;
-        padding: 32px 24px;
+        width: 100%;
+        width: var(--qr-scan-viewport-width, 100vw);
+        height: 100%;
+        height: var(--qr-scan-viewport-height, 100dvh);
+        padding: max(32px, env(safe-area-inset-top)) 24px
+          max(32px, env(safe-area-inset-bottom));
         flex-direction: column;
         justify-content: center;
         align-items: center;
@@ -794,6 +810,7 @@
       @media (max-width: 480px) {
         .uploadPreviewActions {
           padding: 16px 12px;
+          padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
         }
 
         .uploadPreviewButton {
@@ -1429,41 +1446,6 @@
 
     <script>
       (() => {
-        /*
-         * innerHeight is the height iOS is actually showing; 100vh and a
-         * percentage of the root can both resolve against the taller
-         * bars-collapsed viewport. Publishing it as --app-height sizes the
-         * body stage, and every screen fills that.
-         */
-        const setAppHeight = () => {
-          const height = window.visualViewport?.height || window.innerHeight;
-          if (!height) return;
-          document.documentElement.style.setProperty(
-            "--app-height",
-            `${Math.floor(height)}px`,
-          );
-        };
-
-        setAppHeight();
-
-        /*
-         * On the first load from another app Safari is still animating its
-         * chrome while this runs, and it does not reliably fire resize when the
-         * bars settle, so one measurement can lock in the wrong height. On a
-         * refresh the chrome is already settled and one measurement is right,
-         * which is the whole first-load-vs-refresh asymmetry. Re-measure across
-         * the loader's lifetime so the height is correct by the time the intro
-         * screen is revealed.
-         */
-        [50, 200, 500, 1000, 1600].forEach((delay) => {
-          window.setTimeout(setAppHeight, delay);
-        });
-
-        window.addEventListener("resize", setAppHeight);
-        window.addEventListener("orientationchange", setAppHeight);
-        window.addEventListener("pageshow", setAppHeight);
-        window.visualViewport?.addEventListener("resize", setAppHeight);
-
         const CAPTURE_IQ_TAG_NAME = "glamar-captureiq";
         const DEFAULT_CAPTURE_IQ_SCRIPT_URL =
           "https://core.glamar.io/capture-iq/glamar-captureiq.js";
@@ -1562,6 +1544,7 @@
         let sessionCompleted = false;
         let sessionPrimaryAction = null;
         let sessionSecondaryAction = null;
+        let captureIqViewportFrame = 0;
         let experienceRevealed = false;
         let sessionBootstrapPromise = null;
         let sessionBootstrapError = null;
@@ -1582,6 +1565,80 @@
         };
 
         window.setTimeout(revealExperience, minimumLoaderDuration);
+
+        const syncCaptureIqViewport = () => {
+          captureIqViewportFrame = 0;
+          const viewport = window.visualViewport;
+          const documentElement = document.documentElement;
+          const visualRight = viewport
+            ? viewport.offsetLeft + viewport.width
+            : 0;
+          const visualBottom = viewport
+            ? viewport.offsetTop + viewport.height
+            : 0;
+          const width = Math.max(
+            window.innerWidth,
+            documentElement.clientWidth,
+            visualRight,
+          );
+          const height = Math.max(
+            window.innerHeight,
+            documentElement.clientHeight,
+            visualBottom,
+          );
+
+          documentElement.style.setProperty(
+            "--qr-scan-viewport-width",
+            `${width}px`,
+          );
+          documentElement.style.setProperty(
+            "--qr-scan-viewport-height",
+            `${height}px`,
+          );
+        };
+
+        const scheduleCaptureIqViewportSync = () => {
+          if (captureIqViewportFrame) return;
+          captureIqViewportFrame = window.requestAnimationFrame(
+            syncCaptureIqViewport,
+          );
+        };
+
+        const settleCaptureIqViewport = () => {
+          [0, 50, 150, 300, 600, 1000, 1600].forEach((delay) => {
+            window.setTimeout(scheduleCaptureIqViewportSync, delay);
+          });
+        };
+
+        const activateCaptureIqViewport = () => {
+          syncCaptureIqViewport();
+          document.body.classList.add("isCaptureIqOpen");
+        };
+
+        const deactivateCaptureIqViewport = () => {
+          document.body.classList.remove("isCaptureIqOpen");
+        };
+
+        window.visualViewport?.addEventListener(
+          "resize",
+          scheduleCaptureIqViewportSync,
+        );
+        window.visualViewport?.addEventListener(
+          "scroll",
+          scheduleCaptureIqViewportSync,
+        );
+        window.addEventListener("resize", scheduleCaptureIqViewportSync);
+        window.addEventListener("orientationchange", () => {
+          settleCaptureIqViewport();
+        });
+        window.addEventListener("pageshow", settleCaptureIqViewport);
+        window.addEventListener("focus", settleCaptureIqViewport);
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") {
+            settleCaptureIqViewport();
+          }
+        });
+        settleCaptureIqViewport();
 
         const queryParams = new URLSearchParams(window.location.search);
         const sessionId = queryParams.get("sessionId")?.trim() || "";
@@ -2020,7 +2077,7 @@
         const openCaptureIqView = () => {
           captureScreen.setAttribute("aria-hidden", "true");
           captureScreen.setAttribute("inert", "");
-          document.body.classList.add("isCaptureIqOpen");
+          activateCaptureIqViewport();
           captureIqScreen.hidden = false;
           captureIqScreen.setAttribute("aria-hidden", "false");
           takePhotoButton.disabled = true;
@@ -2033,7 +2090,7 @@
           capturePhase = "intro";
           captureIqScreen.hidden = true;
           captureIqScreen.setAttribute("aria-hidden", "true");
-          document.body.classList.remove("isCaptureIqOpen");
+          deactivateCaptureIqViewport();
           captureScreen.removeAttribute("inert");
           captureScreen.setAttribute("aria-hidden", "false");
           takePhotoButton.disabled = false;
@@ -2366,7 +2423,7 @@
           capturePhase = "upload-review";
           captureScreen.setAttribute("aria-hidden", "true");
           captureScreen.setAttribute("inert", "");
-          document.body.classList.add("isCaptureIqOpen");
+          activateCaptureIqViewport();
           captureIqScreen.hidden = false;
           captureIqScreen.setAttribute("aria-hidden", "false");
           captureIqHost.replaceChildren();
