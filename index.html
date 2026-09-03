@@ -80,16 +80,42 @@
         inset: 0;
         visibility: hidden;
         opacity: 0;
+        transition: opacity 220ms ease;
       }
 
-      /*
-       * The capture choices are the unconditional app-mode screen. The early
-       * head class owns this state, so no loader, timer, session request, or
-       * application initialization can prevent the buttons from rendering.
-       */
-      html.isQrApp .captureScreen {
+      body.isReady .captureScreen {
         visibility: visible;
         opacity: 1;
+      }
+
+      /* Exact loader copied from packages/wrapper/src/index.html. */
+      .centeredLoader {
+        position: absolute;
+        inset: 0;
+        z-index: 5000;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        opacity: 1;
+        transition: opacity 220ms ease;
+      }
+
+      body.isReady .centeredLoader {
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      .lottieContainer {
+        display: flex;
+        padding: 7.5rem;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1.25rem;
+        flex-shrink: 0;
       }
 
       .waveGrid {
@@ -178,6 +204,15 @@
       }
       .waveGrid .cell:nth-child(16) {
         animation-delay: 200ms;
+      }
+
+      .lottieText {
+        margin: 0;
+        text-align: center;
+        color: #000;
+        font-size: 3.75rem;
+        font-style: normal;
+        font-weight: 400;
       }
 
       /* Mobile/non-source SkinGPT intro branch. */
@@ -785,9 +820,16 @@
       }
 
       @media (min-width: 648px) {
+        .lottieContainer {
+          padding: 3.7rem;
+          gap: 0.62rem;
+        }
         .waveGrid {
           width: 12.35rem;
           height: 12.35rem;
+        }
+        .lottieText {
+          font-size: 2.16rem;
         }
       }
 
@@ -845,9 +887,16 @@
       }
 
       @media (min-width: 720px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 3.33rem;
+          gap: 0.56rem;
+        }
         .waveGrid {
           width: 11.11rem;
           height: 11.11rem;
+        }
+        .lottieText {
+          font-size: 1.94rem;
         }
         .skinIntroTop {
           min-height: 11.11rem;
@@ -978,9 +1027,16 @@
       }
 
       @media (min-width: 1440px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 1.67rem;
+          gap: 0.28rem;
+        }
         .waveGrid {
           width: 8.33rem;
           height: 8.33rem;
+        }
+        .lottieText {
+          font-size: 1.39rem;
         }
         .skinIntroTop {
           min-height: 6.11rem;
@@ -1020,9 +1076,16 @@
       }
 
       @media (min-width: 1920px) and (orientation: landscape) {
+        .lottieContainer {
+          padding: 1.25rem;
+          gap: 0.21rem;
+        }
         .waveGrid {
           width: 8.33rem;
           height: 8.33rem;
+        }
+        .lottieText {
+          font-size: 1.25rem;
         }
         .skinIntroContainer {
           width: 52.08rem;
@@ -1042,6 +1105,10 @@
         .captureTrack {
           animation: none;
           transform: translateX(0%);
+        }
+        .centeredLoader,
+        .captureScreen {
+          transition: none;
         }
         .skinIntroCta:active {
           transform: none;
@@ -1068,6 +1135,7 @@
         background: #fff;
       }
 
+      html.isQrHandoff body > .centeredLoader,
       html.isQrHandoff body > .captureScreen,
       html.isQrHandoff body > .captureIqScreen,
       html.isQrHandoff body > .sessionStatusScreen {
@@ -1169,7 +1237,7 @@
 
         continueLink.addEventListener("click", (event) => {
           event.preventDefault();
-          navigateAfterVisiblePaint();
+          navigate();
         });
 
         window.addEventListener("pageshow", () => {
@@ -1183,7 +1251,29 @@
       })();
     </script>
 
-    <main class="captureScreen" id="captureScreen" aria-hidden="false">
+    <div
+      class="centeredLoader"
+      id="experienceLoader"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading your experience"
+    >
+      <div class="lottieContainer">
+        <div class="waveGrid" aria-hidden="true">
+          <span class="cell"></span><span class="cell"></span
+          ><span class="cell"></span><span class="cell"></span>
+          <span class="cell"></span><span class="cell"></span
+          ><span class="cell"></span><span class="cell"></span>
+          <span class="cell"></span><span class="cell"></span
+          ><span class="cell"></span><span class="cell"></span>
+          <span class="cell"></span><span class="cell"></span
+          ><span class="cell"></span><span class="cell"></span>
+        </div>
+        <h2 class="lottieText">Loading your experience</h2>
+      </div>
+    </div>
+
+    <main class="captureScreen" id="captureScreen" aria-hidden="true">
       <div class="skinIntroRoot">
         <div class="skinIntroTop" aria-hidden="true"></div>
         <div class="skinIntroFrame">
@@ -1521,6 +1611,9 @@
             --captureiq-btn-solid-text: #ffffff;
           }
         `;
+        const minimumLoaderDuration = 1570;
+        const startedAt = performance.now();
+        const loader = document.getElementById("experienceLoader");
         const captureScreen = document.getElementById("captureScreen");
         const takePhotoButton = document.getElementById("takePhotoButton");
         const uploadPhotoButton = document.getElementById("uploadPhotoButton");
@@ -1588,8 +1681,6 @@
         let sessionCompleted = false;
         let sessionPrimaryAction = null;
         let sessionSecondaryAction = null;
-        let sessionBootstrapPromise = null;
-        let sessionBootstrapError = null;
 
         const queryParams = new URLSearchParams(window.location.search);
         const sessionId = queryParams.get("sessionId")?.trim() || "";
@@ -1598,15 +1689,7 @@
 
         const generateDeviceId = () => {
           const bytes = new Uint8Array(21);
-
-          if (window.crypto?.getRandomValues) {
-            window.crypto.getRandomValues(bytes);
-          } else {
-            for (let index = 0; index < bytes.length; index += 1) {
-              bytes[index] = Math.floor(Math.random() * 256);
-            }
-          }
-
+          window.crypto.getRandomValues(bytes);
           return Array.from(
             bytes,
             (byte) => DEVICE_ID_ALPHABET[byte & 63],
@@ -1783,26 +1866,6 @@
 
           sessionClaimed = true;
           return response;
-        };
-
-        const ensureSessionClaimed = async () => {
-          if (sessionClaimed || sessionCompleted) return;
-
-          if (!sessionBootstrapPromise || sessionBootstrapError) {
-            sessionBootstrapError = null;
-            sessionBootstrapPromise = claimSession().catch((error) => {
-              sessionBootstrapError = error;
-            });
-          }
-
-          await sessionBootstrapPromise;
-
-          if (!sessionClaimed && !sessionCompleted) {
-            throw (
-              sessionBootstrapError ||
-              new Error("This capture session is not ready.")
-            );
-          }
         };
 
         const setSessionAction = (button, label, action) => {
@@ -2305,12 +2368,7 @@
         };
 
         const submitSelectionToSession = async (selection) => {
-          if (!selection?.file) return;
-          if (sessionCompleted) {
-            showCompletedSession();
-            return;
-          }
-
+          if (!selection?.file || sessionCompleted) return;
           pendingSessionSelection = selection;
           restoreIntroView();
           showSessionState({
@@ -2320,11 +2378,8 @@
           });
 
           try {
-            await ensureSessionClaimed();
-
-            if (sessionCompleted) {
-              showCompletedSession();
-              return;
+            if (!sessionClaimed) {
+              throw new Error("This capture session is not ready.");
             }
 
             const preparedPhoto = await preparePhotoForSession(selection.file);
@@ -2548,9 +2603,39 @@
           }
         });
 
-        // Preserve the normal background claim, but never let its latency or
-        // failure cover the capture choices during startup.
-        void ensureSessionClaimed().catch(() => {});
+        let sessionBootstrapError = null;
+        const sessionBootstrapPromise = claimSession().catch((error) => {
+          sessionBootstrapError = error;
+        });
+
+        window.addEventListener(
+          "load",
+          async () => {
+            const remainingDuration = Math.max(
+              0,
+              minimumLoaderDuration - (performance.now() - startedAt),
+            );
+
+            await Promise.all([
+              sessionBootstrapPromise,
+              new Promise((resolve) =>
+                window.setTimeout(resolve, remainingDuration),
+              ),
+            ]);
+
+            document.body.classList.add("isReady");
+            captureScreen.setAttribute("aria-hidden", "false");
+            loader.setAttribute("aria-hidden", "true");
+            window.setTimeout(() => loader.remove(), 240);
+
+            if (sessionCompleted) {
+              showCompletedSession();
+            } else if (sessionBootstrapError) {
+              showSessionClaimError(sessionBootstrapError);
+            }
+          },
+          { once: true },
+        );
       })();
     </script>
   </body>
