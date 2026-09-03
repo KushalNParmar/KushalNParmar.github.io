@@ -27,17 +27,38 @@
       }
 
       html {
-        height: 100%;
+        min-height: 100%;
         font-size: 1vw;
+        background: var(--layout-minimized-background-color);
       }
 
       body {
-        height: 100%;
+        display: grid;
+        min-height: 100vh;
+        min-height: 100dvh;
         margin: 0;
-        overflow: hidden;
         overscroll-behavior: none;
+        isolation: isolate;
         font-family: var(--typography-font-family);
         background: var(--layout-minimized-background-color);
+      }
+
+      /*
+       * Keep every application screen in normal document flow. They overlap
+       * in one grid cell instead of being attached to a mobile browser
+       * viewport with position: fixed/absolute. This avoids the stale viewport
+       * origin that iOS can use while opening a link from another app.
+       */
+      body > .captureScreen,
+      body > .centeredLoader,
+      body > .captureIqScreen,
+      body > .sessionStatusScreen {
+        grid-area: 1 / 1;
+        width: 100%;
+        min-width: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        align-self: stretch;
       }
 
       button,
@@ -46,34 +67,25 @@
       }
 
       .captureScreen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        width: var(--qr-scan-viewport-width, 100vw);
-        height: 100%;
-        height: var(--qr-scan-viewport-height, 100dvh);
+        position: relative;
+        display: none;
         visibility: hidden;
         opacity: 0;
+        background: var(--layout-minimized-background-color);
         transition: opacity 220ms ease;
       }
 
       body.isReady .captureScreen {
+        display: grid;
         visibility: visible;
         opacity: 1;
       }
 
       /* Exact loader copied from packages/wrapper/src/index.html. */
       .centeredLoader {
-        position: fixed;
-        top: 0;
-        left: 0;
+        position: relative;
         z-index: 5000;
         display: flex;
-        width: 100%;
-        width: var(--qr-scan-viewport-width, 100vw);
-        height: 100%;
-        height: var(--qr-scan-viewport-height, 100dvh);
         align-items: center;
         justify-content: center;
         background: white;
@@ -195,11 +207,11 @@
 
       /* Mobile/non-source SkinGPT intro branch. */
       .skinIntroRoot {
-        position: absolute;
-        inset: 0;
+        position: relative;
         display: flex;
         width: 100%;
-        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
         flex-direction: column;
         justify-content: flex-start;
         align-items: center;
@@ -225,7 +237,6 @@
         justify-content: space-between;
         align-items: center;
         align-self: stretch;
-        min-height: 0;
       }
 
       .skinIntroContainer {
@@ -439,27 +450,34 @@
       }
 
       .captureIqScreen {
-        position: fixed;
-        top: 0;
-        left: 0;
+        position: relative;
         z-index: 4500;
-        width: 100%;
-        width: var(--qr-scan-viewport-width, 100vw);
-        height: 100%;
-        height: var(--qr-scan-viewport-height, 100dvh);
         overflow: hidden;
         color: #fff;
         background: #000;
       }
 
-      body.isCaptureIqOpen {
-        background: #000;
+      html.isCaptureIqOpen {
+        overflow: hidden;
       }
 
-      body.isCaptureIqOpen .captureScreen {
-        visibility: hidden;
-        opacity: 0;
-        pointer-events: none;
+      body.isCaptureIqOpen {
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+        grid-template-rows: minmax(0, 1fr);
+        background: #000;
+        overflow: hidden;
+      }
+
+      body.isCaptureIqOpen .captureScreen,
+      body.isSessionStatusOpen .captureScreen {
+        display: none;
+      }
+
+      body.isCaptureIqOpen > .captureIqScreen {
+        height: 100%;
+        min-height: 0;
       }
 
       .captureIqScreen[hidden] {
@@ -699,15 +717,9 @@
 
       /* Session handoff states mirror SkinGPT's ContinueOnDesktop treatment. */
       .sessionStatusScreen {
-        position: fixed;
-        top: 0;
-        left: 0;
+        position: relative;
         z-index: 6000;
         display: flex;
-        width: 100%;
-        width: var(--qr-scan-viewport-width, 100vw);
-        height: 100%;
-        height: var(--qr-scan-viewport-height, 100dvh);
         padding: max(32px, env(safe-area-inset-top)) 24px
           max(32px, env(safe-area-inset-bottom));
         flex-direction: column;
@@ -1544,10 +1556,11 @@
         let sessionCompleted = false;
         let sessionPrimaryAction = null;
         let sessionSecondaryAction = null;
-        let captureIqViewportFrame = 0;
         let experienceRevealed = false;
         let sessionBootstrapPromise = null;
         let sessionBootstrapError = null;
+        let introScrollY = 0;
+        let hasStoredIntroScroll = false;
 
         /*
          * The intro screen is revealed on a timer alone. Nothing below this
@@ -1566,79 +1579,32 @@
 
         window.setTimeout(revealExperience, minimumLoaderDuration);
 
-        const syncCaptureIqViewport = () => {
-          captureIqViewportFrame = 0;
-          const viewport = window.visualViewport;
-          const documentElement = document.documentElement;
-          const visualRight = viewport
-            ? viewport.offsetLeft + viewport.width
-            : 0;
-          const visualBottom = viewport
-            ? viewport.offsetTop + viewport.height
-            : 0;
-          const width = Math.max(
-            window.innerWidth,
-            documentElement.clientWidth,
-            visualRight,
-          );
-          const height = Math.max(
-            window.innerHeight,
-            documentElement.clientHeight,
-            visualBottom,
-          );
+        const setCaptureMode = (isOpen, { restoreScroll = true } = {}) => {
+          const wasOpen = document.body.classList.contains("isCaptureIqOpen");
 
-          documentElement.style.setProperty(
-            "--qr-scan-viewport-width",
-            `${width}px`,
-          );
-          documentElement.style.setProperty(
-            "--qr-scan-viewport-height",
-            `${height}px`,
-          );
-        };
-
-        const scheduleCaptureIqViewportSync = () => {
-          if (captureIqViewportFrame) return;
-          captureIqViewportFrame = window.requestAnimationFrame(
-            syncCaptureIqViewport,
-          );
-        };
-
-        const settleCaptureIqViewport = () => {
-          [0, 50, 150, 300, 600, 1000, 1600].forEach((delay) => {
-            window.setTimeout(scheduleCaptureIqViewportSync, delay);
-          });
-        };
-
-        const activateCaptureIqViewport = () => {
-          syncCaptureIqViewport();
-          document.body.classList.add("isCaptureIqOpen");
-        };
-
-        const deactivateCaptureIqViewport = () => {
-          document.body.classList.remove("isCaptureIqOpen");
-        };
-
-        window.visualViewport?.addEventListener(
-          "resize",
-          scheduleCaptureIqViewportSync,
-        );
-        window.visualViewport?.addEventListener(
-          "scroll",
-          scheduleCaptureIqViewportSync,
-        );
-        window.addEventListener("resize", scheduleCaptureIqViewportSync);
-        window.addEventListener("orientationchange", () => {
-          settleCaptureIqViewport();
-        });
-        window.addEventListener("pageshow", settleCaptureIqViewport);
-        window.addEventListener("focus", settleCaptureIqViewport);
-        document.addEventListener("visibilitychange", () => {
-          if (document.visibilityState === "visible") {
-            settleCaptureIqViewport();
+          if (isOpen && !wasOpen) {
+            introScrollY = window.scrollY;
+            hasStoredIntroScroll = true;
+            window.scrollTo(0, 0);
           }
-        });
-        settleCaptureIqViewport();
+
+          document.documentElement.classList.toggle("isCaptureIqOpen", isOpen);
+          document.body.classList.toggle("isCaptureIqOpen", isOpen);
+
+          if (!isOpen && restoreScroll && hasStoredIntroScroll) {
+            const scrollY = introScrollY;
+            hasStoredIntroScroll = false;
+            window.requestAnimationFrame(() => window.scrollTo(0, scrollY));
+          }
+        };
+
+        const setSessionStatusMode = (isOpen) => {
+          document.body.classList.toggle("isSessionStatusOpen", isOpen);
+          if (isOpen) {
+            window.scrollTo(0, 0);
+            sessionStatusScreen.scrollTop = 0;
+          }
+        };
 
         const queryParams = new URLSearchParams(window.location.search);
         const sessionId = queryParams.get("sessionId")?.trim() || "";
@@ -1886,6 +1852,7 @@
           captureScreen.setAttribute("inert", "");
           captureScreen.setAttribute("aria-hidden", "true");
           captureIqScreen.setAttribute("inert", "");
+          setSessionStatusMode(true);
           sessionStatusScreen.hidden = false;
           sessionStatusScreen.setAttribute(
             "role",
@@ -1900,6 +1867,7 @@
         const hideSessionState = () => {
           sessionStatusScreen.hidden = true;
           sessionStatusScreen.removeAttribute("role");
+          setSessionStatusMode(false);
           captureIqScreen.removeAttribute("inert");
           captureScreen.removeAttribute("inert");
           captureScreen.setAttribute("aria-hidden", "false");
@@ -2077,7 +2045,7 @@
         const openCaptureIqView = () => {
           captureScreen.setAttribute("aria-hidden", "true");
           captureScreen.setAttribute("inert", "");
-          activateCaptureIqViewport();
+          setCaptureMode(true);
           captureIqScreen.hidden = false;
           captureIqScreen.setAttribute("aria-hidden", "false");
           takePhotoButton.disabled = true;
@@ -2086,11 +2054,11 @@
           captureIqCloseButton.focus({ preventScroll: true });
         };
 
-        const restoreIntroView = () => {
+        const restoreIntroView = ({ restoreScroll = true } = {}) => {
           capturePhase = "intro";
           captureIqScreen.hidden = true;
           captureIqScreen.setAttribute("aria-hidden", "true");
-          deactivateCaptureIqViewport();
+          setCaptureMode(false, { restoreScroll });
           captureScreen.removeAttribute("inert");
           captureScreen.setAttribute("aria-hidden", "false");
           takePhotoButton.disabled = false;
@@ -2338,13 +2306,13 @@
           if (!selection?.file) return;
 
           if (sessionCompleted) {
-            restoreIntroView();
+            restoreIntroView({ restoreScroll: false });
             showCompletedSession();
             return;
           }
 
           pendingSessionSelection = selection;
-          restoreIntroView();
+          restoreIntroView({ restoreScroll: false });
           showSessionState({
             kind: "loading",
             title: "Sending your photo…",
@@ -2423,7 +2391,7 @@
           capturePhase = "upload-review";
           captureScreen.setAttribute("aria-hidden", "true");
           captureScreen.setAttribute("inert", "");
-          activateCaptureIqViewport();
+          setCaptureMode(true);
           captureIqScreen.hidden = false;
           captureIqScreen.setAttribute("aria-hidden", "false");
           captureIqHost.replaceChildren();
@@ -2578,6 +2546,11 @@
           if (capturePhase !== "intro") {
             capturePhase = "closing";
             void teardownCaptureIq({ cancelFirst: true });
+          }
+        });
+        window.addEventListener("pageshow", (event) => {
+          if (event.persisted && capturePhase === "closing") {
+            restoreIntroView();
           }
         });
 
