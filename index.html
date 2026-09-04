@@ -142,6 +142,81 @@
         color: var(--error);
       }
 
+      .experience-controls[hidden],
+      .experience-status[hidden] {
+        display: none;
+      }
+
+      .experience-intro {
+        position: fixed;
+        inset: 0;
+        z-index: 6000;
+        display: grid;
+        width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: max(24px, env(safe-area-inset-top))
+          max(20px, env(safe-area-inset-right))
+          max(24px, env(safe-area-inset-bottom))
+          max(20px, env(safe-area-inset-left));
+        overflow: auto;
+        place-items: center;
+        color: #000;
+        background: #fff;
+      }
+
+      .experience-intro[hidden] {
+        display: none;
+      }
+
+      .experience-intro-panel {
+        display: grid;
+        width: min(100%, 420px);
+        gap: 12px;
+      }
+
+      .experience-intro-button {
+        display: flex;
+        width: 100%;
+        min-height: 58px;
+        padding: 14px 24px;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid #000;
+        border-radius: 999px;
+        color: #000;
+        background: #fff;
+        cursor: pointer;
+        font-size: clamp(16px, 2.2vw, 20px);
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        transition:
+          color 160ms ease,
+          background-color 160ms ease,
+          opacity 160ms ease,
+          transform 160ms ease,
+          box-shadow 160ms ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .experience-intro-button[data-intro-experience="makeup"] {
+        color: #fff;
+        background: #000;
+      }
+
+      .experience-intro-button:hover {
+        transform: translateY(-1px);
+      }
+
+      .experience-intro-button:active {
+        transform: scale(0.99);
+      }
+
+      .experience-intro-button:focus-visible {
+        outline: 3px solid #8d8d8d;
+        outline-offset: 3px;
+      }
+
       .centeredLoader {
         position: fixed;
         display: flex;
@@ -286,7 +361,7 @@
       #error {
         position: fixed;
         inset: 0;
-        z-index: 30;
+        z-index: 7000;
         display: none;
         place-items: center;
         padding: 24px;
@@ -398,7 +473,8 @@
 
       @media (prefers-reduced-motion: reduce) {
         .experience-button,
-        .experience-status {
+        .experience-status,
+        .experience-intro-button {
           transition: none;
         }
 
@@ -411,9 +487,42 @@
     <script src="https://cdn.glamarz0.de/sdk/wrapper?"></script>
   </head>
   <body>
-    <main id="GlamAR-module"></main>
+    <main id="GlamAR-module" aria-hidden="true" inert></main>
 
-    <nav class="experience-controls" aria-label="Switch GlamAR experience">
+    <section
+      class="experience-intro"
+      id="experience-intro"
+      aria-label="Choose your experience"
+    >
+      <div
+        class="experience-intro-panel"
+        role="group"
+        aria-label="Experience"
+      >
+        <button
+          class="experience-intro-button"
+          data-intro-experience="makeup"
+          type="button"
+        >
+          VTO
+        </button>
+        <button
+          class="experience-intro-button"
+          data-intro-experience="skin"
+          type="button"
+        >
+          Skin Analysis
+        </button>
+      </div>
+    </section>
+
+    <nav
+      class="experience-controls"
+      aria-label="Switch GlamAR experience"
+      aria-hidden="true"
+      inert
+      hidden
+    >
       <button
         class="experience-button is-active"
         data-experience="makeup"
@@ -444,9 +553,17 @@
       class="experience-status"
       role="status"
       aria-live="polite"
+      hidden
     ></p>
 
-    <div class="centeredLoader" id="lottieLoader" role="status">
+    <div
+      class="centeredLoader"
+      id="lottieLoader"
+      role="status"
+      aria-hidden="true"
+      inert
+      hidden
+    >
       <div class="lottieContainer">
         <div class="waveGrid" aria-hidden="true">
           <span class="cell"></span><span class="cell"></span
@@ -461,57 +578,136 @@
         <h4 class="lottieText">Loading your experience</h4>
       </div>
     </div>
-    <div id="error" role="alert"></div>
+    <div id="error" role="alert" tabindex="-1"></div>
 
     <script>
       (() => {
         const DEFAULT_API_KEY = "25cd4d7a-fe7d-4fc4-af1b-608414bf0c99";
         const SKIN_ANALYSIS_APP_ID = "0732f85d-5768-462e-a50a-174840438a69";
+        const EXPERIENCE_CHANGE_TIMEOUT = 30000;
         const params = new URLSearchParams(window.location.search);
         const accessKey = params.get("accessKey") || DEFAULT_API_KEY;
         const version = params.get("version");
         const debugText = params.get("debug") === "true";
         const cameraSync = params.get("cameraSync");
+        const sdkHost = document.getElementById("GlamAR-module");
+        const controls = document.querySelector(".experience-controls");
         const lottieLoader = document.getElementById("lottieLoader");
         const error = document.getElementById("error");
         const status = document.getElementById("experience-status");
+        const intro = document.getElementById("experience-intro");
         const buttons = Array.from(
           document.querySelectorAll("[data-experience]"),
         );
-        let sdkLoaded = false;
-        let pendingExperience = null;
-        let activeExperience = "makeup";
+        const introButtons = Array.from(
+          document.querySelectorAll("[data-intro-experience]"),
+        );
+        const glamar = window.GlamAR;
+
+        let sdkPhase = "booting";
+        let sdkLoading = false;
+        let firstLoadedHandled = false;
+        let introOpen = true;
+        let introChoice = null;
+        let activeExperience = null;
+        let experienceOpen = false;
+        let desiredRequest = null;
+        let inFlight = null;
+        let requestSequence = 0;
+        let flowCycle = 0;
         let statusTimer = null;
 
-        const experienceCalls = {
-          makeup: () =>
-            GlamAR.setExperience("vto", {
-              category: "makeup",
-            }),
-          hair: () =>
-            GlamAR.setExperience("vto", {
-              category: "hair",
-            }),
-          skin: () =>
-            GlamAR.setExperience("skinAnalysis", {
-              appId: SKIN_ANALYSIS_APP_ID,
-            }),
+        const experienceLabels = {
+          makeup: "Makeup",
+          hair: "Hair",
+          skin: "Skin Analysis",
         };
+
+        const experienceCalls = glamar
+          ? {
+              makeup: () =>
+                glamar.setExperience("vto", {
+                  category: "makeup",
+                }),
+              hair: () =>
+                glamar.setExperience("vto", {
+                  category: "hair",
+                }),
+              skin: () =>
+                glamar.setExperience("skinAnalysis", {
+                  appId: SKIN_ANALYSIS_APP_ID,
+                }),
+            }
+          : {};
 
         const getErrorMessage = (event) => {
           if (typeof event === "string") return event;
-          return event?.error || event?.message;
+
+          const detail = event?.detail;
+          const candidate =
+            detail?.error ||
+            detail?.message ||
+            event?.error ||
+            event?.message;
+
+          if (typeof candidate === "string") return candidate;
+          return candidate?.message;
         };
 
-        const setButtonsDisabled = (disabled) => {
-          buttons.forEach((button) => {
-            button.disabled = disabled;
+        const setInert = (element, value) => {
+          if (value) element.setAttribute("inert", "");
+          else element.removeAttribute("inert");
+        };
+
+        const setLoaderVisible = (visible) => {
+          const isExposed = visible && !introOpen;
+          lottieLoader.hidden = !isExposed;
+          lottieLoader.setAttribute("aria-hidden", String(!isExposed));
+          setInert(lottieLoader, !isExposed);
+        };
+
+        const setExperienceUiVisible = (
+          visible,
+          interactive = visible,
+        ) => {
+          controls.hidden = !visible;
+          controls.setAttribute("aria-hidden", String(!interactive));
+          setInert(controls, !interactive);
+          status.hidden = !visible;
+          sdkHost.setAttribute("aria-hidden", String(!interactive));
+          setInert(sdkHost, !interactive);
+        };
+
+        const showStatus = (message, isError = false, persistent = false) => {
+          window.clearTimeout(statusTimer);
+          status.textContent = message;
+          status.classList.toggle("is-error", isError);
+          status.classList.toggle("is-visible", Boolean(message));
+
+          if (message && !persistent) {
+            statusTimer = window.setTimeout(() => {
+              status.classList.remove("is-visible");
+            }, 2200);
+          }
+        };
+
+        const renderIntroButtons = () => {
+          introButtons.forEach((button) => {
+            button.disabled = sdkPhase === "fatal";
           });
         };
 
         const renderButtons = () => {
+          const pendingExperience = introOpen ? null : inFlight?.target;
+          const disabled =
+            introOpen ||
+            sdkPhase !== "ready" ||
+            sdkLoading ||
+            Boolean(inFlight);
+
           buttons.forEach((button) => {
             const experience = button.dataset.experience;
+            button.disabled = disabled;
             button.classList.toggle(
               "is-active",
               experience === activeExperience && !pendingExperience,
@@ -527,56 +723,257 @@
           });
         };
 
-        const showStatus = (message, isError = false, persistent = false) => {
-          window.clearTimeout(statusTimer);
-          status.textContent = message;
-          status.classList.toggle("is-error", isError);
-          status.classList.toggle("is-visible", Boolean(message));
-          if (message && !persistent) {
-            statusTimer = window.setTimeout(() => {
-              status.classList.remove("is-visible");
-            }, 2200);
-          }
-        };
+        const showFatalError = (message) => {
+          sdkPhase = "fatal";
+          flowCycle += 1;
 
-        const showError = (message) => {
-          lottieLoader.hidden = true;
+          if (inFlight?.timeoutId) {
+            window.clearTimeout(inFlight.timeoutId);
+          }
+
+          inFlight = null;
+          desiredRequest = null;
+          sdkLoading = false;
+          setLoaderVisible(false);
+          intro.hidden = true;
+          intro.setAttribute("aria-hidden", "true");
+          setInert(intro, true);
+          setExperienceUiVisible(false);
+          renderIntroButtons();
+          renderButtons();
           error.textContent = message;
           error.classList.add("is-visible");
-          setButtonsDisabled(true);
+          window.requestAnimationFrame(() => {
+            error.focus({ preventScroll: true });
+          });
         };
 
-        const finishExperienceChange = () => {
-          pendingExperience = null;
-          setButtonsDisabled(!sdkLoaded);
+        const showExperienceView = () => {
+          introOpen = false;
+          intro.hidden = true;
+          intro.setAttribute("aria-hidden", "true");
+          setInert(intro, true);
+          const isReady = sdkPhase === "ready" && !sdkLoading;
+          setExperienceUiVisible(true, isReady);
+          setLoaderVisible(!isReady);
           renderButtons();
         };
 
+        const showIntro = () => {
+          introOpen = true;
+          introChoice = null;
+          desiredRequest = null;
+          intro.hidden = false;
+          intro.removeAttribute("aria-hidden");
+          setInert(intro, false);
+          setLoaderVisible(false);
+          showStatus("");
+          setExperienceUiVisible(false);
+          renderIntroButtons();
+          renderButtons();
+
+          window.requestAnimationFrame(() => {
+            introButtons[0]?.focus({ preventScroll: true });
+          });
+        };
+
+        const matchesExperienceEvent = (event, target) => {
+          const detail = event?.detail || event || {};
+          const experience = detail.experience;
+          const category =
+            detail.category ||
+            detail.options?.category ||
+            detail.configuration?.category ||
+            null;
+
+          if (experience === "skinAnalysis" || experience === "skin") {
+            return target === "skin";
+          }
+          if (experience === "makeup" || experience === "hair") {
+            return target === experience;
+          }
+          if (experience === "vto") {
+            if (target !== "makeup" && target !== "hair") return false;
+            if (category === "makeup" || category === "hair") {
+              return target === category;
+            }
+
+            // The current GlamAR wrapper reports only the VTO family on a
+            // successful change. Requests are serialized locally, so the
+            // active Makeup/Hair request identifies the selected category.
+            return true;
+          }
+
+          return false;
+        };
+
+        const completeRequest = (request) => {
+          if (
+            request.source === "intro" &&
+            !introOpen &&
+            introChoice === request.target
+          ) {
+            const activeButton = buttons.find(
+              (button) => button.dataset.experience === request.target,
+            );
+            window.requestAnimationFrame(() => {
+              activeButton?.focus({ preventScroll: true });
+            });
+          } else if (request.source === "pill" && !introOpen) {
+            showStatus("Experience switched");
+          }
+        };
+
+        const failExperienceChange = (requestId, eventOrError) => {
+          const request = inFlight;
+          if (
+            !request ||
+            request.id !== requestId ||
+            request.cycle !== flowCycle
+          ) {
+            return;
+          }
+
+          window.clearTimeout(request.timeoutId);
+          inFlight = null;
+          sdkLoading = false;
+          setLoaderVisible(false);
+          if (!introOpen) setExperienceUiVisible(true, true);
+
+          const message =
+            getErrorMessage(eventOrError) || "Experience switch failed";
+          const queuedRequest =
+            desiredRequest?.cycle === flowCycle ? desiredRequest : null;
+
+          if (queuedRequest?.target === request.target) {
+            desiredRequest = null;
+          }
+
+          if (queuedRequest && queuedRequest.target !== request.target) {
+            renderIntroButtons();
+            renderButtons();
+            reconcileExperience();
+            return;
+          }
+
+          if (!introOpen) {
+            showStatus(message, true);
+          }
+
+          renderIntroButtons();
+          renderButtons();
+        };
+
+        const startExperienceChange = (request) => {
+          const currentRequest = {
+            ...request,
+            id: ++requestSequence,
+            timeoutId: null,
+          };
+
+          inFlight = currentRequest;
+          currentRequest.timeoutId = window.setTimeout(() => {
+            failExperienceChange(
+              currentRequest.id,
+              new Error("The experience took too long to start."),
+            );
+          }, EXPERIENCE_CHANGE_TIMEOUT);
+
+          if (currentRequest.source === "pill") {
+            showStatus(
+              `Switching to ${experienceLabels[currentRequest.target]}…`,
+              false,
+              true,
+            );
+          }
+
+          renderIntroButtons();
+          renderButtons();
+
+          try {
+            const result = experienceCalls[currentRequest.target]();
+            if (result && typeof result.then === "function") {
+              Promise.resolve(result).catch((changeError) => {
+                failExperienceChange(currentRequest.id, changeError);
+              });
+            }
+          } catch (changeError) {
+            failExperienceChange(currentRequest.id, changeError);
+          }
+        };
+
+        function reconcileExperience() {
+          if (sdkPhase !== "ready" || !desiredRequest || inFlight) return;
+
+          const request = desiredRequest;
+          if (request.cycle !== flowCycle) {
+            desiredRequest = null;
+            return;
+          }
+
+          desiredRequest = null;
+
+          if (
+            experienceOpen &&
+            activeExperience === request.target
+          ) {
+            completeRequest(request);
+            renderIntroButtons();
+            renderButtons();
+            return;
+          }
+
+          startExperienceChange(request);
+        }
+
+        const requestExperience = (target, source) => {
+          if (!experienceCalls[target] || sdkPhase === "fatal") return;
+
+          if (source === "intro") {
+            introChoice = target;
+          }
+
+          desiredRequest = {
+            target,
+            source,
+            cycle: flowCycle,
+          };
+
+          renderIntroButtons();
+          if (source === "intro") showExperienceView();
+          reconcileExperience();
+        };
+
+        introButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            if (!introOpen) return;
+            requestExperience(button.dataset.introExperience, "intro");
+          });
+        });
+
         buttons.forEach((button) => {
           button.addEventListener("click", () => {
-            const experience = button.dataset.experience;
+            const target = button.dataset.experience;
             if (
-              !sdkLoaded ||
-              pendingExperience ||
-              !experienceCalls[experience]
+              introOpen ||
+              sdkPhase !== "ready" ||
+              inFlight ||
+              !experienceCalls[target]
             ) {
               return;
             }
 
-            pendingExperience = experience;
-            setButtonsDisabled(true);
-            renderButtons();
-            showStatus(
-              `Switching to ${button.textContent.trim()}…`,
-              false,
-              true,
-            );
-            experienceCalls[experience]();
+            requestExperience(target, "pill");
           });
         });
 
-        if (!window.GlamAR) {
-          showError(
+        setExperienceUiVisible(false);
+        setLoaderVisible(false);
+        renderIntroButtons();
+        renderButtons();
+
+        if (!glamar) {
+          showFatalError(
             "The GlamAR experience could not be loaded. Please try again.",
           );
           return;
@@ -585,13 +982,6 @@
         const config = {
           platform: "web",
           mode: "private",
-          // category: "makeup",
-          // configuration: {
-          //   skinAnalysis: {
-          //     appId: SKIN_ANALYSIS_APP_ID
-          //   }
-          // },
-
           meta: {
             sdkVersion: version || "2.0.0",
             debugText,
@@ -603,50 +993,123 @@
         };
 
         try {
-          GlamAR.init("GlamAR-module", accessKey, config);
+          /*
+           * GlamAR.init() recreates the wrapper's internal event emitter.
+           * Register our listeners immediately after init returns so they
+           * attach to the emitter that will receive iframe events.
+           */
+          const initResult = glamar.init("GlamAR-module", accessKey, config);
 
-          GlamAR.addEventListener("loading", () => {
-            lottieLoader.hidden = false;
-          });
-
-          GlamAR.addEventListener("loaded", () => {
-            sdkLoaded = true;
-            lottieLoader.hidden = true;
-            setButtonsDisabled(false);
+          glamar.addEventListener("loading", () => {
+            if (sdkPhase === "fatal") return;
+            sdkLoading = true;
+            setLoaderVisible(true);
+            if (!introOpen) setExperienceUiVisible(true, false);
             renderButtons();
-            GlamAR.setExperience("vto", {
-              category: "makeup",
-            });
           });
 
-          GlamAR.addEventListener("experience-changing", (event) => {
+          glamar.addEventListener("loaded", () => {
+            sdkLoading = false;
+            if (sdkPhase === "fatal") return;
+
+            const isFirstLoadedEvent = !firstLoadedHandled;
+            if (isFirstLoadedEvent) {
+              firstLoadedHandled = true;
+              sdkPhase = "ready";
+            }
+
+            setLoaderVisible(false);
+            if (!introOpen) setExperienceUiVisible(true, true);
+            renderButtons();
+            if (!isFirstLoadedEvent) return;
+
+            renderIntroButtons();
+
+            if (!desiredRequest) {
+              desiredRequest = {
+                target: introChoice || "makeup",
+                source: introChoice ? "intro" : "default",
+                cycle: flowCycle,
+              };
+            }
+
+            reconcileExperience();
+          });
+
+          glamar.addEventListener("experience-changing", (event) => {
             console.info("GlamAR experience-changing:", event);
           });
 
-          GlamAR.addEventListener("experience-changed", (event) => {
+          glamar.addEventListener("experience-changed", (event) => {
             console.info("GlamAR experience-changed:", event);
-            if (pendingExperience) {
-              activeExperience = pendingExperience;
-            } else if (event?.experience === "skinAnalysis") {
-              activeExperience = "skin";
+
+            const request = inFlight;
+            if (!request || request.cycle !== flowCycle) return;
+
+            if (!matchesExperienceEvent(event, request.target)) {
+              console.warn(
+                "Ignoring an out-of-order GlamAR experience event:",
+                event,
+              );
+              return;
             }
-            finishExperienceChange();
-            showStatus("Experience switched");
+
+            window.clearTimeout(request.timeoutId);
+            inFlight = null;
+            activeExperience = request.target;
+            experienceOpen = true;
+            sdkLoading = false;
+            setLoaderVisible(false);
+            if (!introOpen) setExperienceUiVisible(true, true);
+
+            if (!desiredRequest) completeRequest(request);
+
+            renderIntroButtons();
+            renderButtons();
+            reconcileExperience();
           });
 
-          GlamAR.addEventListener("experience-change-failed", (event) => {
+          glamar.addEventListener("experience-change-failed", (event) => {
             console.error("GlamAR experience-change-failed:", event);
-            const message =
-              getErrorMessage(event) || "Experience switch failed";
-            finishExperienceChange();
-            showStatus(message, true);
+            if (!inFlight) return;
+
+            if (!matchesExperienceEvent(event, inFlight.target)) {
+              console.warn(
+                "Ignoring an out-of-order GlamAR experience failure:",
+                event,
+              );
+              return;
+            }
+
+            failExperienceChange(inFlight.id, event);
           });
 
-          GlamAR.addEventListener("error", (event) => {
+          glamar.addEventListener("closed", (event) => {
+            console.info("GlamAR closed:", event);
+            const isIdleIntro =
+              introOpen &&
+              !experienceOpen &&
+              !inFlight;
+            if (isIdleIntro) return;
+
+            flowCycle += 1;
+            if (inFlight?.timeoutId) {
+              window.clearTimeout(inFlight.timeoutId);
+            }
+
+            inFlight = null;
+            desiredRequest = null;
+            experienceOpen = false;
+            activeExperience = null;
+            sdkLoading = false;
+            showIntro();
+          });
+
+          glamar.addEventListener("error", (event) => {
             const message = getErrorMessage(event);
 
-            if (!sdkLoaded) {
-              showError(
+            if (sdkPhase !== "ready") {
+              showFatalError(
                 message ||
                   "The experience could not be started. Please try again.",
               );
@@ -655,8 +1118,25 @@
 
             console.warn("GlamAR runtime error:", message || event);
           });
+
+          if (initResult && typeof initResult.then === "function") {
+            Promise.resolve(initResult).catch((initError) => {
+              if (sdkPhase === "ready") {
+                console.warn("GlamAR initialization warning:", initError);
+                return;
+              }
+
+              showFatalError(
+                getErrorMessage(initError) ||
+                  "The experience could not be started. Please try again.",
+              );
+            });
+          }
         } catch (initError) {
-          showError("The experience could not be started. Please try again.");
+          showFatalError(
+            getErrorMessage(initError) ||
+              "The experience could not be started. Please try again.",
+          );
         }
       })();
     </script>
