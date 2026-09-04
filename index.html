@@ -4,108 +4,158 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#f3f3f3" />
-    <title>QR Scan</title>
-    <script>
-      (() => {
-        const url = new URL(window.location.href);
-        const isAppDocument = url.searchParams.get("__qr_handoff") === "1";
-
-        window.__QR_SCAN_APP_DOCUMENT__ = isAppDocument;
-        document.documentElement.classList.add(
-          isAppDocument ? "isQrApp" : "isQrHandoff",
-        );
-
-        if (isAppDocument) {
-          url.searchParams.delete("__qr_handoff");
-          window.addEventListener(
-            "pageshow",
-            () => {
-              window.history.replaceState(
-                window.history.state,
-                "",
-                `${url.pathname}${url.search}${url.hash}`,
-              );
-            },
-            { once: true },
-          );
-        }
-      })();
-    </script>
+    <title>GlamAR experience switcher</title>
     <style>
       :root {
-        --typography-font-family: Inter, sans-serif;
-        --layout-background-color: #ffffff;
-        --layout-minimized-background-color: #f3f3f3;
-        --button-active-color: #000000;
-        --button-inactive-color: #ffffff;
-        --border-color: #f3f3f3;
-        --border-color-selected: #4d4d4d;
-        --icon-color: #000000;
-        --primary-font-color: #000000;
-        --secondary-font-color: #4d4d4d;
+        color-scheme: light;
+        --control-bg: rgba(19, 20, 23, 0.88);
+        --control-border: rgba(255, 255, 255, 0.16);
+        --control-text: rgba(255, 255, 255, 0.72);
+        --control-active: #fff;
+        --accent: #f4f4f4;
+        --error: #ffb4ab;
       }
 
-      * {
+      *,
+      *::before,
+      *::after {
         box-sizing: border-box;
       }
 
       html {
-        height: 100%;
-        overflow: hidden;
         font-size: 1vw;
+        height: 100%;
       }
 
       body {
-        position: relative;
-        width: 100%;
-        height: 100vh;
-        height: 100svh;
         margin: 0;
         overflow: hidden;
-        overscroll-behavior: none;
-        font-family: var(--typography-font-family);
-        background: var(--layout-minimized-background-color);
+        font-family: Inter, sans-serif;
       }
 
-      button,
-      input {
+      button {
         font: inherit;
       }
 
-      .captureScreen {
-        position: absolute;
+      #GlamAR-module {
+        position: fixed;
         inset: 0;
-        visibility: hidden;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+
+      .experience-controls {
+        position: fixed;
+        top: max(14px, env(safe-area-inset-top));
+        left: 50%;
+        z-index: 20;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(76px, 1fr));
+        gap: 4px;
+        width: min(340px, calc(100vw - 28px));
+        padding: 5px;
+        overflow: hidden;
+        border: 1px solid var(--control-border);
+        border-radius: 999px;
+        background: var(--control-bg);
+        box-shadow:
+          0 14px 38px rgba(0, 0, 0, 0.2),
+          inset 0 1px rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(18px) saturate(140%);
+        -webkit-backdrop-filter: blur(18px) saturate(140%);
+        transform: translateX(-50%);
+      }
+
+      .experience-button {
+        min-height: 38px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--control-text);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 650;
+        letter-spacing: 0.02em;
+        transition:
+          color 160ms ease,
+          background-color 160ms ease,
+          opacity 160ms ease,
+          transform 160ms ease;
+      }
+
+      .experience-button:hover:not(:disabled) {
+        color: var(--control-active);
+        transform: translateY(-1px);
+      }
+
+      .experience-button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+      }
+
+      .experience-button.is-active {
+        background: var(--accent);
+        color: #171914;
+      }
+
+      .experience-button.is-pending {
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--control-active);
+      }
+
+      .experience-button:disabled {
+        cursor: wait;
+        opacity: 0.55;
+      }
+
+      .experience-status {
+        position: fixed;
+        top: max(68px, calc(env(safe-area-inset-top) + 54px));
+        left: 50%;
+        z-index: 20;
+        max-width: calc(100vw - 32px);
+        margin: 0;
+        padding: 7px 11px;
+        border-radius: 8px;
+        background: rgba(19, 20, 23, 0.82);
+        color: #fff;
+        font-size: 12px;
+        line-height: 1.35;
         opacity: 0;
-        transition: opacity 220ms ease;
+        pointer-events: none;
+        transform: translate(-50%, -4px);
+        transition:
+          opacity 160ms ease,
+          transform 160ms ease;
       }
 
-      body.isReady .captureScreen {
-        visibility: visible;
+      .experience-status.is-visible {
         opacity: 1;
+        transform: translate(-50%, 0);
       }
 
-      /* Exact loader copied from packages/wrapper/src/index.html. */
+      .experience-status.is-error {
+        color: var(--error);
+      }
+
       .centeredLoader {
-        position: absolute;
-        inset: 0;
-        z-index: 5000;
+        position: fixed;
         display: flex;
         width: 100%;
         height: 100%;
-        align-items: center;
+        background: var(--layout-background-color);
         justify-content: center;
-        background: white;
-        opacity: 1;
-        transition: opacity 220ms ease;
+        align-items: center;
+        z-index: 5000;
+        background: #fff;
       }
 
-      body.isReady .centeredLoader {
-        pointer-events: none;
-        opacity: 0;
+      .centeredLoader[hidden] {
+        display: none;
       }
 
       .lottieContainer {
@@ -143,15 +193,19 @@
         0% {
           transform: scale(0.4);
         }
+
         21% {
           transform: scale(1);
         }
+
         53% {
           transform: scale(1);
         }
+
         75% {
           transform: scale(0.4);
         }
+
         100% {
           transform: scale(0.4);
         }
@@ -160,48 +214,63 @@
       .waveGrid .cell:nth-child(1) {
         animation-delay: 200ms;
       }
+
       .waveGrid .cell:nth-child(2) {
         animation-delay: 267ms;
       }
+
       .waveGrid .cell:nth-child(3) {
         animation-delay: 334ms;
       }
+
       .waveGrid .cell:nth-child(4) {
         animation-delay: 400ms;
       }
+
       .waveGrid .cell:nth-child(5) {
         animation-delay: 133ms;
       }
+
       .waveGrid .cell:nth-child(6) {
         animation-delay: 200ms;
       }
+
       .waveGrid .cell:nth-child(7) {
         animation-delay: 267ms;
       }
+
       .waveGrid .cell:nth-child(8) {
         animation-delay: 334ms;
       }
+
       .waveGrid .cell:nth-child(9) {
         animation-delay: 67ms;
       }
+
       .waveGrid .cell:nth-child(10) {
         animation-delay: 133ms;
       }
+
       .waveGrid .cell:nth-child(11) {
         animation-delay: 200ms;
       }
+
       .waveGrid .cell:nth-child(12) {
         animation-delay: 267ms;
       }
+
       .waveGrid .cell:nth-child(13) {
         animation-delay: 0ms;
       }
+
       .waveGrid .cell:nth-child(14) {
         animation-delay: 67ms;
       }
+
       .waveGrid .cell:nth-child(15) {
         animation-delay: 133ms;
       }
+
       .waveGrid .cell:nth-child(16) {
         animation-delay: 200ms;
       }
@@ -209,614 +278,26 @@
       .lottieText {
         margin: 0;
         text-align: center;
-        color: #000;
         font-size: 3.75rem;
         font-style: normal;
         font-weight: 400;
       }
 
-      /* Mobile/non-source SkinGPT intro branch. */
-      .skinIntroRoot {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: center;
-        background: var(--layout-minimized-background-color);
-      }
-
-      .skinIntroTop {
-        display: flex;
-        min-height: 15rem;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 4.33331rem;
-        align-self: stretch;
-      }
-
-      .skinIntroFrame {
-        display: flex;
-        width: 100%;
-        margin-bottom: 5rem;
-        padding: 0;
-        flex: 1 0 0;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        align-self: stretch;
-        min-height: 0;
-      }
-
-      .skinIntroContainer {
-        display: flex;
-        width: calc(100% - 10rem);
-        max-width: calc(100% - 10rem);
-        min-width: initial;
-        flex: 1 0 0;
-        flex-direction: column;
-        align-items: flex-start;
-        align-self: center;
-        gap: 3rem;
-        border-radius: 2.5rem;
-        background: var(--layout-background-color);
-      }
-
-      .skinIntroContent {
-        display: flex;
-        min-width: 0;
-        padding: 3.75rem;
-        flex: 1 0 0;
-        flex-direction: column;
-        align-items: flex-start;
-        align-self: stretch;
-        gap: 2rem;
-      }
-
-      .skinIntroInstructions {
-        display: flex;
-        width: 80%;
-        flex: 1 0 0;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        align-self: center;
-        gap: 4.25rem;
-      }
-
-      .infoTextRoot {
-        display: flex;
-        width: 100%;
-        flex-shrink: 0;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 2.47719rem;
-      }
-
-      .infoTextRoot h1 {
-        display: flex;
-        margin: 0;
-        gap: 0.52rem;
-        color: var(--primary-font-color);
-        text-align: center;
-        font-size: 4.375rem;
-        font-style: normal;
-        font-weight: 500;
-      }
-
-      .captureIcon {
-        position: relative;
-        display: flex;
-        width: 20.73469rem;
-        height: 20.73469rem;
-        flex: 0 0 auto;
-        align-items: center;
-        justify-content: flex-start;
-        overflow: hidden;
-        border-radius: 1.98156rem;
-        background: var(--layout-minimized-background-color);
-      }
-
-      .captureTrack {
-        position: absolute;
-        top: 0;
-        left: 0;
-        display: flex;
-        width: 200%;
-        height: 100%;
-        transform: translateX(0%);
-        animation: captureSlideLoop 2.8s ease-in-out infinite;
-        will-change: transform;
-      }
-
-      .captureSlide {
-        display: flex;
-        width: 50%;
-        height: 100%;
-        align-items: center;
-        justify-content: center;
-        color: var(--icon-color);
-      }
-
-      .captureSlide svg {
-        width: 25.68rem;
-        height: 25.68rem;
-      }
-
-      @keyframes captureSlideLoop {
-        0%,
-        35% {
-          transform: translateX(0%);
-        }
-        50%,
-        85% {
-          transform: translateX(-50%);
-        }
-        100% {
-          transform: translateX(0%);
-        }
-      }
-
-      .buttonRoot {
-        display: flex;
-        width: 100%;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        align-self: center;
-        gap: 1.25rem;
-      }
-
-      .skinIntroCta {
-        display: flex;
-        width: 100%;
-        padding: 2.5rem 5rem;
-        justify-content: center;
-        align-items: center;
-        align-self: stretch;
-        gap: 3.13rem;
-        border-radius: 6.56rem;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      .filledBtn {
-        border: none;
-        color: var(--button-inactive-color);
-        background: var(--button-active-color);
-      }
-
-      .outlineBtn {
-        border: 1px solid var(--border-color-selected);
-        color: var(--button-active-color);
-        background: var(--layout-background-color);
-      }
-
-      .skinIntroCtaText {
-        display: -webkit-box;
-        overflow: hidden;
-        border: none;
-        text-overflow: ellipsis;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 1;
-        font-size: 3.75rem;
-        font-style: normal;
-        font-weight: 500;
-      }
-
-      .skinIntroCta:focus-visible {
-        outline: 0.7rem solid #8d8d8d;
-        outline-offset: 0.7rem;
-      }
-
-      .skinIntroCta:active {
-        transform: scale(0.99);
-      }
-
-      .skinIntroCta:disabled {
-        cursor: wait;
-        opacity: 0.65;
-      }
-
-      .fileInput {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        clip-path: inset(50%);
-        white-space: nowrap;
-      }
-
-      .skinIntroBottom {
-        display: flex;
-        min-height: 11.25rem;
-        padding: 2.5rem 0;
-        justify-content: center;
-        align-items: center;
-        align-self: stretch;
-        gap: 0.37rem;
-        background: var(--layout-background-color);
-      }
-
-      .skinIntroBottom span {
-        margin: 0;
-        color: var(--secondary-font-color);
-        font-size: 2.5rem;
-        font-style: normal;
-        font-weight: 400;
-      }
-
-      .brandingImg {
-        display: flex;
-        width: auto;
-        height: 4.375rem;
-        flex-shrink: 0;
-        justify-content: center;
-        align-items: center;
-        gap: 0.42rem;
-      }
-
-      .captureIqScreen {
-        position: absolute;
-        inset: 0;
-        z-index: 4500;
-        overflow: hidden;
-        color: #fff;
-        background: #000;
-      }
-
-      .captureIqScreen[hidden] {
-        display: none;
-      }
-
-      .captureIqHost,
-      .captureIqHost > glamar-captureiq {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
-
-      .captureIqHost {
-        position: absolute;
-        inset: 0;
-      }
-
-      /* Upload review mirrors CaptureIQ's Review.svelte layout and controls. */
-      .uploadPreview {
-        position: absolute;
-        inset: 0;
-        z-index: 10;
-        display: flex;
-        width: 100%;
-        height: 100%;
-        flex-direction: column;
-        background: #000;
-      }
-
-      .uploadPreview[hidden] {
-        display: none;
-      }
-
-      .uploadPreviewImageContainer {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        overflow: hidden;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .uploadPreviewImage {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .uploadPreviewGradient {
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 1;
-        height: 200px;
-        pointer-events: none;
-        background: linear-gradient(
-          to top,
-          rgba(0, 0, 0, 0.9) 0%,
-          rgba(0, 0, 0, 0.6) 40%,
-          rgba(0, 0, 0, 0) 100%
-        );
-      }
-
-      .uploadPreviewActions {
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 2;
-        display: flex;
-        padding: 24px 20px;
-        gap: 12px;
-      }
-
-      .uploadPreviewButton {
-        display: flex;
-        padding: 16px 24px;
-        flex: 1;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        border-radius: 12px;
-        cursor: pointer;
-        font-size: clamp(15px, 0.55vw + 10.4px, 32px);
-        font-weight: 600;
-        transition:
-          transform 0.2s ease,
-          background-color 0.2s ease,
-          border-color 0.2s ease;
-      }
-
-      .uploadPreviewButton:active {
-        transform: scale(0.98);
-      }
-
-      .uploadPreviewButtonPrimary {
-        border: none;
-        color: #fff;
-        background: #000;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
-      }
-
-      .uploadPreviewButtonSecondary {
-        border: 1.5px solid #4d4d4d;
-        color: #000;
-        background: #fff;
-        backdrop-filter: blur(10px);
-      }
-
-      .uploadPreviewButton:focus-visible {
-        outline: 3px solid #fff;
-        outline-offset: 3px;
-      }
-
-      .captureIqClose {
-        position: absolute;
-        top: max(16px, env(safe-area-inset-top));
-        right: max(16px, env(safe-area-inset-right));
-        z-index: 40;
-        display: grid;
-        width: 44px;
-        height: 44px;
-        padding: 0;
-        place-items: center;
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        border-radius: 50%;
-        color: #fff;
-        background: rgba(0, 0, 0, 0.62);
-        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
-        cursor: pointer;
-        backdrop-filter: blur(8px);
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      .captureIqClose svg {
-        width: 22px;
-        height: 22px;
-      }
-
-      .captureIqClose:focus-visible {
-        outline: 3px solid #fff;
-        outline-offset: 3px;
-      }
-
-      .captureIqState {
-        position: absolute;
+      #error {
+        position: fixed;
         inset: 0;
         z-index: 30;
-        display: flex;
-        padding: max(32px, env(safe-area-inset-top)) 24px
-          max(32px, env(safe-area-inset-bottom));
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 18px;
-        color: #000;
-        text-align: center;
-        background: #fff;
-      }
-
-      .captureIqState[hidden] {
         display: none;
-      }
-
-      .captureIqLoading .waveGrid {
-        width: clamp(72px, 20vw, 120px);
-        height: clamp(72px, 20vw, 120px);
-      }
-
-      .captureIqState h2,
-      .captureIqState p {
-        margin: 0;
-      }
-
-      .captureIqState h2 {
-        font-size: clamp(20px, 5vw, 30px);
-        font-weight: 500;
-      }
-
-      .captureIqState p {
-        max-width: 420px;
-        color: var(--secondary-font-color);
-        font-size: clamp(14px, 3.6vw, 17px);
+        place-items: center;
+        padding: 24px;
+        background: #fff;
+        color: #b42318;
+        text-align: center;
         line-height: 1.5;
       }
 
-      .captureIqErrorIcon {
+      #error.is-visible {
         display: grid;
-        width: 72px;
-        height: 72px;
-        place-items: center;
-        border-radius: 18px;
-        color: #000;
-        background: var(--layout-minimized-background-color);
-      }
-
-      .captureIqErrorIcon svg {
-        width: 36px;
-        height: 36px;
-      }
-
-      .captureIqErrorActions {
-        display: flex;
-        width: min(100%, 420px);
-        margin-top: 10px;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .captureIqErrorAction {
-        min-height: 48px;
-        padding: 11px 22px;
-        border-radius: 999px;
-        font-size: 16px;
-        font-weight: 500;
-        cursor: pointer;
-      }
-
-      .captureIqErrorActionPrimary {
-        border: 1px solid #000;
-        color: #fff;
-        background: #000;
-      }
-
-      .captureIqErrorActionSecondary {
-        border: 1px solid var(--border-color-selected);
-        color: #000;
-        background: #fff;
-      }
-
-      .captureIqErrorAction:focus-visible {
-        outline: 3px solid #8d8d8d;
-        outline-offset: 3px;
-      }
-
-      /* Session handoff states mirror SkinGPT's ContinueOnDesktop treatment. */
-      .sessionStatusScreen {
-        position: absolute;
-        inset: 0;
-        z-index: 6000;
-        display: flex;
-        padding: max(32px, env(safe-area-inset-top)) 24px
-          max(32px, env(safe-area-inset-bottom));
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 18px;
-        color: var(--primary-font-color);
-        text-align: center;
-        background: var(--layout-background-color);
-      }
-
-      .sessionStatusScreen[hidden],
-      .sessionStatusIcon[hidden],
-      .sessionStatusLoader[hidden],
-      .sessionStatusAction[hidden] {
-        display: none;
-      }
-
-      .sessionStatusLoader .waveGrid {
-        width: clamp(72px, 20vw, 120px);
-        height: clamp(72px, 20vw, 120px);
-      }
-
-      .sessionStatusIcon {
-        display: grid;
-        width: 72px;
-        height: 72px;
-        place-items: center;
-        border-radius: 18px;
-        color: #000;
-        background: var(--layout-minimized-background-color);
-      }
-
-      .sessionStatusIcon svg {
-        width: 38px;
-        height: 38px;
-      }
-
-      .sessionStatusScreen h1,
-      .sessionStatusScreen p {
-        margin: 0;
-      }
-
-      .sessionStatusScreen h1 {
-        font-size: clamp(22px, 5.5vw, 32px);
-        font-weight: 500;
-      }
-
-      .sessionStatusScreen p {
-        max-width: 420px;
-        color: var(--secondary-font-color);
-        font-size: clamp(14px, 3.6vw, 17px);
-        line-height: 1.5;
-      }
-
-      .sessionStatusActions {
-        display: flex;
-        width: min(100%, 420px);
-        margin-top: 10px;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .sessionStatusAction {
-        min-height: 48px;
-        padding: 11px 22px;
-        border-radius: 999px;
-        font-size: 16px;
-        font-weight: 500;
-        cursor: pointer;
-      }
-
-      .sessionStatusActionPrimary {
-        border: 1px solid #000;
-        color: #fff;
-        background: #000;
-      }
-
-      .sessionStatusActionSecondary {
-        border: 1px solid var(--border-color-selected);
-        color: #000;
-        background: #fff;
-      }
-
-      .sessionStatusAction:focus-visible {
-        outline: 3px solid #8d8d8d;
-        outline-offset: 3px;
-      }
-
-      @media (max-width: 768px) {
-        .uploadPreviewActions {
-          padding: 20px 16px;
-        }
-
-        .uploadPreviewButton {
-          padding: 14px 20px;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .uploadPreviewActions {
-          padding: 16px 12px;
-          padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-        }
-
-        .uploadPreviewButton {
-          padding: 12px 16px;
-          font-size: clamp(16px, 0.55vw + 11.2px, 32px);
-        }
       }
 
       @media (min-width: 648px) {
@@ -824,65 +305,14 @@
           padding: 3.7rem;
           gap: 0.62rem;
         }
+
         .waveGrid {
           width: 12.35rem;
           height: 12.35rem;
         }
+
         .lottieText {
           font-size: 2.16rem;
-        }
-      }
-
-      @media (min-width: 648px) and (orientation: portrait) {
-        .skinIntroTop {
-          min-height: 12.4rem;
-        }
-        .skinIntroFrame {
-          width: 100%;
-          margin-bottom: 2.4691rem;
-          padding: 1.2rem 3.7rem;
-          flex: 1;
-          flex-direction: row;
-          align-self: auto;
-        }
-        .skinIntroContainer {
-          width: 74rem;
-          padding-bottom: 0;
-          gap: 2.4691rem;
-          border-radius: 1.23rem;
-        }
-        .skinIntroContent {
-          padding: 2.4691rem;
-        }
-        .skinIntroInstructions {
-          gap: 2.4691rem;
-        }
-        .infoTextRoot h1 {
-          font-size: 2.43rem;
-        }
-        .captureIcon {
-          width: 15.50772rem;
-          height: 15.50772rem;
-          border-radius: 1.06944rem;
-        }
-        .skinIntroCta {
-          padding: 1.23rem 2.46rem;
-          gap: 1.5rem;
-          border-radius: 3.24rem;
-        }
-        .skinIntroCtaText {
-          font-size: 2.16rem;
-          line-height: 3.66rem;
-        }
-        .skinIntroBottom {
-          min-height: 5.5556rem;
-          padding: 1.2346rem 0;
-        }
-        .skinIntroBottom span {
-          font-size: 1.8519rem;
-        }
-        .brandingImg {
-          height: 3.0864rem;
         }
       }
 
@@ -891,138 +321,30 @@
           padding: 3.33rem;
           gap: 0.56rem;
         }
+
         .waveGrid {
           width: 11.11rem;
           height: 11.11rem;
         }
+
         .lottieText {
           font-size: 1.94rem;
-        }
-        .skinIntroTop {
-          min-height: 11.11rem;
-        }
-        .skinIntroFrame {
-          margin-bottom: 2.2222rem;
-          padding: 0;
-          flex: 1;
-          align-self: auto;
-        }
-        .skinIntroContainer {
-          width: 66.66rem;
-          padding-bottom: 0;
-          gap: 2.2222rem;
-          border-radius: 1.11rem;
-        }
-        .skinIntroContent {
-          padding: 2.2222rem;
-        }
-        .skinIntroInstructions {
-          gap: 2.2222rem;
-        }
-        .infoTextRoot h1 {
-          font-size: 2.222rem;
-        }
-        .captureIcon {
-          width: 13.95694rem;
-          height: 13.95694rem;
-          border-radius: 0.9625rem;
-        }
-        .skinIntroCta {
-          padding: 1.111rem 2.222rem;
-          gap: 1.5rem;
-          border-radius: 2.911rem;
-        }
-        .skinIntroCtaText {
-          font-size: 1.944rem;
-        }
-        .skinIntroBottom {
-          min-height: 5.5556rem;
-          padding: 1.2346rem 0;
-        }
-        .skinIntroBottom span {
-          font-size: 1.8519rem;
-        }
-        .brandingImg {
-          height: 3.0864rem;
-        }
-      }
-
-      @media (min-width: 1000px) and (orientation: landscape) {
-        .skinIntroTop {
-          min-height: 8.8rem;
-        }
-        .skinIntroFrame {
-          margin-bottom: 2.4rem;
-        }
-        .skinIntroContainer {
-          width: 45.69rem;
-          gap: 0.76rem;
-          border-radius: 0.833rem;
-        }
-        .skinIntroContent {
-          padding: 1.667rem;
-        }
-        .skinIntroInstructions {
-          padding: 0;
-          gap: 2.4rem;
-        }
-        .infoTextRoot h1 {
-          font-size: 1.667rem;
-        }
-        .buttonRoot {
-          flex-direction: row;
-        }
-        .skinIntroCta {
-          padding: 0.7633rem 1.52667rem;
-          border-radius: 2.003rem;
-        }
-        .skinIntroCtaText {
-          font-size: 1.3389rem;
-        }
-        .captureIcon {
-          width: 12.44444rem;
-          height: 12.44444rem;
-          border-radius: 0.74074rem;
-        }
-        .skinIntroBottom {
-          min-height: 3.3333rem;
-          padding: 0.763rem 0;
-        }
-        .skinIntroBottom span {
-          font-size: 1.1111rem;
-        }
-        .brandingImg {
-          height: 1.81rem;
         }
       }
 
       @media (min-width: 846px) and (orientation: portrait) {
-        .skinIntroTop {
-          min-height: 7.5rem;
+        .lottieContainer {
+          padding: 2.84rem;
+          gap: 0.47rem;
         }
-        .skinIntroContainer {
-          width: 80.2469rem;
+
+        .waveGrid {
+          width: 14.18rem;
+          height: 14.18rem;
         }
-        .skinIntroContent {
-          padding: 2.8367rem;
-        }
-        .infoTextRoot h1 {
-          font-size: 3.78rem;
-        }
-        .buttonRoot {
-          flex-direction: row;
-        }
-        .skinIntroCta {
-          padding: 1.89rem 2.598rem;
-          border-radius: 3.41rem;
-        }
-        .skinIntroCtaText {
-          font-size: 3.309rem;
-        }
-        .captureIcon {
-          width: 18.43972rem;
-          height: 18.43972rem;
-          border-radius: 0.94563rem;
+
+        .lottieText {
+          font-size: 2.36rem;
         }
       }
 
@@ -1031,47 +353,30 @@
           padding: 1.67rem;
           gap: 0.28rem;
         }
+
         .waveGrid {
           width: 8.33rem;
           height: 8.33rem;
         }
-        .lottieText {
+
+        .lottieContainer h4 {
           font-size: 1.39rem;
-        }
-        .skinIntroTop {
-          min-height: 6.11rem;
-        }
-        .skinIntroFrame {
-          margin-bottom: 1.67rem;
-        }
-        .skinIntroInstructions {
-          gap: 1.67rem;
-        }
-        .captureIcon {
-          width: 8.05556rem;
-          height: 8.05556rem;
-          border-radius: 0.55556rem;
         }
       }
 
       @media (min-width: 1080px) and (orientation: portrait) {
-        .skinIntroTop {
-          min-height: 9.5rem;
+        .lottieContainer {
+          padding: 2.22rem;
+          gap: 0.37rem;
         }
-        .infoTextRoot h1 {
-          font-size: 3.7037rem;
+
+        .waveGrid {
+          width: 14.81rem;
+          height: 14.81rem;
         }
-        .skinIntroCta {
-          padding: 1.481rem 2.714rem;
-          border-radius: 3.562rem;
-        }
-        .skinIntroCtaText {
-          font-size: 2.9629rem;
-        }
-        .captureIcon {
-          width: 12.44444rem;
-          height: 12.44444rem;
-          border-radius: 0.74074rem;
+
+        .lottieContainer h4 {
+          font-size: 2.22rem;
         }
       }
 
@@ -1080,184 +385,68 @@
           padding: 1.25rem;
           gap: 0.21rem;
         }
+
         .waveGrid {
           width: 8.33rem;
           height: 8.33rem;
         }
-        .lottieText {
+
+        .lottieContainer h4 {
           font-size: 1.25rem;
-        }
-        .skinIntroContainer {
-          width: 52.08rem;
-        }
-        .captureIcon {
-          width: 7.8125rem;
-          height: 7.8125rem;
-          border-radius: 0.41667rem;
         }
       }
 
       @media (prefers-reduced-motion: reduce) {
+        .experience-button,
+        .experience-status {
+          transition: none;
+        }
+
         .waveGrid .cell {
           animation: none;
           transform: scale(1);
         }
-        .captureTrack {
-          animation: none;
-          transform: translateX(0%);
-        }
-        .centeredLoader,
-        .captureScreen {
-          transition: none;
-        }
-        .skinIntroCta:active {
-          transform: none;
-        }
-      }
-
-      .handoffScreen {
-        display: none;
-      }
-
-      html.isQrHandoff {
-        height: auto;
-        min-height: 0;
-        overflow: auto;
-        background: #fff;
-      }
-
-      html.isQrHandoff body {
-        position: static;
-        height: auto;
-        min-height: 0;
-        overflow: visible;
-        overscroll-behavior: auto;
-        background: #fff;
-      }
-
-      html.isQrHandoff body > .centeredLoader,
-      html.isQrHandoff body > .captureScreen,
-      html.isQrHandoff body > .captureIqScreen,
-      html.isQrHandoff body > .sessionStatusScreen {
-        display: none !important;
-      }
-
-      html.isQrHandoff .handoffScreen {
-        display: grid;
-        width: min(100%, 480px);
-        margin-inline: auto;
-        padding: 128px 24px 48px;
-        justify-items: center;
-        gap: 20px;
-        color: #000;
-        text-align: center;
-      }
-
-      .handoffSpinner {
-        width: 52px;
-        height: 52px;
-        border: 5px solid #e6e6e6;
-        border-top-color: #000;
-        border-radius: 50%;
-        animation: handoffSpin 700ms linear infinite;
-      }
-
-      .handoffText {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 500;
-      }
-
-      .handoffLink {
-        color: #000;
-        font-size: 16px;
-        text-underline-offset: 3px;
-      }
-
-      @keyframes handoffSpin {
-        to {
-          transform: rotate(1turn);
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .handoffSpinner {
-          animation: none;
-        }
       }
     </style>
+    <script src="https://cdn.glamarz0.de/sdk/wrapper?"></script>
   </head>
   <body>
-    <main class="handoffScreen" aria-live="polite">
-      <div class="handoffSpinner" aria-hidden="true"></div>
-      <p class="handoffText">Opening your capture options…</p>
-      <a class="handoffLink" id="handoffContinue" href="?__qr_handoff=1">
-        Continue
-      </a>
-    </main>
+    <main id="GlamAR-module"></main>
 
-    <script>
-      (() => {
-        if (window.__QR_SCAN_APP_DOCUMENT__) return;
-
-        const destination = new URL(window.location.href);
-        destination.searchParams.set("__qr_handoff", "1");
-
-        const continueLink = document.getElementById("handoffContinue");
-        continueLink.href = destination.href;
-
-        let navigationScheduled = false;
-        let navigationStarted = false;
-        let pageShown = false;
-
-        const navigate = () => {
-          if (navigationStarted) return;
-          navigationStarted = true;
-          window.location.replace(destination.href);
-        };
-
-        const navigateAfterVisiblePaint = () => {
-          if (
-            navigationScheduled ||
-            navigationStarted ||
-            !pageShown ||
-            document.visibilityState !== "visible"
-          ) {
-            return;
-          }
-
-          navigationScheduled = true;
-          window.requestAnimationFrame(() => {
-            window.requestAnimationFrame(() => {
-              navigationScheduled = false;
-              if (document.visibilityState === "visible") navigate();
-            });
-          });
-        };
-
-        continueLink.addEventListener("click", (event) => {
-          event.preventDefault();
-          navigate();
-        });
-
-        window.addEventListener("pageshow", () => {
-          pageShown = true;
-          navigateAfterVisiblePaint();
-        });
-        document.addEventListener(
-          "visibilitychange",
-          navigateAfterVisiblePaint,
-        );
-      })();
-    </script>
-
-    <div
-      class="centeredLoader"
-      id="experienceLoader"
+    <nav class="experience-controls" aria-label="Switch GlamAR experience">
+      <button
+        class="experience-button is-active"
+        data-experience="makeup"
+        type="button"
+        disabled
+      >
+        Makeup
+      </button>
+      <button
+        class="experience-button"
+        data-experience="hair"
+        type="button"
+        disabled
+      >
+        Hair
+      </button>
+      <button
+        class="experience-button"
+        data-experience="skin"
+        type="button"
+        disabled
+      >
+        Skin
+      </button>
+    </nav>
+    <p
+      id="experience-status"
+      class="experience-status"
       role="status"
       aria-live="polite"
-      aria-label="Loading your experience"
-    >
+    ></p>
+
+    <div class="centeredLoader" id="lottieLoader" role="status">
       <div class="lottieContainer">
         <div class="waveGrid" aria-hidden="true">
           <span class="cell"></span><span class="cell"></span
@@ -1269,1373 +458,206 @@
           <span class="cell"></span><span class="cell"></span
           ><span class="cell"></span><span class="cell"></span>
         </div>
-        <h2 class="lottieText">Loading your experience</h2>
+        <h4 class="lottieText">Loading your experience</h4>
       </div>
     </div>
-
-    <main class="captureScreen" id="captureScreen" aria-hidden="true">
-      <div class="skinIntroRoot">
-        <div class="skinIntroTop" aria-hidden="true"></div>
-        <div class="skinIntroFrame">
-          <section class="skinIntroContainer" aria-labelledby="captureTitle">
-            <div class="skinIntroContent">
-              <div class="skinIntroInstructions">
-                <span class="captureIcon" aria-hidden="true">
-                  <span class="captureTrack">
-                    <span class="captureSlide">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <rect
-                          x="3"
-                          y="7"
-                          width="14"
-                          height="10"
-                          rx="1.5"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                        />
-                        <path
-                          d="M17 9l3-2v10l-3-2"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    </span>
-                    <span class="captureSlide">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <rect
-                          x="2.5"
-                          y="4.5"
-                          width="19"
-                          height="15"
-                          rx="2"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                        />
-                        <path
-                          d="M7 13l3-3 3 4 4-6"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  </span>
-                </span>
-                <div class="infoTextRoot">
-                  <h1 id="captureTitle">Select the capture option</h1>
-                </div>
-              </div>
-
-              <div class="buttonRoot">
-                <button
-                  class="skinIntroCta filledBtn"
-                  id="takePhotoButton"
-                  type="button"
-                >
-                  <span class="skinIntroCtaText">Take a photo</span>
-                </button>
-                <button
-                  class="skinIntroCta outlineBtn"
-                  id="uploadPhotoButton"
-                  type="button"
-                >
-                  <span class="skinIntroCtaText">Upload Photo</span>
-                </button>
-                <input
-                  class="fileInput"
-                  id="uploadInput"
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif"
-                  tabindex="-1"
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <footer class="skinIntroBottom">
-          <span>Powered by</span>
-          <svg
-            class="brandingImg"
-            viewBox="0 0 49 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            role="img"
-            aria-label="GlamAR"
-          >
-            <g clip-path="url(#glamar-mark-clip)">
-              <path
-                d="M14.5302 5.7514L12.0952 1.43179C12.0464 1.34451 11.9557 1.29102 11.8574 1.29102H3.97109C3.87284 1.29102 3.78214 1.34451 3.73336 1.43179L1.29834 5.7514C1.23581 5.86191 1.25436 6.00127 1.34231 6.09137L1.92015 6.68332C2.04794 6.81424 2.26231 6.78538 2.35232 6.6249L4.50358 2.80784C4.55236 2.72056 4.64306 2.66707 4.74131 2.66707H11.0858C11.1841 2.66707 11.2748 2.71986 11.3236 2.80714L12.9423 5.68031L12.9863 5.75844C13.0921 5.94637 12.9595 6.18076 12.7479 6.18076H11.8437C11.7454 6.18076 11.6547 6.12727 11.6053 6.03999L11.4026 5.68031L10.552 4.17193C10.5032 4.08465 10.4125 4.03116 10.3142 4.03116H5.51084C5.41259 4.03116 5.32189 4.08465 5.27311 4.17193L3.25377 7.7546C3.19125 7.86511 3.2098 8.00447 3.29775 8.09457L7.71981 12.6246C7.827 12.7344 8.00083 12.7344 8.1087 12.6246L11.7351 8.90964C11.9083 8.73227 11.786 8.4289 11.5407 8.4289H10.418C10.3452 8.4289 10.2751 8.45846 10.2235 8.51125L8.10801 10.6777C8.00083 10.7876 7.827 10.7876 7.71912 10.6777L4.97217 7.8637C4.88422 7.7736 4.86636 7.63424 4.92819 7.52373L6.04127 5.54799C6.09005 5.46071 6.18143 5.40721 6.279 5.40721H9.54676C9.64502 5.40721 9.73571 5.46071 9.78449 5.54799L10.5595 6.92334C10.6083 7.01062 10.699 7.06411 10.7973 7.06411H13.4205C13.4934 7.06411 13.5634 7.03455 13.615 6.98176L14.4848 6.09067C14.5728 6.00057 14.5906 5.86121 14.5288 5.7507L14.5302 5.7514Z"
-                fill="#C3C3C3"
-              />
-              <path
-                d="M8.72223 6.73828H7.10553C7.00727 6.73828 6.91658 6.79177 6.8678 6.87905L6.55517 7.4337C6.49265 7.54421 6.5112 7.68357 6.59915 7.77367L7.07186 8.25792L7.71978 8.92167C7.82696 9.03147 8.0008 9.03147 8.10867 8.92167L9.2293 7.77367C9.31725 7.68357 9.33511 7.54421 9.27327 7.4337L8.96065 6.87905C8.91187 6.79177 8.82048 6.73828 8.72292 6.73828H8.72223Z"
-                fill="#C3C3C3"
-              />
-            </g>
-            <path
-              d="M17.7183 6.99374C17.7183 5.06163 18.8355 3.88477 20.3649 3.88477C21.6367 3.88477 22.6192 4.70055 22.8171 5.87741H21.8902C21.6766 5.17143 21.1496 4.7287 20.3732 4.7287C19.3789 4.7287 18.6142 5.52829 18.6142 6.98952C18.6142 8.45074 19.3673 9.25033 20.4089 9.25033C21.344 9.25033 21.9658 8.64149 21.9857 7.67578H20.5394V6.91279H22.8693V7.60681C22.8693 9.13701 21.8353 10.095 20.4048 10.095C18.8004 10.095 17.7189 8.90544 17.7189 6.99444L17.7183 6.99374Z"
-              fill="#000"
-            />
-            <path
-              d="M24.745 10.0125H23.873V3.96484H24.745V10.0125Z"
-              fill="#000"
-            />
-            <path
-              d="M25.6113 8.73161C25.6113 7.70045 26.4791 7.4731 27.3146 7.37596C28.0951 7.28235 28.4318 7.28657 28.4318 6.96631V6.94168C28.4318 6.43842 28.1384 6.14631 27.5839 6.14631C27.0295 6.14631 26.6804 6.45883 26.5581 6.76712L25.7378 6.54822C26.0387 5.73666 26.7835 5.41992 27.5723 5.41992C28.2855 5.41992 29.3037 5.69161 29.3037 7.00291V10.0148H28.46V9.39394H28.4167C28.2463 9.74729 27.8265 10.1161 27.1092 10.1161C26.2654 10.1161 25.6113 9.62481 25.6113 8.73231V8.73161ZM28.4366 8.37827V7.79758C28.3061 7.92709 27.632 8.00029 27.3627 8.03689C26.8714 8.10587 26.4674 8.27621 26.4674 8.74287C26.4674 9.17293 26.8158 9.39606 27.3036 9.39606C28.0127 9.39606 28.4366 8.90898 28.4366 8.37756V8.37827Z"
-              fill="#000"
-            />
-            <path
-              d="M30.4279 5.47586H31.2559L31.2758 6.32402C31.5018 5.69476 31.9972 5.39844 32.5235 5.39844C33.1021 5.39844 33.482 5.75178 33.6565 6.35217C33.8826 5.73911 34.4288 5.39844 35.0589 5.39844C35.8435 5.39844 36.4612 5.92211 36.4612 6.95257V10.013H35.5859V7.04196C35.5859 6.43734 35.2094 6.18184 34.7579 6.18184C34.2076 6.18184 33.8743 6.56756 33.8743 7.10742V10.0137H33.0148V6.98565C33.0148 6.5028 32.674 6.18184 32.2068 6.18184C31.7396 6.18184 31.2992 6.53096 31.2992 7.19259V10.0137H30.4272V5.47586H30.4279Z"
-              fill="#000"
-            />
-            <path
-              d="M39.3014 3.96484H40.4111L42.5506 10.0125H41.5722L41.0294 8.4175H38.7078L38.1808 10.0125H37.2024L39.3021 3.96484H39.3014ZM40.7635 7.64606L40.4228 6.64727C40.264 6.16442 40.0861 5.54713 39.8525 4.69123C39.623 5.55558 39.4402 6.18483 39.2939 6.64727L38.9648 7.64606H40.7635Z"
-              fill="#000"
-            />
-            <path
-              d="M43.3574 3.96484H45.4729C46.8395 3.96484 47.517 4.74825 47.517 5.86458C47.517 6.67613 47.1563 7.29342 46.4396 7.56934L47.7389 10.0125H46.7131L45.5162 7.72771H44.2602V10.0125H43.3567V3.96484H43.3574ZM45.3781 6.93586C46.2418 6.93586 46.6025 6.5424 46.6025 5.86458C46.6025 5.18675 46.2418 4.75669 45.3705 4.75669H44.2616V6.93586H45.3788H45.3781Z"
-              fill="#000"
-            />
-            <defs>
-              <clipPath id="glamar-mark-clip">
-                <rect
-                  width="13.3054"
-                  height="11.4167"
-                  fill="white"
-                  transform="translate(1.26099 1.29102)"
-                />
-              </clipPath>
-            </defs>
-          </svg>
-        </footer>
-      </div>
-    </main>
-
-    <section
-      class="sessionStatusScreen"
-      id="sessionStatusScreen"
-      aria-live="polite"
-      hidden
-    >
-      <div class="sessionStatusLoader" id="sessionStatusLoader" hidden>
-        <div class="waveGrid" aria-hidden="true">
-          <span class="cell"></span><span class="cell"></span
-          ><span class="cell"></span><span class="cell"></span>
-          <span class="cell"></span><span class="cell"></span
-          ><span class="cell"></span><span class="cell"></span>
-          <span class="cell"></span><span class="cell"></span
-          ><span class="cell"></span><span class="cell"></span>
-          <span class="cell"></span><span class="cell"></span
-          ><span class="cell"></span><span class="cell"></span>
-        </div>
-      </div>
-      <span class="sessionStatusIcon" id="sessionStatusIcon" hidden>
-        <svg viewBox="0 0 24 24" fill="none">
-          <path
-            id="sessionStatusIconPath"
-            d="M12 8v5m0 3.25v.25M10.2 3.8 2.9 17a2 2 0 0 0 1.75 3h14.7a2 2 0 0 0 1.75-3L13.8 3.8a2.05 2.05 0 0 0-3.6 0Z"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </span>
-      <h1 id="sessionStatusTitle">Preparing your session…</h1>
-      <p id="sessionStatusDetail">One moment…</p>
-      <div class="sessionStatusActions">
-        <button
-          class="sessionStatusAction sessionStatusActionPrimary"
-          id="sessionStatusPrimaryAction"
-          type="button"
-          hidden
-        ></button>
-        <button
-          class="sessionStatusAction sessionStatusActionSecondary"
-          id="sessionStatusSecondaryAction"
-          type="button"
-          hidden
-        ></button>
-      </div>
-    </section>
-
-    <section
-      class="captureIqScreen"
-      id="captureIqScreen"
-      aria-label="CaptureIQ camera"
-      aria-hidden="true"
-      hidden
-    >
-      <div class="captureIqHost" id="captureIqHost"></div>
-
-      <div class="uploadPreview" id="uploadPreview" hidden>
-        <div class="uploadPreviewImageContainer">
-          <img
-            class="uploadPreviewImage"
-            id="uploadPreviewImage"
-            alt="Your uploaded photo"
-          />
-        </div>
-        <div class="uploadPreviewGradient" aria-hidden="true"></div>
-        <div class="uploadPreviewActions">
-          <button
-            class="uploadPreviewButton uploadPreviewButtonSecondary"
-            id="reuploadButton"
-            type="button"
-          >
-            Reupload
-          </button>
-          <button
-            class="uploadPreviewButton uploadPreviewButtonPrimary"
-            id="useUploadedPhotoButton"
-            type="button"
-          >
-            Use photo
-          </button>
-        </div>
-      </div>
-
-      <div
-        class="captureIqState captureIqLoading"
-        id="captureIqLoading"
-        role="status"
-        aria-live="polite"
-      >
-        <div class="waveGrid" aria-hidden="true">
-          <span class="cell"></span><span class="cell"></span
-          ><span class="cell"></span><span class="cell"></span>
-          <span class="cell"></span><span class="cell"></span
-          ><span class="cell"></span><span class="cell"></span>
-          <span class="cell"></span><span class="cell"></span
-          ><span class="cell"></span><span class="cell"></span>
-          <span class="cell"></span><span class="cell"></span
-          ><span class="cell"></span><span class="cell"></span>
-        </div>
-        <h2 id="captureIqLoadingTitle">Preparing camera…</h2>
-        <p id="captureIqLoadingDetail">
-          Allow camera access when your browser asks.
-        </p>
-      </div>
-
-      <div
-        class="captureIqState captureIqError"
-        id="captureIqError"
-        role="alert"
-        hidden
-      >
-        <span class="captureIqErrorIcon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 8v5m0 3.25v.25M10.2 3.8 2.9 17a2 2 0 0 0 1.75 3h14.7a2 2 0 0 0 1.75-3L13.8 3.8a2.05 2.05 0 0 0-3.6 0Z"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </span>
-        <h2>Camera unavailable</h2>
-        <p id="captureIqErrorMessage">
-          We could not start the guided camera. You can upload a photo instead.
-        </p>
-        <div class="captureIqErrorActions">
-          <button
-            class="captureIqErrorAction captureIqErrorActionPrimary"
-            id="captureIqErrorUploadButton"
-            type="button"
-          >
-            Upload Photo
-          </button>
-          <button
-            class="captureIqErrorAction captureIqErrorActionSecondary"
-            id="captureIqErrorBackButton"
-            type="button"
-          >
-            Back
-          </button>
-        </div>
-      </div>
-
-      <button
-        class="captureIqClose"
-        id="captureIqCloseButton"
-        type="button"
-        aria-label="Close camera"
-      >
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="m6 6 12 12M18 6 6 18"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          />
-        </svg>
-      </button>
-    </section>
+    <div id="error" role="alert"></div>
 
     <script>
       (() => {
-        if (!window.__QR_SCAN_APP_DOCUMENT__) return;
+        const DEFAULT_API_KEY = "25cd4d7a-fe7d-4fc4-af1b-608414bf0c99";
+        const SKIN_ANALYSIS_APP_ID = "0732f85d-5768-462e-a50a-174840438a69";
+        const params = new URLSearchParams(window.location.search);
+        const accessKey = params.get("accessKey") || DEFAULT_API_KEY;
+        const version = params.get("version");
+        const debugText = params.get("debug") === "true";
+        const cameraSync = params.get("cameraSync");
+        const lottieLoader = document.getElementById("lottieLoader");
+        const error = document.getElementById("error");
+        const status = document.getElementById("experience-status");
+        const buttons = Array.from(
+          document.querySelectorAll("[data-experience]"),
+        );
+        let sdkLoaded = false;
+        let pendingExperience = null;
+        let activeExperience = "makeup";
+        let statusTimer = null;
 
-        const CAPTURE_IQ_TAG_NAME = "glamar-captureiq";
-        const DEFAULT_CAPTURE_IQ_SCRIPT_URL =
-          "https://core.glamar.io/capture-iq/glamar-captureiq.js";
-        const DEMO_CAPTURE_IQ_API_KEY = "test_body-shop-dev";
-        const SESSION_API_URL = "__QR_SCAN_API_BASE__/";
-        const RELIANCE_SESSION_ACCESS_KEY =
-          "qJyeHFS0F-xHnT49oxBO7Lrka50yy3QPEECdFNH-vn4";
-        const SESSION_REQUEST_TIMEOUT = 120000;
-        const MAX_SESSION_PHOTO_BYTES = 350 * 1024;
-        const MAX_SESSION_REQUEST_BYTES = 480 * 1024;
-        const DEVICE_ID_ALPHABET =
-          "useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict";
-        const CAPTURE_IQ_STYLES = `
-          :host {
-            --captureiq-btn-primary-bg: #000000;
-            --captureiq-btn-primary-bg-hover: #000000;
-            --captureiq-btn-primary-text: #ffffff;
-            --captureiq-btn-primary-glow: 0 4px 12px rgba(0, 0, 0, 0.22);
-            --captureiq-btn-primary-shadow: rgba(0, 0, 0, 0.22);
-            --captureiq-btn-ghost-text: #000000;
-            --captureiq-btn-ghost-border: #4d4d4d;
-            --captureiq-btn-ghost-bg: #ffffff;
-            --captureiq-color-surface-overlay-strong: #ffffff;
-            --captureiq-loader-wave-cell: #000000;
-            --captureiq-loader-text: #000000;
-            --captureiq-btn-solid-bg: #000000;
-            --captureiq-btn-solid-text: #ffffff;
-          }
-        `;
-        const minimumLoaderDuration = 1570;
-        const startedAt = performance.now();
-        const loader = document.getElementById("experienceLoader");
-        const captureScreen = document.getElementById("captureScreen");
-        const takePhotoButton = document.getElementById("takePhotoButton");
-        const uploadPhotoButton = document.getElementById("uploadPhotoButton");
-        const uploadInput = document.getElementById("uploadInput");
-        const uploadPreview = document.getElementById("uploadPreview");
-        const uploadPreviewImage =
-          document.getElementById("uploadPreviewImage");
-        const reuploadButton = document.getElementById("reuploadButton");
-        const useUploadedPhotoButton = document.getElementById(
-          "useUploadedPhotoButton",
-        );
-        const captureIqScreen = document.getElementById("captureIqScreen");
-        const captureIqHost = document.getElementById("captureIqHost");
-        const captureIqLoading = document.getElementById("captureIqLoading");
-        const captureIqLoadingTitle = document.getElementById(
-          "captureIqLoadingTitle",
-        );
-        const captureIqLoadingDetail = document.getElementById(
-          "captureIqLoadingDetail",
-        );
-        const captureIqError = document.getElementById("captureIqError");
-        const captureIqErrorMessage = document.getElementById(
-          "captureIqErrorMessage",
-        );
-        const captureIqCloseButton = document.getElementById(
-          "captureIqCloseButton",
-        );
-        const captureIqErrorUploadButton = document.getElementById(
-          "captureIqErrorUploadButton",
-        );
-        const captureIqErrorBackButton = document.getElementById(
-          "captureIqErrorBackButton",
-        );
-        const sessionStatusScreen = document.getElementById(
-          "sessionStatusScreen",
-        );
-        const sessionStatusLoader = document.getElementById(
-          "sessionStatusLoader",
-        );
-        const sessionStatusIcon = document.getElementById("sessionStatusIcon");
-        const sessionStatusIconPath = document.getElementById(
-          "sessionStatusIconPath",
-        );
-        const sessionStatusTitle =
-          document.getElementById("sessionStatusTitle");
-        const sessionStatusDetail = document.getElementById(
-          "sessionStatusDetail",
-        );
-        const sessionStatusPrimaryAction = document.getElementById(
-          "sessionStatusPrimaryAction",
-        );
-        const sessionStatusSecondaryAction = document.getElementById(
-          "sessionStatusSecondaryAction",
-        );
-
-        let captureIqScriptPromise = null;
-        let captureIqElement = null;
-        let captureIqListeners = [];
-        let capturePhase = "intro";
-        let captureRunId = 0;
-        let pendingUploadFile = null;
-        let pendingUploadUrl = null;
-        let pendingSessionSelection = null;
-        let sessionClaimed = false;
-        let sessionCompleted = false;
-        let sessionPrimaryAction = null;
-        let sessionSecondaryAction = null;
-
-        const queryParams = new URLSearchParams(window.location.search);
-        const sessionId = queryParams.get("sessionId")?.trim() || "";
-        const accessKey =
-          queryParams.get("accessKey")?.trim() || RELIANCE_SESSION_ACCESS_KEY;
-
-        const generateDeviceId = () => {
-          const bytes = new Uint8Array(21);
-          window.crypto.getRandomValues(bytes);
-          return Array.from(
-            bytes,
-            (byte) => DEVICE_ID_ALPHABET[byte & 63],
-          ).join("");
+        const experienceCalls = {
+          makeup: () =>
+            GlamAR.setExperience("vto", {
+              category: "makeup",
+            }),
+          hair: () =>
+            GlamAR.setExperience("vto", {
+              category: "hair",
+            }),
+          skin: () =>
+            GlamAR.setExperience("skinAnalysis", {
+              appId: SKIN_ANALYSIS_APP_ID,
+            }),
         };
 
-        const getSessionDeviceId = () => {
-          if (!sessionId) return generateDeviceId();
-
-          const storageKey = `reliance-jewels-capture:device:${sessionId}`;
-
-          try {
-            const storedId = window.sessionStorage.getItem(storageKey);
-            if (storedId) return storedId;
-
-            const deviceId = generateDeviceId();
-            window.sessionStorage.setItem(storageKey, deviceId);
-            return deviceId;
-          } catch {
-            return generateDeviceId();
-          }
+        const getErrorMessage = (event) => {
+          if (typeof event === "string") return event;
+          return event?.error || event?.message;
         };
 
-        const deviceId = getSessionDeviceId();
-
-        const bytesToHex = (bytes) =>
-          Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(
-            "",
-          );
-
-        const sha256Hex = async (value) => {
-          const data = new TextEncoder().encode(value);
-          const digest = await window.crypto.subtle.digest("SHA-256", data);
-          return bytesToHex(new Uint8Array(digest));
-        };
-
-        const hmacSha256Hex = async (key, value) => {
-          const encoder = new TextEncoder();
-          const cryptoKey = await window.crypto.subtle.importKey(
-            "raw",
-            encoder.encode(key),
-            { name: "HMAC", hash: "SHA-256" },
-            false,
-            ["sign"],
-          );
-          const signature = await window.crypto.subtle.sign(
-            "HMAC",
-            cryptoKey,
-            encoder.encode(value),
-          );
-          return bytesToHex(new Uint8Array(signature));
-        };
-
-        const createSessionSignatureHeaders = async (url, method, body) => {
-          const timestamp = new Date()
-            .toISOString()
-            .replace(/[:\-]|\.\d{3}/g, "");
-          const canonicalHeaders = `host:${url.host}\nx-ebg-param:${timestamp}`;
-          const signedHeaders = "host;x-ebg-param";
-          const canonicalRequest = [
-            method,
-            url.pathname,
-            url.search.slice(1),
-            `${canonicalHeaders}\n`,
-            signedHeaders,
-            await sha256Hex(body),
-          ].join("\n");
-          const stringToSign = `${timestamp}\n${await sha256Hex(
-            canonicalRequest,
-          )}`;
-          const signature = await hmacSha256Hex("1234567", stringToSign);
-
-          return {
-            "x-ebg-param": window.btoa(timestamp),
-            "x-ebg-signature": `v1:${signature}`,
-          };
-        };
-
-        const getSessionErrorMessage = (payload, response) => {
-          return (
-            payload?.message ||
-            payload?.error?.message ||
-            payload?.error ||
-            `The session request failed (${response.status}).`
-          );
-        };
-
-        const postToSession = async (path, payload) => {
-          if (!window.crypto?.subtle) {
-            throw new Error(
-              "Secure browser APIs are required for this session.",
-            );
-          }
-
-          const url = new URL(path, SESSION_API_URL);
-          const body = JSON.stringify(payload);
-          const bodySize = new TextEncoder().encode(body).byteLength;
-
-          if (bodySize > MAX_SESSION_REQUEST_BYTES) {
-            throw new Error(
-              "This photo is too large to send. Please retake the photo.",
-            );
-          }
-
-          const signatureHeaders = await createSessionSignatureHeaders(
-            url,
-            "POST",
-            body,
-          );
-          const controller = new AbortController();
-          const timeoutId = window.setTimeout(
-            () => controller.abort(),
-            SESSION_REQUEST_TIMEOUT,
-          );
-
-          try {
-            const response = await fetch(url, {
-              method: "POST",
-              credentials: "include",
-              signal: controller.signal,
-              headers: {
-                Accept: "application/json",
-                Authorization: `Bearer ${window.btoa(accessKey)}`,
-                "Content-Type": "application/json",
-                ...signatureHeaders,
-              },
-              body,
-            });
-            const responsePayload = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-              throw new Error(
-                getSessionErrorMessage(responsePayload, response),
-              );
-            }
-
-            return responsePayload;
-          } catch (error) {
-            if (error?.name === "AbortError") {
-              throw new Error(
-                "The session request timed out. Please try again.",
-              );
-            }
-            throw error;
-          } finally {
-            window.clearTimeout(timeoutId);
-          }
-        };
-
-        const claimSession = async () => {
-          if (!sessionId) {
-            throw new Error("This capture link is missing its session ID.");
-          }
-
-          const response = await postToSession(
-            `v1.0/capture-sessions/${encodeURIComponent(sessionId)}/claim`,
-            { deviceId },
-          );
-
-          if (response?.status === "EXPIRED") {
-            const error = new Error("Please scan new QR code and try again.");
-            error.code = "SESSION_EXPIRED";
-            throw error;
-          }
-
-          if (response?.status === "DONE") {
-            sessionCompleted = true;
-            return response;
-          }
-
-          if (response?.status !== "CLAIMED") {
-            throw new Error("This capture session is not available.");
-          }
-
-          sessionClaimed = true;
-          return response;
-        };
-
-        const setSessionAction = (button, label, action) => {
-          if (!label || typeof action !== "function") {
-            button.hidden = true;
-            button.textContent = "";
-            return null;
-          }
-
-          button.textContent = label;
-          button.hidden = false;
-          return action;
-        };
-
-        const showSessionState = ({
-          kind = "error",
-          title,
-          detail,
-          primaryLabel,
-          primaryAction,
-          secondaryLabel,
-          secondaryAction,
-        }) => {
-          const isLoading = kind === "loading";
-          const isSuccess = kind === "success";
-          sessionStatusLoader.hidden = !isLoading;
-          sessionStatusIcon.hidden = isLoading;
-          sessionStatusIconPath.setAttribute(
-            "d",
-            isSuccess
-              ? "m5 12.5 4.25 4.25L19 7"
-              : "M12 8v5m0 3.25v.25M10.2 3.8 2.9 17a2 2 0 0 0 1.75 3h14.7a2 2 0 0 0 1.75-3L13.8 3.8a2.05 2.05 0 0 0-3.6 0Z",
-          );
-          sessionStatusIconPath.setAttribute(
-            "stroke-width",
-            isSuccess ? "1.8" : "1.7",
-          );
-          sessionStatusTitle.textContent = title;
-          sessionStatusDetail.textContent = detail;
-          sessionPrimaryAction = setSessionAction(
-            sessionStatusPrimaryAction,
-            primaryLabel,
-            primaryAction,
-          );
-          sessionSecondaryAction = setSessionAction(
-            sessionStatusSecondaryAction,
-            secondaryLabel,
-            secondaryAction,
-          );
-          captureScreen.setAttribute("inert", "");
-          captureScreen.setAttribute("aria-hidden", "true");
-          captureIqScreen.setAttribute("inert", "");
-          sessionStatusScreen.hidden = false;
-          sessionStatusScreen.setAttribute(
-            "role",
-            kind === "error" ? "alert" : "status",
-          );
-
-          if (primaryLabel) {
-            sessionStatusPrimaryAction.focus({ preventScroll: true });
-          }
-        };
-
-        const hideSessionState = () => {
-          sessionStatusScreen.hidden = true;
-          sessionStatusScreen.removeAttribute("role");
-          captureIqScreen.removeAttribute("inert");
-          captureScreen.removeAttribute("inert");
-          captureScreen.setAttribute("aria-hidden", "false");
-          sessionPrimaryAction = null;
-          sessionSecondaryAction = null;
-        };
-
-        const showCompletedSession = () => {
-          showSessionState({
-            kind: "success",
-            title: "Photo uploaded. Continue on your desktop",
-            detail:
-              "You can close this page and continue on another device. Scan the new QR code to start a new session.",
+        const setButtonsDisabled = (disabled) => {
+          buttons.forEach((button) => {
+            button.disabled = disabled;
           });
         };
 
-        const retrySessionClaim = async () => {
-          showSessionState({
-            kind: "loading",
-            title: "Preparing your session…",
-            detail: "One moment…",
+        const renderButtons = () => {
+          buttons.forEach((button) => {
+            const experience = button.dataset.experience;
+            button.classList.toggle(
+              "is-active",
+              experience === activeExperience && !pendingExperience,
+            );
+            button.classList.toggle(
+              "is-pending",
+              experience === pendingExperience,
+            );
+            button.setAttribute(
+              "aria-pressed",
+              String(experience === activeExperience),
+            );
           });
+        };
 
-          try {
-            await claimSession();
-            if (sessionCompleted) {
-              showCompletedSession();
+        const showStatus = (message, isError = false, persistent = false) => {
+          window.clearTimeout(statusTimer);
+          status.textContent = message;
+          status.classList.toggle("is-error", isError);
+          status.classList.toggle("is-visible", Boolean(message));
+          if (message && !persistent) {
+            statusTimer = window.setTimeout(() => {
+              status.classList.remove("is-visible");
+            }, 2200);
+          }
+        };
+
+        const showError = (message) => {
+          lottieLoader.hidden = true;
+          error.textContent = message;
+          error.classList.add("is-visible");
+          setButtonsDisabled(true);
+        };
+
+        const finishExperienceChange = () => {
+          pendingExperience = null;
+          setButtonsDisabled(!sdkLoaded);
+          renderButtons();
+        };
+
+        buttons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const experience = button.dataset.experience;
+            if (
+              !sdkLoaded ||
+              pendingExperience ||
+              !experienceCalls[experience]
+            ) {
               return;
             }
-            hideSessionState();
-            takePhotoButton.focus({ preventScroll: true });
-          } catch (error) {
-            showSessionClaimError(error);
-          }
-        };
 
-        const showSessionClaimError = (error) => {
-          const isExpired = error?.code === "SESSION_EXPIRED";
-          const canRetry = Boolean(sessionId && !isExpired);
-          showSessionState({
-            kind: "error",
-            title: isExpired ? "QR code expired" : "Session unavailable",
-            detail:
-              error?.message ||
-              "This capture session could not be claimed. Please scan again.",
-            primaryLabel: canRetry ? "Try again" : undefined,
-            primaryAction: canRetry ? retrySessionClaim : undefined,
+            pendingExperience = experience;
+            setButtonsDisabled(true);
+            renderButtons();
+            showStatus(
+              `Switching to ${button.textContent.trim()}…`,
+              false,
+              true,
+            );
+            experienceCalls[experience]();
           });
-        };
+        });
 
-        const resolveCaptureIqApiKey = () => {
-          const dedicatedKey = queryParams.get("captureIqApiKey")?.trim();
-          if (dedicatedKey) return dedicatedKey;
-
-          const accessKey = queryParams.get("accessKey")?.trim();
-          if (accessKey) return `test_${accessKey}`;
-
-          return DEMO_CAPTURE_IQ_API_KEY;
-        };
-
-        const resolveCaptureIqScriptUrl = () => {
-          const requestedUrl = queryParams.get("captureIqScriptUrl")?.trim();
-          const resolvedUrl = new URL(
-            requestedUrl || DEFAULT_CAPTURE_IQ_SCRIPT_URL,
-            window.location.href,
+        if (!window.GlamAR) {
+          showError(
+            "The GlamAR experience could not be loaded. Please try again.",
           );
-          const trustedOrigins = new Set([
-            window.location.origin,
-            "https://core.glamar.io",
-            "https://core.glamarz0.de",
-            "https://cdn.glamar.io",
-            "https://cdn.glamarz0.de",
-          ]);
-
-          if (!trustedOrigins.has(resolvedUrl.origin)) {
-            throw new Error("The CaptureIQ script URL is not trusted.");
-          }
-
-          return resolvedUrl.href;
-        };
-
-        const waitForCaptureIqDefinition = () => {
-          if (customElements.get(CAPTURE_IQ_TAG_NAME)) {
-            return Promise.resolve();
-          }
-
-          return new Promise((resolve, reject) => {
-            const timeoutId = window.setTimeout(
-              () => reject(new Error("CaptureIQ did not initialize.")),
-              10000,
-            );
-
-            customElements.whenDefined(CAPTURE_IQ_TAG_NAME).then(() => {
-              window.clearTimeout(timeoutId);
-              resolve();
-            });
-          });
-        };
-
-        const loadCaptureIqScript = () => {
-          if (customElements.get(CAPTURE_IQ_TAG_NAME)) {
-            return Promise.resolve();
-          }
-          if (captureIqScriptPromise) return captureIqScriptPromise;
-
-          captureIqScriptPromise = Promise.resolve()
-            .then(() => {
-              const scriptUrl = resolveCaptureIqScriptUrl();
-              const existingScript = Array.from(document.scripts).find(
-                (script) => script.src === scriptUrl,
-              );
-
-              if (existingScript) {
-                return new Promise((resolve, reject) => {
-                  existingScript.addEventListener("load", resolve, {
-                    once: true,
-                  });
-                  existingScript.addEventListener(
-                    "error",
-                    () => reject(new Error("Failed to load CaptureIQ.")),
-                    { once: true },
-                  );
-                });
-              }
-
-              return new Promise((resolve, reject) => {
-                const script = document.createElement("script");
-                script.src = scriptUrl;
-                script.async = true;
-                script.onload = resolve;
-                script.onerror = () => {
-                  script.remove();
-                  reject(new Error("Failed to load CaptureIQ."));
-                };
-                document.head.appendChild(script);
-              });
-            })
-            .then(waitForCaptureIqDefinition)
-            .catch((error) => {
-              if (!customElements.get(CAPTURE_IQ_TAG_NAME)) {
-                try {
-                  const failedScriptUrl = resolveCaptureIqScriptUrl();
-                  Array.from(document.scripts)
-                    .find((script) => script.src === failedScriptUrl)
-                    ?.remove();
-                } catch {
-                  // The original validation error is the useful failure.
-                }
-              }
-              captureIqScriptPromise = null;
-              throw error;
-            });
-
-          return captureIqScriptPromise;
-        };
-
-        const clearUploadPreview = () => {
-          uploadPreviewImage.removeAttribute("src");
-          if (pendingUploadUrl) {
-            URL.revokeObjectURL(pendingUploadUrl);
-          }
-          pendingUploadUrl = null;
-          pendingUploadFile = null;
-          uploadPreview.hidden = true;
-        };
-
-        const setCaptureIqLoading = (
-          title = "Preparing camera…",
-          detail = "Allow camera access when your browser asks.",
-        ) => {
-          captureIqLoadingTitle.textContent = title;
-          captureIqLoadingDetail.textContent = detail;
-          uploadPreview.hidden = true;
-          captureIqError.hidden = true;
-          captureIqLoading.hidden = false;
-        };
-
-        const openCaptureIqView = () => {
-          captureScreen.setAttribute("aria-hidden", "true");
-          captureScreen.setAttribute("inert", "");
-          captureIqScreen.hidden = false;
-          captureIqScreen.setAttribute("aria-hidden", "false");
-          takePhotoButton.disabled = true;
-          takePhotoButton.setAttribute("aria-busy", "true");
-          setCaptureIqLoading();
-          captureIqCloseButton.focus({ preventScroll: true });
-        };
-
-        const restoreIntroView = () => {
-          capturePhase = "intro";
-          captureIqScreen.hidden = true;
-          captureIqScreen.setAttribute("aria-hidden", "true");
-          captureScreen.removeAttribute("inert");
-          captureScreen.setAttribute("aria-hidden", "false");
-          takePhotoButton.disabled = false;
-          takePhotoButton.removeAttribute("aria-busy");
-          captureIqError.hidden = true;
-          captureIqLoading.hidden = false;
-          clearUploadPreview();
-          takePhotoButton.focus({ preventScroll: true });
-        };
-
-        const removeCaptureIqListeners = () => {
-          captureIqListeners.forEach(({ element, type, listener }) => {
-            element.removeEventListener(type, listener);
-          });
-          captureIqListeners = [];
-        };
-
-        const teardownCaptureIq = async ({ cancelFirst = false } = {}) => {
-          captureRunId += 1;
-          const element = captureIqElement;
-          captureIqElement = null;
-          removeCaptureIqListeners();
-
-          if (element) {
-            if (cancelFirst && typeof element.cancel === "function") {
-              try {
-                await element.cancel();
-              } catch {
-                // Destruction below remains the authoritative cleanup path.
-              }
-            }
-
-            if (typeof element.destroy === "function") {
-              try {
-                await element.destroy();
-              } catch {
-                // Removing the host still prevents a stale CaptureIQ instance.
-              }
-            }
-
-            element.remove();
-          }
-
-          captureIqHost.replaceChildren();
-        };
-
-        const closeCaptureIq = async () => {
-          if (capturePhase === "intro" || capturePhase === "closing") return;
-          capturePhase = "closing";
-          await teardownCaptureIq({ cancelFirst: true });
-          restoreIntroView();
-        };
-
-        const getCaptureIqErrorMessage = (eventOrError) => {
-          const detail = eventOrError?.detail;
-          const validationErrors = detail?.errors;
-
-          if (Array.isArray(validationErrors) && validationErrors.length) {
-            return validationErrors.join(" ");
-          }
-
-          return (
-            detail?.error?.message ||
-            eventOrError?.message ||
-            "We could not start the guided camera. You can upload a photo instead."
-          );
-        };
-
-        const showCaptureIqError = async (eventOrError) => {
-          if (capturePhase === "intro" || capturePhase === "closing") return;
-          capturePhase = "error";
-          const message = getCaptureIqErrorMessage(eventOrError);
-          await teardownCaptureIq();
-
-          if (capturePhase !== "error") return;
-          captureIqErrorMessage.textContent = message;
-          uploadPreview.hidden = true;
-          captureIqLoading.hidden = true;
-          captureIqError.hidden = false;
-          captureIqErrorUploadButton.focus({ preventScroll: true });
-        };
-
-        const addCaptureIqListener = (element, type, listener) => {
-          element.addEventListener(type, listener);
-          captureIqListeners.push({ element, type, listener });
-        };
-
-        const createCapturedFile = (artifact) => {
-          const blob = artifact?.blob;
-          if (!(blob instanceof Blob)) return null;
-          if (blob instanceof File) return blob;
-
-          const mimeType = artifact?.mimeType || blob.type || "image/jpeg";
-          const extension = mimeType.includes("png") ? "png" : "jpg";
-          return new File([blob], `captureiq-${Date.now()}.${extension}`, {
-            type: mimeType,
-            lastModified: Date.now(),
-          });
-        };
-
-        const readFileAsDataUrl = (file) =>
-          new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.addEventListener("load", () => resolve(reader.result), {
-              once: true,
-            });
-            reader.addEventListener(
-              "error",
-              () => reject(new Error("We could not prepare this photo.")),
-              { once: true },
-            );
-            reader.readAsDataURL(file);
-          });
-
-        const decodeImage = async (file) => {
-          if (typeof window.createImageBitmap === "function") {
-            try {
-              return await window.createImageBitmap(file, {
-                imageOrientation: "from-image",
-              });
-            } catch {
-              try {
-                return await window.createImageBitmap(file);
-              } catch {
-                // Fall through to the image element decoder.
-              }
-            }
-          }
-
-          return new Promise((resolve, reject) => {
-            const image = new Image();
-            const objectUrl = URL.createObjectURL(file);
-            const cleanUp = () => URL.revokeObjectURL(objectUrl);
-            image.addEventListener(
-              "load",
-              () => {
-                cleanUp();
-                resolve(image);
-              },
-              { once: true },
-            );
-            image.addEventListener(
-              "error",
-              () => {
-                cleanUp();
-                reject(new Error("This image format could not be prepared."));
-              },
-              { once: true },
-            );
-            image.src = objectUrl;
-          });
-        };
-
-        const canvasToBlob = (canvas, quality) =>
-          new Promise((resolve, reject) => {
-            canvas.toBlob(
-              (blob) => {
-                if (blob) resolve(blob);
-                else reject(new Error("We could not prepare this photo."));
-              },
-              "image/jpeg",
-              quality,
-            );
-          });
-
-        const compressImageForSession = async (file) => {
-          const decoded = await decodeImage(file);
-          const sourceWidth = decoded.width || decoded.naturalWidth;
-          const sourceHeight = decoded.height || decoded.naturalHeight;
-          const initialScale = Math.min(
-            1,
-            1600 / Math.max(sourceWidth, sourceHeight),
-          );
-          let width = Math.max(1, Math.round(sourceWidth * initialScale));
-          let height = Math.max(1, Math.round(sourceHeight * initialScale));
-          let quality = 0.86;
-          let blob;
-
-          try {
-            for (let attempt = 0; attempt < 10; attempt += 1) {
-              const canvas = document.createElement("canvas");
-              canvas.width = width;
-              canvas.height = height;
-              const context = canvas.getContext("2d", { alpha: false });
-              context.fillStyle = "#fff";
-              context.fillRect(0, 0, width, height);
-              context.drawImage(decoded, 0, 0, width, height);
-              blob = await canvasToBlob(canvas, quality);
-
-              if (blob.size <= MAX_SESSION_PHOTO_BYTES) break;
-
-              if (quality > 0.5) {
-                quality = Math.max(0.5, quality - 0.12);
-              } else {
-                width = Math.max(1, Math.round(width * 0.82));
-                height = Math.max(1, Math.round(height * 0.82));
-                quality = 0.74;
-              }
-            }
-          } finally {
-            if (typeof decoded.close === "function") decoded.close();
-          }
-
-          if (!blob || blob.size > MAX_SESSION_PHOTO_BYTES) {
-            throw new Error(
-              "This photo is too large to send. Choose another photo.",
-            );
-          }
-
-          return { blob, width, height };
-        };
-
-        const preparePhotoForSession = async (file) => {
-          const canUseOriginal =
-            file.size <= MAX_SESSION_PHOTO_BYTES &&
-            ["image/jpeg", "image/png", "image/webp"].includes(file.type);
-          const prepared = canUseOriginal
-            ? { blob: file, width: undefined, height: undefined }
-            : await compressImageForSession(file);
-
-          return {
-            photo: await readFileAsDataUrl(prepared.blob),
-            mimeType: prepared.blob.type || file.type || "image/jpeg",
-            fileName: file.name || `photo-${Date.now()}.jpg`,
-            size: prepared.blob.size,
-            originalSize: file.size,
-            width: prepared.width,
-            height: prepared.height,
-          };
-        };
-
-        const dispatchSelection = (detail) => {
-          window.dispatchEvent(
-            new CustomEvent("reliance-jewels-capture:selected", { detail }),
-          );
-        };
-
-        const abandonPendingSubmission = () => {
-          pendingSessionSelection = null;
-          hideSessionState();
-          restoreIntroView();
-        };
-
-        const submitSelectionToSession = async (selection) => {
-          if (!selection?.file || sessionCompleted) return;
-          pendingSessionSelection = selection;
-          restoreIntroView();
-          showSessionState({
-            kind: "loading",
-            title: "Sending your photo…",
-            detail: "Keep this page open for a moment.",
-          });
-
-          try {
-            if (!sessionClaimed) {
-              throw new Error("This capture session is not ready.");
-            }
-
-            const preparedPhoto = await preparePhotoForSession(selection.file);
-            const result = {
-              photo: preparedPhoto.photo,
-              source: selection.source,
-              mimeType: preparedPhoto.mimeType,
-              fileName: preparedPhoto.fileName,
-              size: preparedPhoto.size,
-              originalSize: preparedPhoto.originalSize,
-            };
-
-            if (preparedPhoto.width && preparedPhoto.height) {
-              result.width = preparedPhoto.width;
-              result.height = preparedPhoto.height;
-            }
-
-            const response = await postToSession(
-              `v1.0/capture-sessions/${encodeURIComponent(sessionId)}/result`,
-              { result, deviceId },
-            );
-
-            if (response?.status === "EXPIRED") {
-              const error = new Error("Please scan new QR code and try again.");
-              error.code = "SESSION_EXPIRED";
-              throw error;
-            }
-            if (response?.status !== "DONE") {
-              throw new Error("The photo was not accepted by this session.");
-            }
-
-            sessionCompleted = true;
-            sessionClaimed = false;
-            pendingSessionSelection = null;
-            dispatchSelection({
-              ...selection,
-              sessionId,
-              sessionResult: response.result,
-            });
-            showCompletedSession();
-          } catch (error) {
-            const isExpired = error?.code === "SESSION_EXPIRED";
-            showSessionState({
-              kind: "error",
-              title: isExpired ? "QR code expired" : "Photo not sent",
-              detail:
-                error?.message ||
-                "We could not send your photo. Please try again.",
-              primaryLabel: isExpired ? undefined : "Try again",
-              primaryAction: isExpired
-                ? undefined
-                : () => submitSelectionToSession(pendingSessionSelection),
-              secondaryLabel: isExpired ? undefined : "Choose another photo",
-              secondaryAction: isExpired ? undefined : abandonPendingSubmission,
-            });
-          }
-        };
-
-        const showUploadPreview = (file) => {
-          clearUploadPreview();
-          pendingUploadFile = file;
-          pendingUploadUrl = URL.createObjectURL(file);
-          uploadPreviewImage.src = pendingUploadUrl;
-          capturePhase = "upload-review";
-          captureScreen.setAttribute("aria-hidden", "true");
-          captureScreen.setAttribute("inert", "");
-          captureIqScreen.hidden = false;
-          captureIqScreen.setAttribute("aria-hidden", "false");
-          captureIqHost.replaceChildren();
-          captureIqLoading.hidden = true;
-          captureIqError.hidden = true;
-          uploadPreview.hidden = false;
-          takePhotoButton.disabled = true;
-          takePhotoButton.removeAttribute("aria-busy");
-          captureIqCloseButton.focus({ preventScroll: true });
-        };
-
-        const confirmUploadedPhoto = () => {
-          if (capturePhase !== "upload-review" || !pendingUploadFile) return;
-          const file = pendingUploadFile;
-          void submitSelectionToSession({ source: "upload", file });
-        };
-
-        const handleCaptureIqSuccess = async (event) => {
-          if (capturePhase !== "active") return;
-          const result = event?.detail?.result;
-          const artifact = result?.artifact;
-          const file = createCapturedFile(artifact);
-
-          if (!file) {
-            await showCaptureIqError(
-              new Error("CaptureIQ did not return a usable image."),
-            );
-            return;
-          }
-
-          capturePhase = "completing";
-          setCaptureIqLoading("Preparing your photo…", "One moment…");
-          await teardownCaptureIq();
-
-          if (capturePhase !== "completing") return;
-          void submitSelectionToSession({
-            source: "captureiq",
-            file,
-            artifact,
-            metadata: result?.metadata,
-          });
-        };
-
-        const startCaptureIq = async () => {
-          if (capturePhase !== "intro") return;
-          capturePhase = "starting";
-          const runId = ++captureRunId;
-          openCaptureIqView();
-
-          try {
-            await loadCaptureIqScript();
-            if (capturePhase !== "starting" || runId !== captureRunId) return;
-
-            const element = document.createElement(CAPTURE_IQ_TAG_NAME);
-            captureIqElement = element;
-            element.setAttribute("api-key", resolveCaptureIqApiKey());
-            element.setAttribute("preset", "face");
-            element.setAttribute(
-              "config",
-              JSON.stringify({ allowRetake: true }),
-            );
-            element.setAttribute("styles", CAPTURE_IQ_STYLES);
-            element.style.display = "block";
-            element.style.width = "100%";
-            element.style.height = "100%";
-
-            const handleCaptureFail = (event) => {
-              if (event?.detail?.error?.code === "user-retry") return;
-              void showCaptureIqError(event);
-            };
-            const handleRuntimeError = (event) => {
-              if (event?.detail?.error?.severity === "warning") return;
-              void showCaptureIqError(event);
-            };
-            const handleSessionEnd = (event) => {
-              if (event?.detail?.reason === "cancelled") {
-                void closeCaptureIq();
-              } else if (event?.detail?.reason === "error") {
-                void showCaptureIqError(event?.detail?.error || event);
-              }
-            };
-
-            addCaptureIqListener(
-              element,
-              "captureSuccess",
-              handleCaptureIqSuccess,
-            );
-            addCaptureIqListener(element, "captureFail", handleCaptureFail);
-            addCaptureIqListener(element, "sessionEnd", handleSessionEnd);
-            addCaptureIqListener(element, "cameraError", showCaptureIqError);
-            addCaptureIqListener(element, "licenseError", showCaptureIqError);
-            addCaptureIqListener(element, "configError", showCaptureIqError);
-            addCaptureIqListener(element, "error", handleRuntimeError);
-
-            captureIqHost.replaceChildren(element);
-            await element.init();
-            if (capturePhase !== "starting" || runId !== captureRunId) return;
-            await element.start();
-            if (capturePhase !== "starting" || runId !== captureRunId) return;
-
-            capturePhase = "active";
-            captureIqLoading.hidden = true;
-          } catch (error) {
-            if (capturePhase === "starting" && runId === captureRunId) {
-              await showCaptureIqError(error);
-            }
-          }
-        };
-
-        const announceUploadSelection = (input) => {
-          const file = input.files?.[0];
-          if (!file) return;
-          input.value = "";
-          showUploadPreview(file);
-        };
-
-        takePhotoButton.addEventListener("click", () => {
-          void startCaptureIq();
-        });
-        uploadPhotoButton.addEventListener("click", () => uploadInput.click());
-        uploadInput.addEventListener("change", () =>
-          announceUploadSelection(uploadInput),
-        );
-        reuploadButton.addEventListener("click", () => uploadInput.click());
-        useUploadedPhotoButton.addEventListener("click", confirmUploadedPhoto);
-        uploadPreviewImage.addEventListener("error", () => {
-          if (capturePhase === "upload-review") {
-            void showCaptureIqError(
-              new Error(
-                "This photo format could not be previewed. Choose another photo.",
-              ),
-            );
-          }
-        });
-        captureIqCloseButton.addEventListener("click", () => {
-          void closeCaptureIq();
-        });
-        captureIqErrorBackButton.addEventListener("click", () => {
-          void closeCaptureIq();
-        });
-        captureIqErrorUploadButton.addEventListener("click", () => {
-          restoreIntroView();
-          uploadInput.click();
-        });
-        sessionStatusPrimaryAction.addEventListener("click", () => {
-          if (sessionPrimaryAction) void sessionPrimaryAction();
-        });
-        sessionStatusSecondaryAction.addEventListener("click", () => {
-          if (sessionSecondaryAction) void sessionSecondaryAction();
-        });
-        window.addEventListener("pagehide", () => {
-          if (capturePhase !== "intro") {
-            capturePhase = "closing";
-            void teardownCaptureIq({ cancelFirst: true });
-          }
-        });
-
-        let sessionBootstrapError = null;
-        const sessionBootstrapPromise = claimSession().catch((error) => {
-          sessionBootstrapError = error;
-        });
-
-        window.addEventListener(
-          "load",
-          async () => {
-            const remainingDuration = Math.max(
-              0,
-              minimumLoaderDuration - (performance.now() - startedAt),
-            );
-
-            await Promise.all([
-              sessionBootstrapPromise,
-              new Promise((resolve) =>
-                window.setTimeout(resolve, remainingDuration),
-              ),
-            ]);
-
-            document.body.classList.add("isReady");
-            captureScreen.setAttribute("aria-hidden", "false");
-            loader.setAttribute("aria-hidden", "true");
-            window.setTimeout(() => loader.remove(), 240);
-
-            if (sessionCompleted) {
-              showCompletedSession();
-            } else if (sessionBootstrapError) {
-              showSessionClaimError(sessionBootstrapError);
-            }
+          return;
+        }
+
+        const config = {
+          platform: "web",
+          mode: "private",
+          // category: "makeup",
+          // configuration: {
+          //   skinAnalysis: {
+          //     appId: SKIN_ANALYSIS_APP_ID
+          //   }
+          // },
+
+          meta: {
+            sdkVersion: version || "2.0.0",
+            debugText,
+            preloadMLModels: ["face", "hair", "hand", "light"],
+            ...(cameraSync !== null && {
+              disableCameraSync: cameraSync === "true",
+            }),
           },
-          { once: true },
-        );
+        };
+
+        try {
+          GlamAR.init("GlamAR-module", accessKey, config);
+
+          GlamAR.addEventListener("loading", () => {
+            lottieLoader.hidden = false;
+          });
+
+          GlamAR.addEventListener("loaded", () => {
+            sdkLoaded = true;
+            lottieLoader.hidden = true;
+            setButtonsDisabled(false);
+            renderButtons();
+            GlamAR.setExperience("vto", {
+              category: "makeup",
+            });
+          });
+
+          GlamAR.addEventListener("experience-changing", (event) => {
+            console.info("GlamAR experience-changing:", event);
+          });
+
+          GlamAR.addEventListener("experience-changed", (event) => {
+            console.info("GlamAR experience-changed:", event);
+            if (pendingExperience) {
+              activeExperience = pendingExperience;
+            } else if (event?.experience === "skinAnalysis") {
+              activeExperience = "skin";
+            }
+            finishExperienceChange();
+            showStatus("Experience switched");
+          });
+
+          GlamAR.addEventListener("experience-change-failed", (event) => {
+            console.error("GlamAR experience-change-failed:", event);
+            const message =
+              getErrorMessage(event) || "Experience switch failed";
+            finishExperienceChange();
+            showStatus(message, true);
+          });
+
+          GlamAR.addEventListener("error", (event) => {
+            const message = getErrorMessage(event);
+
+            if (!sdkLoaded) {
+              showError(
+                message ||
+                  "The experience could not be started. Please try again.",
+              );
+              return;
+            }
+
+            console.warn("GlamAR runtime error:", message || event);
+          });
+        } catch (initError) {
+          showError("The experience could not be started. Please try again.");
+        }
       })();
     </script>
   </body>
