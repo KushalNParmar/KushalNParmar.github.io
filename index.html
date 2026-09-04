@@ -494,11 +494,7 @@
       id="experience-intro"
       aria-label="Choose your experience"
     >
-      <div
-        class="experience-intro-panel"
-        role="group"
-        aria-label="Experience"
-      >
+      <div class="experience-intro-panel" role="group" aria-label="Experience">
         <button
           class="experience-intro-button"
           data-intro-experience="makeup"
@@ -645,10 +641,7 @@
 
           const detail = event?.detail;
           const candidate =
-            detail?.error ||
-            detail?.message ||
-            event?.error ||
-            event?.message;
+            detail?.error || detail?.message || event?.error || event?.message;
 
           if (typeof candidate === "string") return candidate;
           return candidate?.message;
@@ -666,10 +659,7 @@
           setInert(lottieLoader, !isExposed);
         };
 
-        const setExperienceUiVisible = (
-          visible,
-          interactive = visible,
-        ) => {
+        const setExperienceUiVisible = (visible, interactive = visible) => {
           controls.hidden = !visible;
           controls.setAttribute("aria-hidden", String(!interactive));
           setInert(controls, !interactive);
@@ -913,10 +903,7 @@
 
           desiredRequest = null;
 
-          if (
-            experienceOpen &&
-            activeExperience === request.target
-          ) {
+          if (experienceOpen && activeExperience === request.target) {
             completeRequest(request);
             renderIntroButtons();
             renderButtons();
@@ -983,6 +970,7 @@
           platform: "web",
           mode: "private",
           meta: {
+            deviceType: "kiosk",
             sdkVersion: version || "2.0.0",
             debugText,
             preloadMLModels: ["face", "hair", "hand", "light"],
@@ -1086,10 +1074,7 @@
 
           glamar.addEventListener("closed", (event) => {
             console.info("GlamAR closed:", event);
-            const isIdleIntro =
-              introOpen &&
-              !experienceOpen &&
-              !inFlight;
+            const isIdleIntro = introOpen && !experienceOpen && !inFlight;
             if (isIdleIntro) return;
 
             flowCycle += 1;
