@@ -484,7 +484,7 @@
         }
       }
     </style>
-    <script src="https://cdn.glamarz0.de/sdk/wrapper?"></script>
+    <script src="https://cdn.glamar.io/sdk/wrapper"></script>
   </head>
   <body>
     <main id="GlamAR-module" aria-hidden="true" inert></main>
@@ -578,8 +578,8 @@
 
     <script>
       (() => {
-        const DEFAULT_API_KEY = "25cd4d7a-fe7d-4fc4-af1b-608414bf0c99";
-        const SKIN_ANALYSIS_APP_ID = "0732f85d-5768-462e-a50a-174840438a69";
+        const DEFAULT_API_KEY = "dc7d98be-63cc-4ecb-b195-1be4d5925c6f";
+        const SKIN_ANALYSIS_APP_ID = "5619e6b6-dfdd-4da6-bc6a-f2fc9993da15";
         const EXPERIENCE_CHANGE_TIMEOUT = 30000;
         const params = new URLSearchParams(window.location.search);
         const accessKey = params.get("accessKey") || DEFAULT_API_KEY;
@@ -977,7 +977,6 @@
             ...(cameraSync !== null && {
               disableCameraSync: cameraSync === "true",
             }),
-            
           },
         };
 
